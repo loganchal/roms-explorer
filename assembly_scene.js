@@ -360,8 +360,8 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "argo", title: "Argo check", kid: "134 independent float profiles.",
-        prov: "obs", source: "argo_floats_202101.json",
+        id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
+        prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
         detail: "Model minus observed at each depth: red model-high, blue model-low.",
         limitation: null,
     },
@@ -1832,11 +1832,17 @@ export function mountAssembly() {
         });
         drawArgoProfile(document.getElementById("argoChart"), modelZ, modelVal, obsZ, obsVal);
     }
+    const MONTH_ABBR = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function argoMonthLabel() {
+        if (typeof ARGO_MONTH === "undefined") return "";
+        const [y, mo] = ARGO_MONTH.split("-").map(Number);
+        return `${MONTH_ABBR[mo]} ${y}`;
+    }
     function renderArgoPanel(fl, model) {
         const panel = document.getElementById("argo-detail");
         if (!panel) return;
         panel.style.display = "block";
-        panel.innerHTML = `<div class="k">${fl.id} &middot; day ${model.day + 1} Jan 2021 &middot; ${model.dist_km} km from model cell</div>
+        panel.innerHTML = `<div class="k">${fl.id} &middot; day ${model.day + 1} ${argoMonthLabel()} &middot; ${model.dist_km} km from model cell</div>
             <canvas class="chart" id="argoChart"></canvas>`;
         argoPanelState = { float: fl, model };
         drawArgoPanelChart();
