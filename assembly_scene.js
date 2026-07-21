@@ -366,7 +366,7 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "parts", title: "The parts", kid: "Everything the model was given, by class.",
+        id: "parts", title: "Data explorer", kid: "Explore forcing data",
         detail: "Rebuilt and reconstructed pieces open their own page.",
         limitation: null,
     },
