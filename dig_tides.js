@@ -1,14 +1,23 @@
-// dig_tides.js -- the Reconstructed / Tides dig page.
+// dig_tides.js -- the Rebuilt / Tides dig page.
 // Pure 2D canvas: (1) an eleven-constituent decomposition at one deep
-// boundary point, (2) the M2-amplitude refit vs EOT20 altimetry around the
-// open boundary, (3) a per-constituent amplitude/phase comparison table.
+// boundary point, (2) the M2-amplitude refit vs an outside reference tide
+// model around the open boundary, (3) a per-constituent amplitude/phase
+// comparison table. The reference (EOT20 independent altimetry, or TPXO8 --
+// the same model family the original hindcast's own tides came from) is
+// whichever showcase npz build_roms_explorer_scene_data.py was last given;
+// see TIDEVAL_SOURCE below.
 
 import { b64f32, drawSeries, mountHeader } from "./dig_common.js";
 
+const TIDEVAL_LABEL = typeof TIDEVAL_SOURCE !== "undefined" ? TIDEVAL_SOURCE : "EOT20";
+const validationRefLabelEl = document.getElementById("validation-ref-label");
+if (validationRefLabelEl) validationRefLabelEl.textContent = TIDEVAL_LABEL;
+
 mountHeader(document.getElementById("dig-header"), {
-    prov: "reconstructed",
+    prov: "rebuilt",
     title: "Tides",
-    sentence: "Eleven constituents fit by least squares to two years of hourly sea levels.",
+    sentence: "Eleven constituents fit by least squares to two years of hourly sea levels; " +
+        `moving to a direct ${TIDEVAL_LABEL}-atlas regrid (build in progress).`,
     source: "nz5km-tide.nc",
 });
 
@@ -91,31 +100,32 @@ function redrawDecomp() {
 }
 redrawDecomp();
 
-// ---- 3. validation curve: refit vs EOT20 around the open boundary ---------
-// only the 8 constituents in EOT_CURVE_NAMES have an independent altimetric
-// match (M4/MF/MM aren't in EOT20's product); same lexical-binding-not-
-// window-property workaround as AMP_BY_NAME/PHASE_BY_NAME above.
-const EOT_CURVE_BY_NAME = {
-    M2: [EOT_CURVE_M2_OURS_B64, EOT_CURVE_M2_EOT_B64],
-    S2: [EOT_CURVE_S2_OURS_B64, EOT_CURVE_S2_EOT_B64],
-    N2: [EOT_CURVE_N2_OURS_B64, EOT_CURVE_N2_EOT_B64],
-    K2: [EOT_CURVE_K2_OURS_B64, EOT_CURVE_K2_EOT_B64],
-    K1: [EOT_CURVE_K1_OURS_B64, EOT_CURVE_K1_EOT_B64],
-    O1: [EOT_CURVE_O1_OURS_B64, EOT_CURVE_O1_EOT_B64],
-    P1: [EOT_CURVE_P1_OURS_B64, EOT_CURVE_P1_EOT_B64],
-    Q1: [EOT_CURVE_Q1_OURS_B64, EOT_CURVE_Q1_EOT_B64],
+// ---- 3. validation curve: refit vs the outside reference around the ------
+// open boundary. Only the 8 constituents in TIDEVAL_CURVE_NAMES have a
+// match in the reference product (M4/MF/MM aren't in either EOT20 or
+// TPXO8); same lexical-binding-not-window-property workaround as
+// AMP_BY_NAME/PHASE_BY_NAME above.
+const TIDEVAL_CURVE_BY_NAME = {
+    M2: [TIDEVAL_CURVE_M2_OURS_B64, TIDEVAL_CURVE_M2_REF_B64],
+    S2: [TIDEVAL_CURVE_S2_OURS_B64, TIDEVAL_CURVE_S2_REF_B64],
+    N2: [TIDEVAL_CURVE_N2_OURS_B64, TIDEVAL_CURVE_N2_REF_B64],
+    K2: [TIDEVAL_CURVE_K2_OURS_B64, TIDEVAL_CURVE_K2_REF_B64],
+    K1: [TIDEVAL_CURVE_K1_OURS_B64, TIDEVAL_CURVE_K1_REF_B64],
+    O1: [TIDEVAL_CURVE_O1_OURS_B64, TIDEVAL_CURVE_O1_REF_B64],
+    P1: [TIDEVAL_CURVE_P1_OURS_B64, TIDEVAL_CURVE_P1_REF_B64],
+    Q1: [TIDEVAL_CURVE_Q1_OURS_B64, TIDEVAL_CURVE_Q1_REF_B64],
 };
 const validationCaptionEl = document.getElementById("validation-caption");
 const validationNoteEl = document.getElementById("validation-note");
 function redrawValidation(name) {
-    const shown = EOT_CURVE_BY_NAME[name] ? name : "M2";
-    validationNoteEl.textContent = shown === name ? "" : `No independent EOT20 comparison for ${name} -- showing M2.`;
-    const [oursYs, eotYs] = EOT_CURVE_BY_NAME[shown].map(b64 => Array.from(b64f32(b64)));
+    const shown = TIDEVAL_CURVE_BY_NAME[name] ? name : "M2";
+    validationNoteEl.textContent = shown === name ? "" : `No independent ${TIDEVAL_LABEL} comparison for ${name} -- showing M2.`;
+    const [oursYs, refYs] = TIDEVAL_CURVE_BY_NAME[shown].map(b64 => Array.from(b64f32(b64)));
     drawSeries(document.getElementById("validation-canvas"), [
-        { ys: eotYs, color: "#f2a63c", width: 2 },
+        { ys: refYs, color: "#f2a63c", width: 2 },
         { ys: oursYs, color: "#5cb3ff", width: 2 },
     ], { zeroLine: false });
-    validationCaptionEl.textContent = `${shown} amplitude around the open boundary, refit vs independent EOT20 altimetry.`;
+    validationCaptionEl.textContent = `${shown} amplitude around the open boundary, refit vs ${TIDEVAL_LABEL}.`;
 }
 redrawValidation("M2");
 
@@ -141,32 +151,32 @@ namesByAmp.forEach(name => {
 });
 
 // ---- 4. constituent table --------------------------------------------------
-const rows = EOT_MEDIANS.map(r => {
+const rows = TIDEVAL_MEDIANS.map(r => {
     const weak = Math.abs(r.dphase_deg) > 30;
     return `<tr class="${weak ? "weak" : ""}">
         <td>${r.name}</td>
         <td>${r.ours_cm.toFixed(1)}</td>
-        <td>${r.eot_cm.toFixed(1)}</td>
+        <td>${r.ref_cm.toFixed(1)}</td>
         <td>${r.ratio.toFixed(2)}</td>
     </tr>`;
 }).join("");
 
 document.getElementById("table-wrap").innerHTML = `
     <table class="dig-table">
-        <thead><tr><th>constituent</th><th>ours (cm)</th><th>EOT20 (cm)</th><th>ratio</th></tr></thead>
+        <thead><tr><th>constituent</th><th>ours (cm)</th><th>${TIDEVAL_LABEL} (cm)</th><th>ratio</th></tr></thead>
         <tbody>${rows}</tbody>
     </table>`;
 
-// ---- 5. total agreement, weighted by each constituent's own EOT20 --------
+// ---- 5. total agreement, weighted by each constituent's own reference ----
 // amplitude -- an unweighted average would let K2/P1/Q1 (a few cm, mostly
 // noise) swamp the answer with their huge phase errors; weighting by
 // amplitude reports what the tide itself actually does, dominated by M2.
-const totalW = EOT_MEDIANS.reduce((s, r) => s + r.eot_cm, 0);
-const weightedRatio = EOT_MEDIANS.reduce((s, r) => s + r.ratio * r.eot_cm, 0) / totalW;
-const weightedDphase = EOT_MEDIANS.reduce((s, r) => s + Math.abs(r.dphase_deg) * r.eot_cm, 0) / totalW;
-const strongCount = EOT_MEDIANS.filter(r => Math.abs(r.dphase_deg) <= 30).length;
+const totalW = TIDEVAL_MEDIANS.reduce((s, r) => s + r.ref_cm, 0);
+const weightedRatio = TIDEVAL_MEDIANS.reduce((s, r) => s + r.ratio * r.ref_cm, 0) / totalW;
+const weightedDphase = TIDEVAL_MEDIANS.reduce((s, r) => s + Math.abs(r.dphase_deg) * r.ref_cm, 0) / totalW;
+const strongCount = TIDEVAL_MEDIANS.filter(r => Math.abs(r.dphase_deg) <= 30).length;
 
 document.getElementById("agreement-summary").innerHTML = `
     <div class="stat"><div class="v">${(weightedRatio * 100).toFixed(0)}%</div><div class="l">amplitude</div></div>
     <div class="stat"><div class="v">${weightedDphase.toFixed(0)}&deg;</div><div class="l">phase offset</div></div>
-    <div class="note">amplitude-weighted across all 8 &middot; ${strongCount}/8 individually within 30&deg;</div>`;
+    <div class="note">amplitude-weighted across all ${TIDEVAL_MEDIANS.length} vs ${TIDEVAL_LABEL} &middot; ${strongCount}/${TIDEVAL_MEDIANS.length} individually within 30&deg;</div>`;
