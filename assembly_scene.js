@@ -331,8 +331,8 @@ const STEPS = [
     },
     {
         id: "tides", title: "Tides", kid: "11 constituents on the open boundary.",
-        prov: "reconstructed", source: "nz5km-tide.nc",
-        detail: "Refit from the hindcast's output, agrees with TPXO8.",
+        prov: "rebuilt", source: "nz5km-tide.nc",
+        detail: "TPXO8-atlas, validated against harmonics fit from the hindcast's own output.",
         limitation: "Amplitude and cycle speed normalized per constituent.",
     },
     {
@@ -1668,7 +1668,7 @@ export function mountAssembly() {
         [surfaceMesh, { base: surfaceMesh.position.y, offset: 150 }],  // rebuilt (weather drape)
         [windPlane, { base: windPlane.position.y, offset: 150 }],      // rebuilt
         [boundaryGroup, { base: boundaryGroup.position.y, offset: 80 }], // rebuilt (walls span 0..-150)
-        [tideWallGroup, { base: tideWallGroup.position.y, offset: -100 }], // reconstructed
+        [tideWallGroup, { base: tideWallGroup.position.y, offset: 20 }], // rebuilt (TPXO8-atlas)
         [riverGroup, { base: riverGroup.position.y, offset: -140 }],   // reconstructed
     ]);
     const PARTS_TWEEN_DURATION = 0.8; // seconds
@@ -1743,7 +1743,7 @@ export function mountAssembly() {
     partsLabelGroup.add(
         makePartsLabel("Weather", PROV.rebuilt.color, 150, "dig_weather.html"),
         makePartsLabel("Open boundaries", PROV.rebuilt.color, 80, "dig_boundary.html"),
-        makePartsLabel("Tides", PROV.reconstructed.color, -100, "dig_tides.html"),
+        makePartsLabel("Tides", PROV.rebuilt.color, 20, "dig_tides.html"),
         makePartsLabel("Rivers", PROV.reconstructed.color, -140, "dig_rivers.html"),
     );
     partsLabelGroup.visible = false;

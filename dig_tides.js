@@ -1,11 +1,12 @@
-// dig_tides.js -- the Reconstructed / Tides dig page.
-// Pure 2D canvas: (1) an eleven-constituent decomposition at one deep
-// boundary point, (2) the M2-amplitude refit vs an outside reference tide
-// model around the open boundary, (3) a per-constituent amplitude/phase
-// comparison table. The reference (EOT20 independent altimetry, or TPXO8 --
-// the same model family the original hindcast's own tides came from) is
-// whichever showcase npz build_roms_explorer_scene_data.py was last given;
-// see TIDEVAL_SOURCE below.
+// dig_tides.js -- the Rebuilt / Tides dig page.
+// TPXO8-atlas is the tide forcing actually used (regridded onto the open
+// boundary -- the same TPXO family the original hindcast's own tides came
+// from). To check that choice, we independently fit eleven harmonics
+// straight from the hindcast's own archived output (a completely separate
+// method) and compared: they agree, which validates using TPXO8 here.
+// Pure 2D canvas: (1) that eleven-constituent harmonic fit at one deep
+// boundary point, (2) the M2 harmonic amplitude vs TPXO8 around the open
+// boundary, (3) a per-constituent amplitude/phase agreement table.
 
 import { b64f32, drawSeries, mountHeader } from "./dig_common.js";
 
@@ -14,9 +15,9 @@ const validationRefLabelEl = document.getElementById("validation-ref-label");
 if (validationRefLabelEl) validationRefLabelEl.textContent = TIDEVAL_LABEL;
 
 mountHeader(document.getElementById("dig-header"), {
-    prov: "reconstructed",
+    prov: "rebuilt",
     title: "Tides",
-    sentence: `Eleven constituents fit by least squares to two years of hourly sea levels, agrees with ${TIDEVAL_LABEL}.`,
+    sentence: `${TIDEVAL_LABEL}-atlas tide forcing, validated by independently fitting harmonics from the hindcast's own output -- they agree.`,
     source: "nz5km-tide.nc",
 });
 
@@ -99,11 +100,10 @@ function redrawDecomp() {
 }
 redrawDecomp();
 
-// ---- 3. validation curve: refit vs the outside reference around the ------
+// ---- 3. the check: independently-fit harmonics vs TPXO8 around the -------
 // open boundary. Only the 8 constituents in TIDEVAL_CURVE_NAMES have a
-// match in the reference product (M4/MF/MM aren't in either EOT20 or
-// TPXO8); same lexical-binding-not-window-property workaround as
-// AMP_BY_NAME/PHASE_BY_NAME above.
+// match in TPXO8's product (M4/MF/MM aren't in it); same lexical-binding-
+// not-window-property workaround as AMP_BY_NAME/PHASE_BY_NAME above.
 const TIDEVAL_CURVE_BY_NAME = {
     M2: [TIDEVAL_CURVE_M2_OURS_B64, TIDEVAL_CURVE_M2_REF_B64],
     S2: [TIDEVAL_CURVE_S2_OURS_B64, TIDEVAL_CURVE_S2_REF_B64],
@@ -118,13 +118,13 @@ const validationCaptionEl = document.getElementById("validation-caption");
 const validationNoteEl = document.getElementById("validation-note");
 function redrawValidation(name) {
     const shown = TIDEVAL_CURVE_BY_NAME[name] ? name : "M2";
-    validationNoteEl.textContent = shown === name ? "" : `No independent ${TIDEVAL_LABEL} comparison for ${name} -- showing M2.`;
+    validationNoteEl.textContent = shown === name ? "" : `No ${TIDEVAL_LABEL} match for ${name} -- showing M2.`;
     const [oursYs, refYs] = TIDEVAL_CURVE_BY_NAME[shown].map(b64 => Array.from(b64f32(b64)));
     drawSeries(document.getElementById("validation-canvas"), [
         { ys: refYs, color: "#f2a63c", width: 2 },
         { ys: oursYs, color: "#5cb3ff", width: 2 },
     ], { zeroLine: false });
-    validationCaptionEl.textContent = `${shown} amplitude around the open boundary, refit vs ${TIDEVAL_LABEL}.`;
+    validationCaptionEl.textContent = `${shown} amplitude around the open boundary: harmonics fit from the hindcast's own output vs ${TIDEVAL_LABEL}, the tide forcing used.`;
 }
 redrawValidation("M2");
 
@@ -162,7 +162,7 @@ const rows = TIDEVAL_MEDIANS.map(r => {
 
 document.getElementById("table-wrap").innerHTML = `
     <table class="dig-table">
-        <thead><tr><th>constituent</th><th>ours (cm)</th><th>${TIDEVAL_LABEL} (cm)</th><th>ratio</th></tr></thead>
+        <thead><tr><th>constituent</th><th>harmonics (cm)</th><th>${TIDEVAL_LABEL} (cm)</th><th>ratio</th></tr></thead>
         <tbody>${rows}</tbody>
     </table>`;
 
@@ -178,4 +178,4 @@ const strongCount = TIDEVAL_MEDIANS.filter(r => Math.abs(r.dphase_deg) <= 30).le
 document.getElementById("agreement-summary").innerHTML = `
     <div class="stat"><div class="v">${(weightedRatio * 100).toFixed(0)}%</div><div class="l">amplitude</div></div>
     <div class="stat"><div class="v">${weightedDphase.toFixed(0)}&deg;</div><div class="l">phase offset</div></div>
-    <div class="note">amplitude-weighted across all ${TIDEVAL_MEDIANS.length} vs ${TIDEVAL_LABEL} &middot; ${strongCount}/${TIDEVAL_MEDIANS.length} individually within 30&deg;</div>`;
+    <div class="note">harmonics agree with ${TIDEVAL_LABEL}, amplitude-weighted across all ${TIDEVAL_MEDIANS.length} &middot; ${strongCount}/${TIDEVAL_MEDIANS.length} individually within 30&deg;</div>`;
