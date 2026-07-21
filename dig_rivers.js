@@ -8,7 +8,7 @@ import { b64f32, mountHeader, PROV } from "./dig_common.js";
 mountHeader(document.getElementById("header-mount"), {
     prov: "reconstructed",
     title: "Rivers",
-    sentence: "47 sources re-placed on the real coastline.",
+    sentence: "47 sources re-placed on the coastline.",
     source: "nz5km_N50_rivers.nc",
 });
 
