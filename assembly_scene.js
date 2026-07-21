@@ -50,7 +50,7 @@ function fieldRange(arr, maskArr) {
 const BATHY_STOPS = ["#d8f2ea", "#5cd6c4", "#2e8fc9", "#1a4a8e", "#0a1230"];
 const LAND_COLOR = new THREE.Color("#6b6a63");
 const WARM_STOPS = ["#2b5faa", "#6fb1c9", "#f2e394", "#e0782f", "#a8281f"];
-const SALT_STOPS = ["#1a3a2e", "#2f7a6e", "#5cd6c4", "#a8e6da", "#e8f7f0"];
+const SALT_STOPS = ["#2a186c", "#1b3aa0", "#16638d", "#318288", "#46a483", "#69c46f", "#b8db60", "#fdef9a"]; // cmocean 'haline'
 const NUDG_STOPS = ["#140b1f", "#5b2a86", "#c8632e", "#f2c53d"];
 const SW_STOPS = ["#05070f", "#132244", "#2f5c8c", "#e0a83c", "#fff4cf"];
 const PAIR_STOPS = ["#3d2a6b", "#4f7cae", "#dbe4de", "#d9843c", "#a8281f"];
