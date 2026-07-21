@@ -1925,7 +1925,7 @@ export function mountAssembly() {
 
         if (stepIdx < 0) {
             if (titleEl) titleEl.textContent = "An empty model";
-            if (kidEl) kidEl.textContent = "Nothing in the box yet.";
+            if (kidEl) kidEl.textContent = "";
             if (detailBody) detailBody.innerHTML = "";
             if (limitEl) limitEl.style.display = "none";
             if (fieldButtons) fieldButtons.classList.remove("visible");
