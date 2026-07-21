@@ -245,6 +245,19 @@ const FRAMES_FIELDS = {
     speed: { label: "Current speed", range: FRAMES_SPEED_RANGE, stops: WIND_SPEED_STOPS },
     ssh: { label: "SSH", range: FRAMES_ZETA_RANGE, stops: ZETA_STOPS },
 };
+// temperature/stratification anomaly frames only exist if the scene_data
+// build was given --clim-sst/--strat-dir/--clim-n2pyc
+// (extract_model_showcase.py) -- guard so older builds still work. Both are
+// deviations from the 1994-2020 day-of-year climatology, so they share
+// SSH's diverging blue-white-red ramp (below/above the seasonal norm).
+if (typeof FRAMES_TEMP_ANOM_B64 !== "undefined") {
+    FRAMES_RAW.temp_anom = b64u8(FRAMES_TEMP_ANOM_B64);
+    FRAMES_FIELDS.temp_anom = { label: "Temperature anomaly", range: FRAMES_TEMP_ANOM_RANGE, stops: ZETA_STOPS };
+}
+if (typeof FRAMES_N2PYC_ANOM_B64 !== "undefined") {
+    FRAMES_RAW.n2pyc_anom = b64u8(FRAMES_N2PYC_ANOM_B64);
+    FRAMES_FIELDS.n2pyc_anom = { label: "Stratification anomaly", range: FRAMES_N2PYC_ANOM_RANGE, stops: ZETA_STOPS };
+}
 
 // all 11 tidal constituents' amp+phase -- bare identifiers since scene_data.js
 // declares one const per constituent (TIDE_AMP_M2_B64 etc); TIDE_NAMES gives
@@ -1383,15 +1396,17 @@ export function mountAssembly() {
     scene.add(framesMesh);
 
     const framesColorCache = {}; // field key -> [Float32Array(FCOUNT*3) x FN], built on first use
+    // ssh and the two anomaly fields need a range SYMMETRIC about zero (so
+    // their diverging ramp's white middle stop lands on mean-sea-level / no
+    // anomaly), which differs from the field's own [vmin,vmax] -- everything
+    // else maps its own byte range straight to [0,1].
+    const ZERO_CENTERED_FIELDS = new Set(["ssh", "temp_anom", "n2pyc_anom"]);
     function framesToT01(key) {
-        // every field except ssh maps its own byte range straight to
-        // [0,1] -- (val-vmin)/span collapses to byte/255 exactly, since
-        // that's how quantize_frames() built the byte in the first place.
-        // ssh needs a range SYMMETRIC about zero (so ZETA_STOPS' white
-        // middle stop lands on mean sea level), which differs from the
-        // field's own [vmin,vmax], so that one case actually dequantizes.
-        if (key !== "ssh") return (byte) => byte / 255;
-        const [vmin, vmax] = FRAMES_FIELDS.ssh.range, span = (vmax - vmin) || 1;
+        // (val-vmin)/span collapses to byte/255 exactly, since that's how
+        // quantize_frames() built the byte in the first place -- the
+        // non-zero-centered case just dequantizes back to a plain 0..1.
+        if (!ZERO_CENTERED_FIELDS.has(key)) return (byte) => byte / 255;
+        const [vmin, vmax] = FRAMES_FIELDS[key].range, span = (vmax - vmin) || 1;
         const m = Math.max(Math.abs(vmin), Math.abs(vmax)) || 1;
         return (byte) => ((vmin + (byte / 255) * span) + m) / (2 * m);
     }
