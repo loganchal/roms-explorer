@@ -345,7 +345,7 @@ const STEPS = [
     {
         id: "tides", title: "Tides", kid: "11 constituents on the open boundary.",
         prov: "rebuilt", source: "nz5km-tide.nc",
-        detail: "TPXO8-atlas, validated against harmonics fit from the hindcast's own output.",
+        detail: "TPXO8-atlas, validated against harmonics fit from the hindcast's own output and LINZ tide gauges.",
         limitation: "Amplitude and cycle speed normalized per constituent.",
     },
     {
