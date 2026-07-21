@@ -17,7 +17,7 @@ if (validationRefLabelEl) validationRefLabelEl.textContent = TIDEVAL_LABEL;
 mountHeader(document.getElementById("dig-header"), {
     prov: "rebuilt",
     title: "Tides",
-    sentence: `${TIDEVAL_LABEL}-atlas tide forcing, validated by independently fitting harmonics from the hindcast's own output -- they agree.`,
+    sentence: `${TIDEVAL_LABEL}-atlas tide forcing, validated by independently fitting harmonics from the hindcast's own output.`,
     source: "nz5km-tide.nc",
 });
 
