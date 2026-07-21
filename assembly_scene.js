@@ -354,9 +354,9 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "frames", title: "Run forward", kid: "The model's own first month.",
-        prov: "original", source: "nz5km_avg_202101.nc",
-        detail: "Daily means from the run's archive.",
+        id: "frames", title: "Run forward", kid: "The model's own output, month by month.",
+        prov: "original", source: "nz5km_avg_*.nc",
+        detail: "A few daily-mean snapshots per month, across the whole run so far.",
         limitation: null,
     },
     {
@@ -1344,9 +1344,9 @@ export function mountAssembly() {
     makeFieldButtons("ini-field-buttons", INI_FIELDS, "temp", setIniField);
 
     // -- run-forward step: a DEDICATED lower-res mesh, not the shared
-    // surfaceMesh -- 31 frames x 4 fields of full-resolution per-vertex
+    // surfaceMesh -- FN frames x 4 fields of full-resolution per-vertex
     // colour would be wasteful to recompute on every switch. Colours are
-    // decoded from the quantized bytes and cached ONCE per field (31
+    // decoded from the quantized bytes and cached ONCE per field (FN
     // Float32Array buffers, built lazily on first use), so playback and
     // field switching after that first hit is just an array copy +
     // needsUpdate -- no per-frame colour math.
@@ -1410,16 +1410,21 @@ export function mountAssembly() {
         return cache;
     }
     let framesFieldKey = "temp", framesDayIdx = 0, framesPlaying = false, framesElapsed = 0;
-    const FRAMES_FPS = 3; // ~10 s for the month -- slow enough to actually watch eddies move
+    // playback speed scales with frame count so a multi-year timelapse still
+    // finishes in a reasonable time instead of taking the single-month pace
+    // (~10 s) and stretching it out to minutes.
+    const FRAMES_FPS = FN <= 40 ? 3 : Math.min(12, Math.max(6, Math.round(FN / 20)));
     function paintFramesFrame() {
         if (!framesColorCache[framesFieldKey]) framesColorCache[framesFieldKey] = buildFramesCache(framesFieldKey);
         framesGeo.attributes.color.array.set(framesColorCache[framesFieldKey][framesDayIdx]);
         framesGeo.attributes.color.needsUpdate = true;
     }
-    function formatFramesDay(idx) { return `${idx + 1} Jan 2021`; }
+    function formatFramesDay(idx) {
+        return (typeof FRAMES_DATES !== "undefined" && FRAMES_DATES[idx]) ? FRAMES_DATES[idx] : `frame ${idx + 1}`;
+    }
     function updateFramesUI() {
         const slider = document.getElementById("frames-day-slider");
-        if (slider) slider.value = String(framesDayIdx + 1);
+        if (slider) { slider.max = String(FN); slider.value = String(framesDayIdx + 1); }
         const label = document.getElementById("frames-day-label");
         if (label) label.textContent = formatFramesDay(framesDayIdx);
         const playBtn = document.getElementById("frames-play-btn");
