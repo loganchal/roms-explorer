@@ -321,7 +321,7 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "volume", title: "Interior nudging", kid: "A relaxation ramp from the original configuration.",
+        id: "volume", title: "Interior nudging", kid: "Taken from the original configuration.",
         sources: [
             { prov: "original", source: "nz5km_nudg_N50.nc" },
             { prov: "rebuilt", source: "nz5km_N50_clim_202101.nc" },
