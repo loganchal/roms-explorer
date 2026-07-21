@@ -1,4 +1,4 @@
-// dig_tides.js -- the Rebuilt / Tides dig page.
+// dig_tides.js -- the Reconstructed / Tides dig page.
 // Pure 2D canvas: (1) an eleven-constituent decomposition at one deep
 // boundary point, (2) the M2-amplitude refit vs an outside reference tide
 // model around the open boundary, (3) a per-constituent amplitude/phase
@@ -14,10 +14,9 @@ const validationRefLabelEl = document.getElementById("validation-ref-label");
 if (validationRefLabelEl) validationRefLabelEl.textContent = TIDEVAL_LABEL;
 
 mountHeader(document.getElementById("dig-header"), {
-    prov: "rebuilt",
+    prov: "reconstructed",
     title: "Tides",
-    sentence: "Eleven constituents fit by least squares to two years of hourly sea levels; " +
-        `moving to a direct ${TIDEVAL_LABEL}-atlas regrid (build in progress).`,
+    sentence: `Eleven constituents fit by least squares to two years of hourly sea levels, agrees with ${TIDEVAL_LABEL}.`,
     source: "nz5km-tide.nc",
 });
 
