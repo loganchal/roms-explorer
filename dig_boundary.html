@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open boundaries &mdash; ROMS extension domain explorer</title>
+    <link rel="stylesheet" href="explorer.css">
+    <style>
+        .curtain-label {
+            position: absolute;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: .02em;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+        }
+        .curtain-label .dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="viewport" style="height:100vh">
+        <div id="step-panel">
+            <div id="step-card" class="glass">
+                <div id="dig-header"></div>
+                <div id="boundary-field-buttons" class="field-buttons visible"></div>
+            </div>
+        </div>
+
+        <div id="glorys-label" class="curtain-label"><span class="dot" style="background:#f2a63c"></span>GLORYS native grid</div>
+        <div id="bnd-label" class="curtain-label"><span class="dot" style="background:#4fa8ff"></span>ROMS boundary file</div>
+
+        <div id="hint">Drag to orbit &middot; scroll to zoom</div>
+        <div id="err"></div>
+    </div>
+
+    <script src="error_banner.js"></script>
+    <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }}
+    </script>
+    <script src="scene_data.js"></script>
+    <script type="module" src="./dig_boundary.js"></script>
+</body>
+
+</html>

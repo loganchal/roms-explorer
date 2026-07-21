@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROMS extension domain explorer &middot; Rivers</title>
+    <link rel="stylesheet" href="explorer.css">
+    <style>
+        #map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+        #step-panel { width: 300px; }
+        #river-detail canvas.chart { height: 140px; }
+        #placement-note { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 4px; }
+        #placement-note ul { margin: 0; padding-left: 16px; }
+        #placement-note li { font-size: 11.5px; line-height: 1.5; color: var(--muted); margin: 0 0 6px; }
+        #placement-note li:last-child { margin-bottom: 0; }
+        #placement-note li b { color: var(--ink); font-weight: 500; }
+    </style>
+</head>
+
+<body>
+    <div id="viewport" style="height:100vh">
+        <canvas id="map-canvas"></canvas>
+
+        <div id="step-panel">
+            <div id="step-card">
+                <div id="header-mount"></div>
+                <div id="river-detail">
+                    <div class="k" id="river-detail-text"></div>
+                    <canvas class="chart" id="riverChart"></canvas>
+                </div>
+                <div id="placement-note">
+                    <ul>
+                        <li><b>Source</b> &mdash; NIWA/council gauges and LAWA.</li>
+                        <li><b>Placement</b> &mdash; snapped to the nearest coastline face.</li>
+                        <li><b>Injection</b> &mdash; top 10 m, weighted by layer thickness.</li>
+                        <li><b>Validated</b> &mdash; injection profiles set to match observed model behavior near river mouths.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="hint">Click a river dot for its injection profile</div>
+        <div id="err"></div>
+    </div>
+
+    <script src="error_banner.js"></script>
+    <script src="scene_data.js"></script>
+    <script type="module" src="./dig_rivers.js"></script>
+</body>
+
+</html>

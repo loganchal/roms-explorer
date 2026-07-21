@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROMS extension domain explorer</title>
+    <link rel="stylesheet" href="explorer.css">
+</head>
+
+<body>
+    <div id="viewport" style="height:100vh">
+        <div id="step-panel">
+            <div id="step-dots"></div>
+            <div id="step-card">
+                <div id="step-title"></div>
+                <div id="step-kid"></div>
+                <div id="parts-legend"></div>
+                <details>
+                    <summary style="cursor:pointer;font-size:11px;color:var(--muted)">&rsaquo; Information</summary>
+                    <div id="step-detail-body"></div>
+                </details>
+                <div id="step-limitation"></div>
+                <div id="river-detail"></div>
+                <div id="argo-detail"></div>
+                <div id="boundary-field-buttons" class="field-buttons"></div>
+                <div id="clim-field-buttons" class="field-buttons"></div>
+                <div id="nudg-mode-buttons" class="field-buttons"></div>
+                <div id="tide-constituent-wrap" class="field-buttons">
+                    <select id="tide-constituent-select"></select>
+                </div>
+                <div id="meteo-field-buttons" class="field-buttons"></div>
+                <div id="ini-field-buttons" class="field-buttons"></div>
+                <div id="frames-controls-wrap" class="field-buttons frames-controls">
+                    <button id="frames-play-btn" class="play-btn">Play</button>
+                    <input id="frames-day-slider" type="range" min="1" max="31" value="1" step="1">
+                    <span id="frames-day-label">1 Jan 2021</span>
+                </div>
+                <div id="frames-field-buttons" class="field-buttons"></div>
+                <div id="argo-var-buttons" class="field-buttons"></div>
+                <div id="step-nav">
+                    <button id="step-prev">&larr; Back</button>
+                    <button id="step-next">Next &rarr;</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="hint">Drag to orbit &middot; scroll to zoom &middot; click a river or Argo float once added, for its own profile &middot; <a href="full.html" style="pointer-events:auto">manual view</a></div>
+        <div id="err"></div>
+    </div>
+
+    <script src="error_banner.js"></script>
+    <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }}
+    </script>
+    <script src="scene_data.js"></script>
+    <script type="module">
+        import { mountAssembly } from "./assembly_scene.js";
+        mountAssembly();
+    </script>
+</body>
+
+</html>

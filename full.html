@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full explorer — ROMS extension domain</title>
+    <link rel="stylesheet" href="explorer.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="panel" id="layers">
+            <a class="back-link" href="index.html">&larr; Domain</a>
+            <h1>Full explorer</h1>
+            <div class="sub">Jul 2020, NZ 5&nbsp;km grid — everything at once</div>
+
+            <h2>Surface drape</h2>
+            <label class="row"><input type="radio" name="drape" value="bathymetry" checked> Bathymetry</label>
+            <label class="row"><input type="radio" name="drape" value="clim_temp"> Climatology, temp</label>
+            <label class="row"><input type="radio" name="drape" value="nudging"> Nudging strength</label>
+            <label class="row"><input type="radio" name="drape" value="tide_amp"> Tide M2 amplitude</label>
+
+            <h2>Overlays</h2>
+            <label class="row"><input type="checkbox" id="ov-boundary" checked> Boundary wall</label>
+            <label class="row"><input type="checkbox" id="ov-rivers" checked> Rivers</label>
+            <label class="row"><input type="checkbox" id="ov-argo" checked> Argo floats</label>
+            <label class="row"><input type="checkbox" id="ov-wind"> Meteo wind</label>
+
+            <h2>View</h2>
+            <label class="row">Vertical exaggeration
+                <input type="range" id="vexag" min="5" max="60" value="22" style="flex:1">
+            </label>
+        </div>
+
+        <div id="viewport">
+            <div id="hint">Drag to orbit &middot; scroll to zoom &middot; click an object for details</div>
+            <div id="err"></div>
+        </div>
+
+        <div class="panel" id="inspector">
+            <h2>Inspector</h2>
+            <div id="inspector-body"><div class="empty">Click anything in the scene.</div></div>
+        </div>
+    </div>
+
+    <script src="error_banner.js"></script>
+    <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }}
+    </script>
+    <script src="scene_data.js"></script>
+    <script type="module">
+        import { mountExplorer } from "./scene_core.js";
+        mountExplorer({
+            initialDrape: "bathymetry",
+            overlays: { boundary: true, rivers: true, argo: true, wind: false },
+        });
+    </script>
+</body>
+
+</html>

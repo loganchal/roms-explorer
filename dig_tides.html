@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tides &middot; ROMS extension domain explorer</title>
+    <link rel="stylesheet" href="explorer.css">
+    <style>
+        body { min-height: 100vh; padding: 24px; }
+        #dig-wrap {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            align-items: start;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        #dig-header-card {
+            position: sticky;
+            top: 24px;
+            border-radius: 14px;
+            padding: 18px 20px;
+        }
+        #dig-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+        .dig-card {
+            border-radius: 14px;
+            padding: 18px 20px;
+        }
+        .dig-caption {
+            font-size: 12px;
+            line-height: 1.55;
+            color: var(--muted);
+            margin-top: 10px;
+        }
+        .dig-point {
+            font-size: 10.5px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .dig-point code { color: var(--ink); background: var(--panel-2); padding: 2px 6px; border-radius: 4px; }
+        canvas.dig-chart {
+            width: 100%;
+            height: 160px;
+            background: var(--panel-2);
+            border-radius: 6px;
+            display: block;
+        }
+        canvas.dig-chart.tall { height: 180px; }
+        .dig-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 11px; color: var(--muted); }
+        .dig-legend .sw { display: inline-flex; align-items: center; gap: 6px; }
+        .dig-legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+        table.dig-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        table.dig-table th {
+            text-align: right;
+            font-weight: 400;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--muted);
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--line);
+        }
+        table.dig-table th:first-child, table.dig-table td:first-child { text-align: left; }
+        table.dig-table td {
+            text-align: right;
+            padding: 5px 8px;
+            border-bottom: 1px solid var(--line);
+            font-variant-numeric: tabular-nums;
+        }
+        table.dig-table tr.weak td { color: var(--muted); opacity: 0.55; }
+        table.dig-table tr:last-child td { border-bottom: none; }
+        #agreement-summary {
+            display: flex;
+            align-items: baseline;
+            gap: 22px;
+            padding-bottom: 14px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--line);
+        }
+        #agreement-summary .stat { display: flex; flex-direction: column; gap: 2px; }
+        #agreement-summary .stat .v { font-size: 20px; font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+        #agreement-summary .stat .l { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+        #agreement-summary .note { font-size: 11px; color: var(--muted); align-self: center; }
+        #constituent-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .tide-chip {
+            font: 500 11px/1 -apple-system, "Segoe UI", sans-serif;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: var(--panel-2);
+            color: var(--muted);
+            cursor: pointer;
+        }
+        .tide-chip:hover { color: var(--ink); }
+        .tide-chip.active { color: #0a0e14; background: #f2a63c; border-color: #f2a63c; }
+        #constituent-info { font-size: 11.5px; color: var(--muted); margin-top: 8px; min-height: 15px; }
+        #constituent-info code { color: var(--ink); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+    </style>
+</head>
+
+<body>
+    <div id="dig-wrap">
+        <div id="dig-header-card" class="glass">
+            <div id="dig-header"></div>
+        </div>
+        <div id="dig-content">
+            <div id="decomp-card" class="dig-card glass">
+                <div id="decomp-point" class="dig-point"></div>
+                <canvas id="decomp-canvas" class="dig-chart"></canvas>
+                <div class="dig-caption">Eleven sinusoids and the tide they add up to, three days at one point.</div>
+                <div id="constituent-picker"></div>
+                <div id="constituent-info"></div>
+            </div>
+            <div id="validation-card" class="dig-card glass">
+                <canvas id="validation-canvas" class="dig-chart tall"></canvas>
+                <div class="dig-legend">
+                    <span class="sw"><span class="dot" style="background:#5cb3ff"></span>ours</span>
+                    <span class="sw"><span class="dot" style="background:#f2a63c"></span>EOT20</span>
+                </div>
+                <div id="validation-caption" class="dig-caption">M2 amplitude around the open boundary, refit vs independent EOT20 altimetry.</div>
+                <div id="validation-note" class="dig-caption" style="color:#f2a63c;"></div>
+            </div>
+            <div id="table-card" class="dig-card glass">
+                <div id="agreement-summary"></div>
+                <div id="table-wrap"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="err"></div>
+
+    <script src="error_banner.js"></script>
+    <script src="scene_data.js"></script>
+    <script type="module" src="./dig_tides.js"></script>
+</body>
+
+</html>
