@@ -1,0 +1,67 @@
+/* The model prepares behind a quiet printed frontispiece. */
+#entrance {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    overflow: auto;
+    isolation: isolate;
+    background: #f8f6ef;
+    color: #292924;
+    opacity: 1;
+    transition: opacity 1.2s cubic-bezier(.22, .61, .36, 1);
+}
+#entrance::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.7'/%3E%3C/svg%3E");
+}
+.entrance-home {
+    position: absolute;
+    top: clamp(24px, 4vw, 48px);
+    left: clamp(24px, 4vw, 64px);
+    color: inherit;
+    font: 500 14px/1.4 system-ui, sans-serif;
+    text-decoration: none;
+}
+.entrance-home:hover, #entrance a:hover { text-decoration: underline; text-underline-offset: .25em; }
+.entrance-copy {
+    position: absolute;
+    top: 42%;
+    left: 24px;
+    right: 24px;
+    text-align: center;
+    transform: translateY(-50%);
+    transition: opacity .5s ease, translate .8s ease;
+}
+.entrance-label { margin: 0 0 20px; font: 11px/1.4 system-ui, sans-serif; letter-spacing: .13em; text-transform: uppercase; }
+.entrance-copy h1 { margin: 0; font: 400 clamp(40px, 6.5vw, 88px)/1.05 Georgia, serif; letter-spacing: -.045em; }
+.entrance-arc { position: absolute; top: 53%; left: 0; width: 100%; height: 24%; overflow: visible; }
+.entrance-arc path { fill: none; stroke: #7f8176; stroke-width: .8; vector-effect: non-scaling-stroke; opacity: .5; }
+.entrance-status { position: absolute; bottom: max(9%, 36px); left: 24px; right: 24px; text-align: center; font: 12px/1.6 system-ui, sans-serif; }
+.entrance-status p { margin: 14px 0 0; }
+.entrance-mark { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #a5644b; animation: quiet-pulse 2.4s ease-in-out infinite; }
+@keyframes quiet-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+#entrance-recovery { margin-top: 20px; }
+#entrance-retry { border: 1px solid #bfbcb0; background: transparent; border-radius: 999px; padding: 8px 16px; font: inherit; color: inherit; cursor: pointer; }
+#entrance-recovery a { margin-left: 16px; color: inherit; }
+#entrance-recovery details { max-width: 480px; margin: 20px auto 0; color: #696b61; font-size: 11px; }
+#entrance-error { overflow-wrap: anywhere; white-space: pre-wrap; }
+#entrance.has-error .entrance-mark { animation: none; opacity: 1; }
+#entrance.is-leaving { opacity: 0; }
+#entrance.is-leaving .entrance-copy { opacity: 0; translate: 0 -6px; }
+.scene-pending { visibility: hidden; }
+.entrance-noscript { position: absolute; bottom: 24px; width: 100%; text-align: center; }
+@media (max-height: 480px) {
+    .entrance-home { top: 18px; }
+    .entrance-label { margin-bottom: 12px; }
+    .entrance-status { bottom: 18px; }
+    #entrance.has-error .entrance-copy, #entrance.has-error .entrance-arc { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #entrance, .entrance-copy { transition: none; }
+    .entrance-mark { animation: none; }
+}

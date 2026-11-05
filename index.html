@@ -6,10 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMS extension domain explorer</title>
     <link rel="stylesheet" href="explorer.css">
+    <link rel="stylesheet" href="entrance.css">
 </head>
 
 <body>
-    <div id="viewport" style="height:100vh">
+    <div id="entrance" role="status" aria-live="polite">
+        <a class="entrance-home" href="/">Logan Chalmers</a>
+        <div class="entrance-copy">
+            <p class="entrance-label">New Zealand · ROMS</p>
+            <h1>Ocean model</h1>
+        </div>
+        <svg class="entrance-arc" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M -100 260 Q 720 -40 1540 260" />
+        </svg>
+        <div class="entrance-status">
+            <span class="entrance-mark" aria-hidden="true"></span>
+            <p id="entrance-message">Preparing the scene</p>
+            <div id="entrance-recovery" hidden>
+                <button type="button" id="entrance-retry">Try again ↗</button>
+                <a href="/">Return home</a>
+                <details><summary>Technical details</summary><pre id="entrance-error"></pre></details>
+            </div>
+        </div>
+        <noscript><p class="entrance-noscript">This interactive model needs JavaScript. <a href="/">Return home ↗</a></p></noscript>
+    </div>
+    <div id="viewport" class="scene-pending" style="height:100vh;height:100dvh" inert aria-busy="true">
         <div id="step-panel">
             <div id="step-dots"></div>
             <div id="step-card">
@@ -56,11 +77,7 @@
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }}
     </script>
-    <script src="scene_data.js"></script>
-    <script type="module">
-        import { mountAssembly } from "./assembly_scene.js";
-        mountAssembly();
-    </script>
+    <script type="module" src="entrance.js"></script>
 </body>
 
 </html>
