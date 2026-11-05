@@ -41,6 +41,29 @@
 .entrance-copy h1 { margin: 0; font: 400 clamp(40px, 6.5vw, 88px)/1.05 Georgia, serif; letter-spacing: -.045em; }
 .entrance-arc { position: absolute; top: 53%; left: 0; width: 100%; height: 24%; overflow: visible; }
 .entrance-arc path { fill: none; stroke: #7f8176; stroke-width: .8; vector-effect: non-scaling-stroke; opacity: .5; }
+/* Fine currents travel along the horizon, without implying download progress. */
+.entrance-arc .arc-current path { opacity: .12; }
+.arc-current { transform-box: fill-box; transform-origin: center; }
+.arc-current-upper { animation: current-rise 6s ease-in-out infinite; }
+.arc-current-lower { animation: current-fall 6s ease-in-out infinite; }
+.entrance-arc .arc-trace {
+    stroke-linecap: round;
+    stroke-dasharray: 80 920;
+    stroke-width: 1.35;
+    opacity: 0;
+    animation: horizon-current 6s linear infinite;
+}
+.entrance-arc .arc-trace-ink { stroke: #606e68; }
+.entrance-arc .arc-trace-rust { stroke: #a5644b; stroke-dasharray: 34 966; animation-delay: -3s; }
+@keyframes horizon-current {
+    0% { stroke-dashoffset: 1000; opacity: 0; }
+    15%, 80% { opacity: .7; }
+    100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes current-rise { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+@keyframes current-fall { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+#entrance.is-leaving .arc-current { animation-play-state: paused; transition: transform .9s ease, opacity .9s ease; transform: translateY(0); opacity: 0; }
+#entrance.has-error .arc-current, #entrance.has-error .arc-trace { animation: none; opacity: 0; }
 .entrance-status { position: absolute; bottom: max(9%, 36px); left: 24px; right: 24px; text-align: center; font: 12px/1.6 system-ui, sans-serif; }
 .entrance-status p { margin: 14px 0 0; }
 .entrance-mark { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #a5644b; animation: quiet-pulse 2.4s ease-in-out infinite; }
@@ -63,5 +86,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
     #entrance, .entrance-copy { transition: none; }
-    .entrance-mark { animation: none; }
+    .entrance-mark, .arc-current, .entrance-arc .arc-trace { animation: none; }
+    .entrance-arc .arc-trace { opacity: 0; }
 }

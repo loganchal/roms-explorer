@@ -17,7 +17,11 @@
             <h1>Ocean model</h1>
         </div>
         <svg class="entrance-arc" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M -100 260 Q 720 -40 1540 260" />
+            <path class="arc-guide" d="M -100 260 Q 720 -40 1540 260" />
+            <g class="arc-current arc-current-upper"><path d="M -100 246 Q 720 -54 1540 246" /></g>
+            <g class="arc-current arc-current-lower"><path d="M -100 274 Q 720 -26 1540 274" /></g>
+            <path class="arc-trace arc-trace-ink" pathLength="1000" d="M -100 260 Q 720 -40 1540 260" />
+            <path class="arc-trace arc-trace-rust" pathLength="1000" d="M -100 260 Q 720 -40 1540 260" />
         </svg>
         <div class="entrance-status">
             <span class="entrance-mark" aria-hidden="true"></span>
