@@ -106,10 +106,16 @@
         #constituent-info { font-size: 11.5px; color: var(--muted); margin-top: 8px; min-height: 15px; }
         #constituent-info code { color: var(--ink); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
     </style>
+    <link rel="stylesheet" href="data-pages.css">
 </head>
 
-<body>
-    <div id="dig-wrap">
+<body class="data-page">
+    <header class="model-header">
+        <a class="model-home" href="/">Logan Chalmers</a>
+        <a class="model-name" href="index.html">Ocean model <span>New Zealand · ROMS</span></a>
+        <nav aria-label="Explorer views"><a href="index.html">Guided</a><a href="full.html">Manual</a></nav>
+    </header>
+    <main id="dig-wrap">
         <div id="dig-header-card" class="glass">
             <div id="dig-header"></div>
         </div>
@@ -135,7 +141,7 @@
                 <div id="table-wrap"></div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="err"></div>
 

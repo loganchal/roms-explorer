@@ -1,6 +1,6 @@
 // Keep the first paint independent of the scene's large data download.
 const veil = document.getElementById("entrance");
-const viewport = document.getElementById("viewport");
+const viewport = document.getElementById("model-shell");
 let failed = false;
 
 function showFailure(error) {

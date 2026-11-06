@@ -94,10 +94,16 @@
             #series-grid, #regrid-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <link rel="stylesheet" href="data-pages.css">
 </head>
 
-<body>
-    <div id="dig-wrap">
+<body class="data-page">
+    <header class="model-header">
+        <a class="model-home" href="/">Logan Chalmers</a>
+        <a class="model-name" href="index.html">Ocean model <span>New Zealand · ROMS</span></a>
+        <nav aria-label="Explorer views"><a href="index.html">Guided</a><a href="full.html">Manual</a></nav>
+    </header>
+    <main id="dig-wrap">
         <div id="dig-header-card" class="glass">
             <div id="dig-header"></div>
             <div id="field-buttons" class="field-buttons visible"></div>
@@ -140,7 +146,7 @@
                 <div class="dig-caption">Wind components and shortwave at one grid point across the month.</div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="err"></div>
 

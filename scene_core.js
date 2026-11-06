@@ -112,6 +112,7 @@ export function mountExplorer(config = {}) {
 
     const viewport = document.getElementById("viewport");
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf8f6ef);
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -130,10 +131,13 @@ export function mountExplorer(config = {}) {
     function resize() {
         const w = viewport.clientWidth, h = viewport.clientHeight;
         camera.aspect = w / h;
+        // Fit the domain in narrow stages without changing orbital zoom.
+        camera.zoom = Math.min(1, (w / h) / 1.8) * 0.9;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
     }
     window.addEventListener("resize", resize);
+    new ResizeObserver(resize).observe(viewport);
 
     // -- terrain (always bathymetry-colored) + surface drape --------------
     function buildGridGeometry() {

@@ -18,11 +18,14 @@
     </style>
 </head>
 
-<body>
-    <div id="viewport" style="height:100vh">
-        <canvas id="map-canvas"></canvas>
-
-        <div id="step-panel">
+<body class="detail-page">
+    <header class="model-header">
+        <a class="model-home" href="/">Logan Chalmers</a>
+        <a class="model-name" href="index.html">Ocean model <span>New Zealand · ROMS</span></a>
+        <nav aria-label="Explorer views"><a href="index.html">Guided</a><a href="full.html">Manual</a></nav>
+    </header>
+    <main class="detail-layout">
+        <section id="step-panel" aria-label="Data details">
             <div id="step-card">
                 <div id="header-mount"></div>
                 <div id="river-detail">
@@ -37,11 +40,14 @@
                     </ul>
                 </div>
             </div>
-        </div>
+        </section>
+        <div id="viewport" role="region" aria-label="River locations">
+        <canvas id="map-canvas"></canvas>
 
         <div id="hint">Click a river dot for its injection profile</div>
         <div id="err"></div>
-    </div>
+        </div>
+    </main>
 
     <script src="error_banner.js"></script>
     <script src="scene_data.js"></script>
