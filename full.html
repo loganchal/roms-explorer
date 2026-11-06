@@ -8,51 +8,40 @@
     <link rel="stylesheet" href="explorer.css">
 </head>
 
-<body class="manual-page">
-    <header class="model-header">
-        <a class="model-home" href="/">Logan Chalmers</a>
-        <a class="model-name" href="index.html">Ocean model <span>New Zealand · ROMS</span></a>
-        <nav aria-label="Explorer views"><a href="index.html">Guided</a><a href="full.html" aria-current="page">Manual</a></nav>
-    </header>
+<body>
     <div id="app">
-        <section class="panel" id="layers" aria-label="Model layers">
-            <a class="back-link" href="index.html">&larr; Guided assembly</a>
-            <p class="eyebrow">Manual view</p>
-            <h1>Explore the model</h1>
+        <div class="panel" id="layers">
+            <a class="back-link" href="index.html">&larr; Domain</a>
+            <h1>Full explorer</h1>
             <div class="sub">Jul 2020, NZ 5&nbsp;km grid — everything at once</div>
 
-            <div class="layer-groups">
-            <fieldset><legend>Surface drape</legend>
+            <h2>Surface drape</h2>
             <label class="row"><input type="radio" name="drape" value="bathymetry" checked> Bathymetry</label>
             <label class="row"><input type="radio" name="drape" value="clim_temp"> Climatology, temp</label>
             <label class="row"><input type="radio" name="drape" value="nudging"> Nudging strength</label>
             <label class="row"><input type="radio" name="drape" value="tide_amp"> Tide M2 amplitude</label>
 
-            </fieldset>
-            <fieldset><legend>Overlays</legend>
+            <h2>Overlays</h2>
             <label class="row"><input type="checkbox" id="ov-boundary" checked> Boundary wall</label>
             <label class="row"><input type="checkbox" id="ov-rivers" checked> Rivers</label>
             <label class="row"><input type="checkbox" id="ov-argo" checked> Argo floats</label>
             <label class="row"><input type="checkbox" id="ov-wind"> Meteo wind</label>
 
-            </fieldset>
-            <fieldset class="view-group"><legend>View</legend>
+            <h2>View</h2>
             <label class="row">Vertical exaggeration
                 <input type="range" id="vexag" min="5" max="60" value="22" style="flex:1">
             </label>
-            </fieldset>
-            </div>
-        </section>
+        </div>
 
-        <div id="viewport" role="region" aria-label="Interactive ocean model">
-            <div id="hint"><span class="hint-desktop">Drag to orbit · scroll to zoom</span><span class="hint-touch">Drag to orbit · pinch to zoom</span><span class="hint-secondary">Select an object to inspect its details</span></div>
+        <div id="viewport">
+            <div id="hint">Drag to orbit &middot; scroll to zoom &middot; click an object for details</div>
             <div id="err"></div>
         </div>
 
-        <section class="panel" id="inspector" aria-label="Selected object">
+        <div class="panel" id="inspector">
             <h2>Inspector</h2>
-            <div id="inspector-body"><div class="empty">Select an object in the model to see its details.</div></div>
-        </section>
+            <div id="inspector-body"><div class="empty">Click anything in the scene.</div></div>
+        </div>
     </div>
 
     <script src="error_banner.js"></script>

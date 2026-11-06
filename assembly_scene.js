@@ -397,8 +397,8 @@ export function mountAssembly() {
     Object.assign(labelRenderer.domElement.style, { position: "absolute", top: "0", left: "0", pointerEvents: "none" });
     viewport.appendChild(labelRenderer.domElement);
 
-    scene.background = new THREE.Color(0xf8f6ef);
-    scene.fog = new THREE.FogExp2(0xf8f6ef, 0.0007);
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.FogExp2(0x000000, 0.0007);
 
     scene.add(new THREE.HemisphereLight(0x8fb8e8, 0x0a0e14, 0.9));
     const sun = new THREE.DirectionalLight(0xfff4e0, 0.65);
@@ -431,19 +431,17 @@ export function mountAssembly() {
     function resize() {
         const w = viewport.clientWidth, h = viewport.clientHeight;
         camera.aspect = w / h;
-        // Fit the domain in narrow stages without changing orbital zoom.
-        camera.zoom = Math.min(1, (w / h) / 1.4) * 0.9;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
         labelRenderer.setSize(w, h);
     }
     window.addEventListener("resize", resize);
-    new ResizeObserver(resize).observe(viewport);
 
-    // -- empty-cube outline, kept distinct from the scientific colour ramps --
+    // -- empty-cube wireframe -- bright + unfogged so it stays visible
+    // against the black background even at default camera distance -----
     const cubeGeo = new THREE.BoxGeometry(CUBE_SIZE, CUBE_HEIGHT, CUBE_SIZE);
     const cubeEdges = new THREE.EdgesGeometry(cubeGeo);
-    const cubeWire = new THREE.LineSegments(cubeEdges, new THREE.LineBasicMaterial({ color: 0x6d827a, transparent: true, opacity: 0.65, fog: false }));
+    const cubeWire = new THREE.LineSegments(cubeEdges, new THREE.LineBasicMaterial({ color: 0x8fb0d8, transparent: true, opacity: 0.9, fog: false }));
     cubeWire.position.set(0, -CUBE_HEIGHT / 2, 0);
     scene.add(cubeWire);
 
@@ -1922,28 +1920,14 @@ export function mountAssembly() {
         if (dots) {
             dots.innerHTML = "";
             STEPS.forEach((s, i) => {
-                const d = document.createElement("button");
-                d.type = "button";
-                d.textContent = String(i + 1).padStart(2, "0");
-                d.setAttribute("aria-label", `${i + 1}. ${s.title}`);
-                if (i === stepIdx) d.setAttribute("aria-current", "step");
+                const d = document.createElement("span");
                 d.className = "step-dot" + (i === stepIdx ? " active" : i < stepIdx ? " done" : "");
                 d.title = s.title;
-                d.addEventListener("click", () => {
-                    goTo(i);
-                    dots.children[i]?.focus({ preventScroll: true });
-                });
+                d.addEventListener("click", () => goTo(i));
                 dots.appendChild(d);
             });
         }
 
-        const progress = document.getElementById("step-progress");
-        if (progress) progress.textContent = stepIdx < 0 ? "Guided assembly · start here" : `Guided assembly · ${String(stepIdx + 1).padStart(2, "0")} / ${STEPS.length}`;
-        document.getElementById("step-prev").disabled = stepIdx < 0;
-        document.getElementById("step-next").disabled = stepIdx === STEPS.length - 1;
-        document.getElementById("step-next").textContent = stepIdx < 0 ? "Begin →" : "Next →";
-        const info = document.querySelector("#step-card > details");
-        if (info) info.hidden = stepIdx < 0;
         const fieldButtons = document.getElementById("meteo-field-buttons");
         const boundaryButtons = document.getElementById("boundary-field-buttons");
         const climButtons = document.getElementById("clim-field-buttons");
@@ -1955,10 +1939,8 @@ export function mountAssembly() {
         const argoVarButtons = document.getElementById("argo-var-buttons");
 
         if (stepIdx < 0) {
-            const partsLegend = document.getElementById("parts-legend");
-            if (partsLegend) partsLegend.replaceChildren();
             if (titleEl) titleEl.textContent = "An empty model";
-            if (kidEl) kidEl.textContent = "Build the New Zealand ocean model, one layer at a time.";
+            if (kidEl) kidEl.textContent = "";
             if (detailBody) detailBody.innerHTML = "";
             if (limitEl) limitEl.style.display = "none";
             if (fieldButtons) fieldButtons.classList.remove("visible");

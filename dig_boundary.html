@@ -27,27 +27,21 @@
     </style>
 </head>
 
-<body class="detail-page">
-    <header class="model-header">
-        <a class="model-home" href="/">Logan Chalmers</a>
-        <a class="model-name" href="index.html">Ocean model <span>New Zealand · ROMS</span></a>
-        <nav aria-label="Explorer views"><a href="index.html">Guided</a><a href="full.html">Manual</a></nav>
-    </header>
-    <main class="detail-layout">
-        <section id="step-panel" aria-label="Data details">
+<body>
+    <div id="viewport" style="height:100vh">
+        <div id="step-panel">
             <div id="step-card" class="glass">
                 <div id="dig-header"></div>
                 <div id="boundary-field-buttons" class="field-buttons visible"></div>
             </div>
-        </section>
-        <div id="viewport" role="region" aria-label="Interactive boundary data">
+        </div>
+
         <div id="glorys-label" class="curtain-label"><span class="dot" style="background:#f2a63c"></span>GLORYS native grid</div>
         <div id="bnd-label" class="curtain-label"><span class="dot" style="background:#4fa8ff"></span>ROMS boundary file</div>
 
-        <div id="hint"><span class="hint-desktop">Drag to orbit · scroll to zoom</span><span class="hint-touch">Drag to orbit · pinch to zoom</span></div>
+        <div id="hint">Drag to orbit &middot; scroll to zoom</div>
         <div id="err"></div>
-        </div>
-    </main>
+    </div>
 
     <script src="error_banner.js"></script>
     <script type="importmap">

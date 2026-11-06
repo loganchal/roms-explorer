@@ -13,8 +13,8 @@ mountHeader(document.getElementById("header-mount"), {
 });
 
 const RIVER_COLOR = PROV.reconstructed.color; // "#f2a63c"
-const LAND_COLOR = "#b8c0b4";
-const WATER_COLOR = "#f8f6ef";
+const LAND_COLOR = "#2a2f36";
+const WATER_COLOR = "#050810";
 
 const lonRho = b64f32(LON_RHO_B64);
 const latRho = b64f32(LAT_RHO_B64);
@@ -110,7 +110,6 @@ function resize() {
     draw();
 }
 window.addEventListener("resize", resize);
-new ResizeObserver(resize).observe(document.getElementById("viewport"));
 resize();
 
 // -- river injection-profile chart (vshape fraction vs sigma level) -------

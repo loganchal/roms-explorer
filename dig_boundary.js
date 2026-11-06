@@ -158,7 +158,7 @@ function paintSource(geo, key) {
 // -- scene -------------------------------------------------------------
 const viewport = document.getElementById("viewport");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf8f6ef);
+scene.background = new THREE.Color(0x000000);
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
 camera.position.set(60, 90, 260);
@@ -193,13 +193,10 @@ renderer.domElement.addEventListener("wheel", wakeFromIdle, { passive: true });
 function resize() {
     const w = viewport.clientWidth, h = viewport.clientHeight;
     camera.aspect = w / h;
-    // Fit the domain in narrow stages without changing orbital zoom.
-    camera.zoom = Math.min(1, (w / h) / 1.4) * 0.9;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
 }
 window.addEventListener("resize", resize);
-new ResizeObserver(resize).observe(viewport);
 resize();
 
 // faint sea-surface guide spanning both curtains, so "0 m" reads as a plane
