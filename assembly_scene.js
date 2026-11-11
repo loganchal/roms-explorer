@@ -187,12 +187,12 @@ const lwradDownRange = fieldRange(lwradDown, MASK);
 // all 6 of the file's 8 fields that vary spatially (wind stays the constant
 // animated layer above; the other 2, Uwind/Vwind, drive that animation).
 const METEO_FIELDS = {
-    swrad: { label: "Sunlight", field: swrad, range: swradRange, stops: SW_STOPS },
-    pair: { label: "Air pressure", field: pair, range: pairRange, stops: PAIR_STOPS },
-    tair: { label: "Air temperature", field: tair, range: tairRange, stops: TAIR_STOPS },
+    swrad: { label: "Shortwave", field: swrad, range: swradRange, stops: SW_STOPS },
+    pair: { label: "Pressure", field: pair, range: pairRange, stops: PAIR_STOPS },
+    tair: { label: "Air temp", field: tair, range: tairRange, stops: TAIR_STOPS },
     qair: { label: "Humidity", field: qair, range: qairRange, stops: QAIR_STOPS },
     rain: { label: "Rain", field: rain, range: rainRange, stops: RAIN_STOPS },
-    lwradDown: { label: "Thermal radiation", field: lwradDown, range: lwradDownRange, stops: LWRAD_STOPS },
+    lwradDown: { label: "Longwave", field: lwradDown, range: lwradDownRange, stops: LWRAD_STOPS },
 };
 // -- initial state (t=0 ocean handed to ROMS) + run-forward animation + Argo
 // check: the last three steps, using model input/output rather than forcing.
@@ -214,7 +214,7 @@ const INI_FIELDS = {
     temp: { label: "Temperature", field: INI_TEMP_SURF, range: iniTempRange, stops: WARM_STOPS },
     salt: { label: "Salinity", field: INI_SALT_SURF, range: iniSaltRange, stops: SALT_STOPS },
     speed: { label: "Current speed", field: INI_SPEED_SURF, range: iniSpeedRange, stops: WIND_SPEED_STOPS },
-    ssh: { label: "Sea level", field: INI_ZETA, range: iniZetaRange, stops: ZETA_STOPS },
+    ssh: { label: "SSH", field: INI_ZETA, range: iniZetaRange, stops: ZETA_STOPS },
 };
 // two full-depth curtains through the domain middle -- raw decode grouped
 // here (same pattern as NUDG_CLIM_WALLS above), painted where the meshes
@@ -238,7 +238,7 @@ const FRAMES_FIELDS = {
     temp: { label: "Temperature", range: FRAMES_TEMP_RANGE, stops: WARM_STOPS },
     salt: { label: "Salinity", range: FRAMES_SALT_RANGE, stops: SALT_STOPS },
     speed: { label: "Current speed", range: FRAMES_SPEED_RANGE, stops: WIND_SPEED_STOPS },
-    ssh: { label: "Sea level", range: FRAMES_ZETA_RANGE, stops: ZETA_STOPS },
+    ssh: { label: "SSH", range: FRAMES_ZETA_RANGE, stops: ZETA_STOPS },
 };
 // temperature/stratification anomaly frames only exist if the scene_data
 // build was given --clim-sst/--strat-dir/--clim-n2pyc
@@ -317,19 +317,19 @@ for (let k = 0; k < NY * NX; k++) {
 // -- step definitions -------------------------------------------------------
 const STEPS = [
     {
-        id: "grid", title: "The ocean grid", kid: "An ocean divided into cells, from the surface to the seabed.",
+        id: "grid", title: "The grid", kid: "395 x 465 points, 5 km, 50 sigma levels.",
         prov: "original", source: "nz5km_grd_horizontal.nc",
-        detail: "The hindcast's native grid: 395 x 465 points, 5 km spacing and 50 sigma levels.",
+        detail: "The hindcast's native grid file.",
         limitation: null,
     },
     {
-        id: "boundary", title: "The open ocean", kid: "Water enters and leaves at the edges.",
+        id: "boundary", title: "Open boundaries", kid: "GLORYS state at the walls.",
         prov: "rebuilt", source: "nz5km_N50_bnd_202101.nc",
         detail: "GLORYS reanalysis rebuilt into a ROMS boundary file.",
         limitation: null,
     },
     {
-        id: "volume", title: "Interior adjustment", kid: "Guiding the ocean toward its background state.",
+        id: "volume", title: "Interior nudging", kid: "Taken from the original configuration.",
         sources: [
             { prov: "original", source: "nz5km_nudg_N50.nc" },
             { prov: "rebuilt", source: "nz5km_N50_clim_202101.nc" },
@@ -338,43 +338,43 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "tides", title: "The tides", kid: "Sea level rises and falls at the ocean's edges.",
+        id: "tides", title: "Tides", kid: "11 constituents on the open boundary.",
         prov: "metocean", source: "nz5km-tide.nc",
-        detail: "11 tidal constituents. Tidal forcing provided by MetOcean.",
+        detail: "Tidal forcing provided by MetOcean.",
         limitation: "Amplitude and cycle speed normalized per constituent.",
     },
     {
-        id: "rivers", title: "Rivers meet the sea", kid: "Fresh water enters along the coast.",
+        id: "rivers", title: "Rivers", kid: "47 point sources.",
         prov: "metocean", source: "nz5km_N50_rivers.nc",
-        detail: "47 river sources. River forcing provided by MetOcean.",
+        detail: "River forcing provided by MetOcean.",
         limitation: null,
     },
     {
-        id: "meteo", title: "The weather", kid: "Sunlight, wind and rain act on the sea surface.",
+        id: "meteo", title: "Weather above", kid: "CFSR raw atmospheric state.",
         prov: "rebuilt", source: "nz5km_N50_meteo_202101.nc",
-        detail: "CFSR atmospheric fields, regridded onto the model grid. Sunlight is incoming shortwave radiation. Thermal radiation is downward longwave radiation.",
+        detail: "Regridded onto the model grid.",
         limitation: null,
     },
     {
-        id: "ini", title: "Starting conditions", kid: "The ocean state at the start of the simulation.",
+        id: "ini", title: "Initial state", kid: "The last state of the Moana Hindcast.",
         prov: "original", source: "nz5km_ini_20210101_audited.nc",
-        detail: "1 January 2021, using the last state of the Moana Hindcast.",
+        detail: "1 January 2021.",
         limitation: null,
     },
     {
-        id: "frames", title: "Watch the ocean change", kid: "Follow the simulation as it moves forward.",
+        id: "frames", title: "Run forward", kid: "The model's own output, month by month.",
         prov: "original", source: "nz5km_avg_*.nc",
         detail: "A few daily-mean snapshots per month, across the whole run so far.",
         limitation: null,
     },
     {
-        id: "argo", title: "A check against observations", kid: "Compare the model with measurements from drifting ocean floats.",
+        id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
         prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
-        detail: `${ARGO_MODEL.length} independent Argo float profiles. Model minus observed at each depth: red model-high, blue model-low.`,
+        detail: "Model minus observed at each depth: red model-high, blue model-low.",
         limitation: null,
     },
     {
-        id: "parts", title: "Inside the model", kid: "Choose a component to explore.",
+        id: "parts", title: "Data explorer", kid: "Explore forcing data",
         detail: "Each forcing component opens its own page.",
         limitation: null,
     },
@@ -952,7 +952,7 @@ export function mountAssembly() {
         }
         col.needsUpdate = true;
     }
-    const NUDG_MODE_FIELDS = { coef: { label: "Adjustment strength" }, temp: { label: "Temperature" }, salt: { label: "Salinity" }, speed: { label: "Current speed" } };
+    const NUDG_MODE_FIELDS = { coef: { label: "Pull strength" }, temp: { label: "Temperature" }, salt: { label: "Salinity" }, speed: { label: "Current speed" } };
     function setNudgDisplayMode(key) {
         if (!NUDG_MODE_FIELDS[key]) return;
         nudgDisplayMode = key;
@@ -1923,8 +1923,8 @@ export function mountAssembly() {
         const argoVarButtons = document.getElementById("argo-var-buttons");
 
         if (stepIdx < 0) {
-            if (titleEl) titleEl.textContent = "An ocean in layers";
-            if (kidEl) kidEl.textContent = "Explore the water, weather and tides that shape the model.";
+            if (titleEl) titleEl.textContent = "An empty model";
+            if (kidEl) kidEl.textContent = "";
             if (detailBody) detailBody.innerHTML = "";
             if (limitEl) limitEl.style.display = "none";
             if (fieldButtons) fieldButtons.classList.remove("visible");
@@ -1962,7 +1962,7 @@ export function mountAssembly() {
             partsLegendEl.innerHTML = s.id === "parts"
                 ? `<nav class="component-links" aria-labelledby="step-title">
                     <a href="dig_weather.html">Weather</a>
-                    <a href="dig_boundary.html">Ocean exchange</a>
+                    <a href="dig_boundary.html">Open boundaries</a>
                     <a href="dig_tides.html">Tides</a>
                     <a href="dig_rivers.html">Rivers</a>
                   </nav>`
