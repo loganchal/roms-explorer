@@ -1,0 +1,58 @@
+/* Optional model treatments. The 3-D scene retains its scientific colour scales. */
+#entrance { background:var(--sheet); color:var(--letter); }
+#entrance::before { content:""; position:absolute; pointer-events:none; }
+#entrance .entrance-arc, #entrance .entrance-mark { display:none; }
+#entrance .entrance-copy { z-index:1; }
+#entrance h1 { font-size:clamp(32px,4.4vw,72px); }
+#step-card { background:var(--panel); color:var(--ink); box-shadow:none; }
+#step-title { font:400 22px/1.15 Georgia,serif; }
+#step-panel { max-width:calc(100vw - 32px); }
+#step-card select option { color:#fff; }
+#step-card .prov-badge, #step-card .prov-pair .prov-badge { background:#192326; color:var(--c); }
+#step-card .field-buttons button.active { color:var(--ink); }
+
+html[data-theme="soundings"] {
+    --sheet:#f2efe4; --letter:#243f3f; --panel:#f2efe4; --ink:#223d3b;
+    --muted:#50605b; --accent:#2d6868; --line:#a5b3aa;
+}
+[data-theme="soundings"] #entrance::before {
+    inset:0 0 0 40%; background:url(soundings.svg) center/cover no-repeat;
+    mask-image:linear-gradient(90deg, transparent,black 30%);
+}
+[data-theme="soundings"] .entrance-copy { left:8vw; right:50%; text-align:left; }
+[data-theme="soundings"] #step-card { border-radius:0; border-top:3px double var(--accent); }
+[data-theme="soundings"] #step-nav button { border-radius:0; }
+
+html[data-theme="watch"] {
+    --sheet:#081927; --letter:#e0f4ed; --panel:#0c222e; --ink:#e0f4ed;
+    --muted:#aec6cb; --accent:#84dccb; --line:#41616a;
+}
+[data-theme="watch"] #entrance::before {
+    inset:8% 4% 8% 48%; background:url(profiles.svg) center/contain no-repeat,
+    repeating-linear-gradient(0deg,transparent 0 47px,#71999826 47px 48px);
+}
+[data-theme="watch"] .entrance-copy { left:7vw; right:50%; text-align:left; }
+[data-theme="watch"] .entrance-copy h1 { font:400 clamp(21px,3vw,46px)/1.25 ui-monospace,monospace; letter-spacing:-.055em; }
+[data-theme="watch"] #step-card { border-radius:3px; border-left:3px solid var(--accent); }
+[data-theme="watch"] #step-title, [data-theme="watch"] #step-nav button { font-family:ui-monospace,monospace; }
+
+html[data-theme="etretat"] {
+    --sheet:#f8f3e8; --letter:#373b37; --panel:#faf5e9; --ink:#353e39;
+    --muted:#5d655b; --accent:#476b70; --line:#b9b9ab;
+}
+[data-theme="etretat"] #entrance::before {
+    inset:0 0 47%; background:#a6b7bd url('/assets/monet/ngv.webp') center 48%/cover;
+}
+[data-theme="etretat"] .entrance-copy { top:68%; }
+[data-theme="etretat"] #step-card { border-radius:2px; border:0; overflow:hidden; }
+[data-theme="etretat"] #step-card::before {
+    content:""; display:block; height:16px; margin:-18px -20px 15px;
+    background:#b3bcb3 url('/assets/monet/ngv.webp') center 68%/cover;
+}
+#hint { color:#e2e7e5; }
+@media(max-width:640px){
+    [data-theme="soundings"] #entrance::before,[data-theme="watch"] #entrance::before { inset:0 0 42%; mask-image:none; }
+    [data-theme="soundings"] .entrance-copy,[data-theme="watch"] .entrance-copy { top:72%; left:6%; right:6%; text-align:center; }
+    #step-panel { left:16px; bottom:16px; }
+    #step-card { max-height:48dvh; overflow-y:auto; }
+}

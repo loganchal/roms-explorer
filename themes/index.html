@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Model previews</title>
+<link rel="stylesheet" href="../language.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f8f6ef;color:#292924;font:16px/1.45 Georgia,serif}
+main{max-width:1160px;margin:auto;padding:68px clamp(16px,5vw,72px)}
+h1{font:400 clamp(36px,5vw,62px)/1.05 Georgia,serif;letter-spacing:-.04em;margin:0 0 40px}
+h2{font:400 clamp(24px,3vw,35px)/1.2 Georgia,serif;margin:0 0 12px}
+.choice{display:block;color:inherit;text-decoration:none;margin-bottom:40px}
+.choice:is(:hover,:focus-visible) h2{text-decoration:underline;text-underline-offset:.15em}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pair img{display:block;width:100%;height:auto}
+@media(max-width:580px){.pair{grid-template-columns:1fr}.choice{margin-bottom:28px}}
+</style></head><body><main><h1>Model previews</h1><a class="choice" href="../?theme=soundings"><h2>Soundings</h2><div class="pair"><img alt="" src="soundings-loader.webp" width="780" height="510"><img alt="" src="soundings-ui.webp" width="780" height="510"></div></a>
+<a class="choice" href="../?theme=watch"><h2>Night watch</h2><div class="pair"><img alt="" src="watch-loader.webp" width="780" height="510"><img alt="" src="watch-ui.webp" width="780" height="510"></div></a>
+<a class="choice" href="../?theme=etretat"><h2>Étretat</h2><div class="pair"><img alt="" src="etretat-loader.webp" width="780" height="510"><img alt="" src="etretat-ui.webp" width="780" height="510"></div></a></main>
+<script>
+const names = { "Model previews":"Ngā arokite tauira", "Soundings":"Ngā hōhonutanga", "Night watch":"Te tūtei pō" };
+try {
+ if (localStorage.getItem("site-language")==="mi") {
+  document.documentElement.lang="mi";
+  document.title=names[document.title];
+  for (const heading of document.querySelectorAll("h1,h2")) heading.textContent=names[heading.textContent]||heading.textContent;
+ }
+} catch {}
+</script></body></html>
