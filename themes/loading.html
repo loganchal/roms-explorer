@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Loading preview</title>
+<link rel="stylesheet" href="../entrance.css?v=20261111-model">
+<link rel="stylesheet" href="preview.css?v=20261112-motion">
+<style>body{margin:0}#entrance{position:fixed}#entrance .entrance-copy h1{font-size:clamp(20px,4.4vw,72px)}</style>
+<script>
+const theme=new URLSearchParams(location.search).get("theme");
+if(["soundings","watch","etretat"].includes(theme)) document.documentElement.dataset.theme=theme;
+</script></head><body>
+<div id="entrance"><div class="entrance-copy"><h1>Preparing the model</h1></div></div>
+<script>
+try {
+ if(localStorage.getItem("site-language")==="mi"){
+  document.documentElement.lang="mi";
+  document.querySelector("h1").textContent="Kei te whakaritea te tauira";
+ }
+}catch{}
+</script></body></html>

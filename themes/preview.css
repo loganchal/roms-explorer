@@ -16,7 +16,7 @@ html[data-theme="soundings"] {
     --muted:#50605b; --accent:#2d6868; --line:#a5b3aa;
 }
 [data-theme="soundings"] #entrance::before {
-    inset:0 0 0 40%; background:url(soundings.svg) center/cover no-repeat;
+    inset:0 0 0 40%; background:url(soundings-flow.svg?v=20261112-motion) center/cover no-repeat;
     mask-image:linear-gradient(90deg, transparent,black 30%);
 }
 [data-theme="soundings"] .entrance-copy { left:8vw; right:50%; text-align:left; }
@@ -28,7 +28,7 @@ html[data-theme="watch"] {
     --muted:#aec6cb; --accent:#84dccb; --line:#41616a;
 }
 [data-theme="watch"] #entrance::before {
-    inset:8% 4% 8% 48%; background:url(profiles.svg) center/contain no-repeat,
+    inset:8% 4% 8% 48%; background:url(profiles-flow.svg?v=20261112-motion) center/contain no-repeat,
     repeating-linear-gradient(0deg,transparent 0 47px,#71999826 47px 48px);
 }
 [data-theme="watch"] .entrance-copy { left:7vw; right:50%; text-align:left; }
@@ -55,4 +55,26 @@ html[data-theme="etretat"] {
     [data-theme="soundings"] .entrance-copy,[data-theme="watch"] .entrance-copy { top:72%; left:6%; right:6%; text-align:center; }
     #step-panel { left:16px; bottom:16px; }
     #step-card { max-height:48dvh; overflow-y:auto; }
+}
+
+/* Continuous motion follows the existing contours and observed profiles. */
+[data-theme="etretat"] #entrance::before {
+    background-size:cover;
+    animation:painted-swell 12s ease-in-out infinite alternate;
+    transform-origin:50% 60%;
+}
+@keyframes painted-swell {
+    from { transform:scale(1.015) translateX(-.4%); }
+    to { transform:scale(1.055) translateX(.4%); }
+}
+#entrance.has-error::before, #entrance.is-leaving::before { animation-play-state:paused; }
+@media(prefers-reduced-motion:reduce) {
+    [data-theme="etretat"] #entrance::before { animation:none; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    [data-theme="soundings"] #entrance::before { background-image:url(soundings.svg); }
+    [data-theme="watch"] #entrance::before {
+        background-image:url(profiles.svg), repeating-linear-gradient(0deg,transparent 0 47px,#71999826 47px 48px);
+    }
 }
