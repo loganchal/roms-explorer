@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROMS extension domain explorer &middot; Rivers</title>
-    <link rel="stylesheet" href="explorer.css">
+    <link rel="stylesheet" href="explorer.css?v=20261112-labels">
     <style>
         #map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
         #step-panel { width: 300px; }
@@ -16,7 +16,7 @@
         #placement-note li:last-child { margin-bottom: 0; }
         #placement-note li b { color: var(--ink); font-weight: 500; }
     </style>
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261110-reo1"></script></head>
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-metocean"></script></head>
 
 <body>
     <div id="viewport" style="height:100vh">
@@ -31,7 +31,7 @@
                 </div>
                 <div id="placement-note">
                     <ul>
-                        <li><b>Source</b> &mdash; NIWA/council gauges and LAWA.</li>
+                        <li><b>Source</b> &mdash; MetOcean.</li>
                         <li><b>Placement</b> &mdash; snapped to the nearest coastline face.</li>
                         <li><b>Injection</b> &mdash; top 10 m, weighted by layer thickness.</li>
                     </ul>
@@ -45,7 +45,7 @@
 
     <script src="error_banner.js"></script>
     <script src="scene_data.js"></script>
-    <script type="module" src="./dig_rivers.js"></script>
+    <script type="module" src="./dig_rivers.js?v=20261112-metocean"></script>
 </body>
 
 </html>

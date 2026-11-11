@@ -178,16 +178,16 @@ details summary:hover { color: var(--ink) !important; }
 
 /* -- "The parts" step: clickable piece labels (CSS2DRenderer) beside the
    floating forcing pieces -- colour is set per-label from PROV ----------- */
-.parts-shelf-label {
-    font: 600 13px/1 -apple-system, "Segoe UI", sans-serif;
-    letter-spacing: .04em;
-    white-space: nowrap;
-    pointer-events: auto;
-    cursor: pointer;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.75);
-    padding: 4px 8px;
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    background: rgba(5, 8, 16, 0.65);
+
+/* Source attribution reads as a note, alongside the component it describes. */
+.prov-badge {
+    display:inline-flex; gap:6px; padding:0; border:0; border-radius:0;
+    background:none; color:var(--muted); font-size:11px; font-weight:400;
+    letter-spacing:0; margin-bottom:6px;
 }
-.parts-shelf-label:hover { background: rgba(255, 255, 255, 0.12); }
+.prov-badge .dot { display:none; }
+.prov-pair { align-items:baseline; gap:8px 12px; }
+code.src { padding:0; background:none; border-radius:0; font-size:10px; }
+#parts-legend { gap:18px; margin:8px 0; }
+
+#parts-legend { color:var(--muted); font:400 11px/1.5 system-ui,sans-serif; }

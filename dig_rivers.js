@@ -1,18 +1,18 @@
-// dig_rivers.html -- Reconstructed / Rivers dig page.
+// MetOcean river forcing detail page.
 // Plan-view map of the domain (from MASK_RHO) with the 47 river point
-// sources plotted as orange dots. Click a dot to see its transport and
+// sources plotted as green dots. Click a dot to see its transport and
 // vertical injection profile (vshape).
 
-import { b64f32, mountHeader, PROV } from "./dig_common.js";
+import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261112-metocean";
 
 mountHeader(document.getElementById("header-mount"), {
-    prov: "reconstructed",
+    prov: "metocean",
     title: "Rivers",
-    sentence: "47 sources re-placed on the coastline.",
+    sentence: "River forcing provided by MetOcean.",
     source: "nz5km_N50_rivers.nc",
 });
 
-const RIVER_COLOR = PROV.reconstructed.color; // "#f2a63c"
+const RIVER_COLOR = PROV.metocean.color;
 const LAND_COLOR = "#2a2f36";
 const WATER_COLOR = "#050810";
 

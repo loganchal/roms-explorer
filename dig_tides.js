@@ -1,23 +1,14 @@
-// dig_tides.js -- the Rebuilt / Tides dig page.
-// TPXO8-atlas is the tide forcing actually used (regridded onto the open
-// boundary -- the same TPXO family the original hindcast's own tides came
-// from). To check that choice, we independently fit eleven harmonics
-// straight from the hindcast's own archived output (a completely separate
-// method) and compared: they agree, which validates using TPXO8 here.
-// Pure 2D canvas: (1) that eleven-constituent harmonic fit at one deep
-// boundary point, (2) the M2 harmonic amplitude vs TPXO8 around the open
-// boundary, (3) a per-constituent amplitude/phase agreement table.
-
-import { b64f32, drawSeries, mountHeader } from "./dig_common.js";
+// MetOcean tide forcing detail page, with the existing archived validation comparison.
+import { b64f32, drawSeries, mountHeader } from "./dig_common.js?v=20261112-metocean";
 
 const TIDEVAL_LABEL = typeof TIDEVAL_SOURCE !== "undefined" ? TIDEVAL_SOURCE : "EOT20";
 const validationRefLabelEl = document.getElementById("validation-ref-label");
 if (validationRefLabelEl) validationRefLabelEl.textContent = TIDEVAL_LABEL;
 
 mountHeader(document.getElementById("dig-header"), {
-    prov: "rebuilt",
+    prov: "metocean",
     title: "Tides",
-    sentence: `${TIDEVAL_LABEL}-atlas tide forcing, validated by independently fitting harmonics from the hindcast's own output and against LINZ tide gauges.`,
+    sentence: "Tidal forcing provided by MetOcean.",
     source: "nz5km-tide.nc",
 });
 

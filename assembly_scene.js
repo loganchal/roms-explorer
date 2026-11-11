@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 
 // Guided assembly: start from an empty cube, step through building the
 // model up one piece at a time. Each step is simple by default (a kid
@@ -74,16 +74,11 @@ function fastColormap(t, stopsRGB, out) {
     return out;
 }
 
-// Three data classes (Logan's taxonomy): ORIGINAL = the hindcast's own
-// artefacts, used as-is (grid, nudging coefficients, initial state, the model
-// and its settings, the run's own output). REBUILT = forcing remade from the
-// same upstream sources the original run used (GLORYS ocean state, CFSR
-// weather). RECONSTRUCTED = forcing that had to be re-derived because the
-// original was never published (tides refit from output, rivers re-placed).
-// The last two are where the scrutiny belongs. Argo is none of these --
-// independent observations, kept as a quiet fourth badge.
+// Distinguish supplied forcing, original model inputs, rebuilt forcing,
+// and independent observations in the provenance labels.
 const PROV = {
     original: { label: "Original", color: "#5dcaa5" },
+    metocean: { label: "MetOcean", color: "#5dcaa5" },
     rebuilt: { label: "Rebuilt", color: "#4fa8ff" },
     reconstructed: { label: "Reconstructed", color: "#f2a63c" },
     obs: { label: "Observations", color: "#b9a6ff" },
@@ -192,12 +187,12 @@ const lwradDownRange = fieldRange(lwradDown, MASK);
 // all 6 of the file's 8 fields that vary spatially (wind stays the constant
 // animated layer above; the other 2, Uwind/Vwind, drive that animation).
 const METEO_FIELDS = {
-    swrad: { label: "Shortwave", field: swrad, range: swradRange, stops: SW_STOPS },
-    pair: { label: "Pressure", field: pair, range: pairRange, stops: PAIR_STOPS },
-    tair: { label: "Air temp", field: tair, range: tairRange, stops: TAIR_STOPS },
+    swrad: { label: "Sunlight", field: swrad, range: swradRange, stops: SW_STOPS },
+    pair: { label: "Air pressure", field: pair, range: pairRange, stops: PAIR_STOPS },
+    tair: { label: "Air temperature", field: tair, range: tairRange, stops: TAIR_STOPS },
     qair: { label: "Humidity", field: qair, range: qairRange, stops: QAIR_STOPS },
     rain: { label: "Rain", field: rain, range: rainRange, stops: RAIN_STOPS },
-    lwradDown: { label: "Longwave", field: lwradDown, range: lwradDownRange, stops: LWRAD_STOPS },
+    lwradDown: { label: "Thermal radiation", field: lwradDown, range: lwradDownRange, stops: LWRAD_STOPS },
 };
 // -- initial state (t=0 ocean handed to ROMS) + run-forward animation + Argo
 // check: the last three steps, using model input/output rather than forcing.
@@ -219,7 +214,7 @@ const INI_FIELDS = {
     temp: { label: "Temperature", field: INI_TEMP_SURF, range: iniTempRange, stops: WARM_STOPS },
     salt: { label: "Salinity", field: INI_SALT_SURF, range: iniSaltRange, stops: SALT_STOPS },
     speed: { label: "Current speed", field: INI_SPEED_SURF, range: iniSpeedRange, stops: WIND_SPEED_STOPS },
-    ssh: { label: "SSH", field: INI_ZETA, range: iniZetaRange, stops: ZETA_STOPS },
+    ssh: { label: "Sea level", field: INI_ZETA, range: iniZetaRange, stops: ZETA_STOPS },
 };
 // two full-depth curtains through the domain middle -- raw decode grouped
 // here (same pattern as NUDG_CLIM_WALLS above), painted where the meshes
@@ -243,7 +238,7 @@ const FRAMES_FIELDS = {
     temp: { label: "Temperature", range: FRAMES_TEMP_RANGE, stops: WARM_STOPS },
     salt: { label: "Salinity", range: FRAMES_SALT_RANGE, stops: SALT_STOPS },
     speed: { label: "Current speed", range: FRAMES_SPEED_RANGE, stops: WIND_SPEED_STOPS },
-    ssh: { label: "SSH", range: FRAMES_ZETA_RANGE, stops: ZETA_STOPS },
+    ssh: { label: "Sea level", range: FRAMES_ZETA_RANGE, stops: ZETA_STOPS },
 };
 // temperature/stratification anomaly frames only exist if the scene_data
 // build was given --clim-sst/--strat-dir/--clim-n2pyc
@@ -322,19 +317,19 @@ for (let k = 0; k < NY * NX; k++) {
 // -- step definitions -------------------------------------------------------
 const STEPS = [
     {
-        id: "grid", title: "The grid", kid: "395 x 465 points, 5 km, 50 sigma levels.",
+        id: "grid", title: "The ocean grid", kid: "An ocean divided into cells, from the surface to the seabed.",
         prov: "original", source: "nz5km_grd_horizontal.nc",
-        detail: "The hindcast's native grid file.",
+        detail: "The hindcast's native grid: 395 x 465 points, 5 km spacing and 50 sigma levels.",
         limitation: null,
     },
     {
-        id: "boundary", title: "Open boundaries", kid: "GLORYS state at the walls.",
+        id: "boundary", title: "The open ocean", kid: "Water enters and leaves at the edges.",
         prov: "rebuilt", source: "nz5km_N50_bnd_202101.nc",
         detail: "GLORYS reanalysis rebuilt into a ROMS boundary file.",
         limitation: null,
     },
     {
-        id: "volume", title: "Interior nudging", kid: "Taken from the original configuration.",
+        id: "volume", title: "Interior adjustment", kid: "Guiding the ocean toward its background state.",
         sources: [
             { prov: "original", source: "nz5km_nudg_N50.nc" },
             { prov: "rebuilt", source: "nz5km_N50_clim_202101.nc" },
@@ -343,44 +338,44 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "tides", title: "Tides", kid: "11 constituents on the open boundary.",
-        prov: "rebuilt", source: "nz5km-tide.nc",
-        detail: "TPXO8-atlas, validated against harmonics fit from the hindcast's own output and LINZ tide gauges.",
+        id: "tides", title: "The tides", kid: "Sea level rises and falls at the ocean's edges.",
+        prov: "metocean", source: "nz5km-tide.nc",
+        detail: "11 tidal constituents. Tidal forcing provided by MetOcean.",
         limitation: "Amplitude and cycle speed normalized per constituent.",
     },
     {
-        id: "rivers", title: "Rivers", kid: "47 point sources.",
-        prov: "reconstructed", source: "nz5km_N50_rivers.nc",
-        detail: "Re-placed on the real coastline.",
+        id: "rivers", title: "Rivers meet the sea", kid: "Fresh water enters along the coast.",
+        prov: "metocean", source: "nz5km_N50_rivers.nc",
+        detail: "47 river sources. River forcing provided by MetOcean.",
         limitation: null,
     },
     {
-        id: "meteo", title: "Weather above", kid: "CFSR raw atmospheric state.",
+        id: "meteo", title: "The weather", kid: "Sunlight, wind and rain act on the sea surface.",
         prov: "rebuilt", source: "nz5km_N50_meteo_202101.nc",
-        detail: "Regridded onto the model grid.",
+        detail: "CFSR atmospheric fields, regridded onto the model grid. Sunlight is incoming shortwave radiation. Thermal radiation is downward longwave radiation.",
         limitation: null,
     },
     {
-        id: "ini", title: "Initial state", kid: "The last state of the Moana Hindcast.",
+        id: "ini", title: "Starting conditions", kid: "The ocean state at the start of the simulation.",
         prov: "original", source: "nz5km_ini_20210101_audited.nc",
-        detail: "1 January 2021.",
+        detail: "1 January 2021, using the last state of the Moana Hindcast.",
         limitation: null,
     },
     {
-        id: "frames", title: "Run forward", kid: "The model's own output, month by month.",
+        id: "frames", title: "Watch the ocean change", kid: "Follow the simulation as it moves forward.",
         prov: "original", source: "nz5km_avg_*.nc",
         detail: "A few daily-mean snapshots per month, across the whole run so far.",
         limitation: null,
     },
     {
-        id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
+        id: "argo", title: "A check against observations", kid: "Compare the model with measurements from drifting ocean floats.",
         prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
-        detail: "Model minus observed at each depth: red model-high, blue model-low.",
+        detail: `${ARGO_MODEL.length} independent Argo float profiles. Model minus observed at each depth: red model-high, blue model-low.`,
         limitation: null,
     },
     {
-        id: "parts", title: "Data explorer", kid: "Explore forcing data",
-        detail: "Rebuilt and reconstructed pieces open their own page.",
+        id: "parts", title: "Inside the model", kid: "Choose a component to explore.",
+        detail: "Each forcing component opens its own page.",
         limitation: null,
     },
 ];
@@ -398,7 +393,7 @@ export function mountAssembly() {
     viewport.appendChild(labelRenderer.domElement);
 
     scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.FogExp2(0x000000, 0.0007);
+    scene.fog = null;
 
     scene.add(new THREE.HemisphereLight(0x8fb8e8, 0x0a0e14, 0.9));
     const sun = new THREE.DirectionalLight(0xfff4e0, 0.65);
@@ -428,9 +423,21 @@ export function mountAssembly() {
     renderer.domElement.addEventListener("pointerdown", wakeFromIdle);
     renderer.domElement.addEventListener("wheel", wakeFromIdle, { passive: true });
 
+    let viewScale = 1;
     function resize() {
         const w = viewport.clientWidth, h = viewport.clientHeight;
+        const nextScale = Math.max(1, 0.9 / (w / h));
+        const ratio = nextScale / viewScale;
+        const offset = camera.position.clone().sub(controls.target);
+        camera.position.copy(controls.target).addScaledVector(offset, ratio);
+        partsCam.fromDist *= ratio;
+        partsCam.toDist *= ratio;
+        if (partsCam.prevDist !== null) partsCam.prevDist *= ratio;
+        viewScale = nextScale;
+        controls.maxDistance = 1600 * viewScale;
         camera.aspect = w / h;
+        if (w <= 640) camera.setViewOffset(w, h, 0, Math.round(h * 0.16), w, h);
+        else camera.clearViewOffset();
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
         labelRenderer.setSize(w, h);
@@ -441,7 +448,7 @@ export function mountAssembly() {
     // against the black background even at default camera distance -----
     const cubeGeo = new THREE.BoxGeometry(CUBE_SIZE, CUBE_HEIGHT, CUBE_SIZE);
     const cubeEdges = new THREE.EdgesGeometry(cubeGeo);
-    const cubeWire = new THREE.LineSegments(cubeEdges, new THREE.LineBasicMaterial({ color: 0x8fb0d8, transparent: true, opacity: 0.9, fog: false }));
+    const cubeWire = new THREE.LineSegments(cubeEdges, new THREE.LineBasicMaterial({ color: 0xbac7be, transparent: true, opacity: 0.45, fog: false }));
     cubeWire.position.set(0, -CUBE_HEIGHT / 2, 0);
     scene.add(cubeWire);
 
@@ -945,7 +952,7 @@ export function mountAssembly() {
         }
         col.needsUpdate = true;
     }
-    const NUDG_MODE_FIELDS = { coef: { label: "Pull strength" }, temp: { label: "Temperature" }, salt: { label: "Salinity" }, speed: { label: "Current speed" } };
+    const NUDG_MODE_FIELDS = { coef: { label: "Adjustment strength" }, temp: { label: "Temperature" }, salt: { label: "Salinity" }, speed: { label: "Current speed" } };
     function setNudgDisplayMode(key) {
         if (!NUDG_MODE_FIELDS[key]) return;
         nudgDisplayMode = key;
@@ -1673,18 +1680,18 @@ export function mountAssembly() {
         });
     }
 
-    // -- "The parts" step: only the rebuilt/reconstructed forcing pieces,
+    // -- "The parts" step: the forcing components,
     // floating apart in empty space (terrain, nudging, the cube wireframe
     // and all model-output layers hide -- see applyVisibility's "parts"
-    // override). Each piece gets a clickable name label that opens its
-    // dig-down page. Offsets are ADDED to each object's own resting y, not
+    // override). The component menu opens each detail page.
+    // Offsets are ADDED to each object's own resting y, not
     // an absolute height.
     const PARTS_SHELF = new Map([
-        [surfaceMesh, { base: surfaceMesh.position.y, offset: 150 }],  // rebuilt (weather drape)
-        [windPlane, { base: windPlane.position.y, offset: 150 }],      // rebuilt
-        [boundaryGroup, { base: boundaryGroup.position.y, offset: 80 }], // rebuilt (walls span 0..-150)
-        [tideWallGroup, { base: tideWallGroup.position.y, offset: 20 }], // rebuilt (TPXO8-atlas)
-        [riverGroup, { base: riverGroup.position.y, offset: -140 }],   // reconstructed
+        [surfaceMesh, { base: surfaceMesh.position.y, offset: 410 }],  // rebuilt (weather drape)
+        [windPlane, { base: windPlane.position.y, offset: 410 }],      // rebuilt
+        [boundaryGroup, { base: boundaryGroup.position.y, offset: 120 }], // rebuilt (walls span 0..-150)
+        [tideWallGroup, { base: tideWallGroup.position.y, offset: -240 }], // MetOcean tides
+        [riverGroup, { base: riverGroup.position.y, offset: -440 }],   // MetOcean rivers
     ]);
     const PARTS_TWEEN_DURATION = 0.8; // seconds
     function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
@@ -1706,7 +1713,7 @@ export function mountAssembly() {
         });
     }
 
-    // the floating pieces span y +150..-140 -- the tour's default orbit
+    // The separated components span y +410..-440 -- the tour's default orbit
     // can't frame that, so entering "parts" recentres the orbit target on
     // the stack and dollies out (and both restore on leaving, keeping
     // whatever the user had before).
@@ -1718,8 +1725,8 @@ export function mountAssembly() {
         if (active) {
             partsCam.prevDist = dist;
             partsCam.prevTy = controls.target.y;
-            partsCam.toTy = 5;
-            partsCam.toDist = Math.max(dist, 640);
+            partsCam.toTy = -15;
+            partsCam.toDist = Math.max(dist, 1400 * viewScale);
         } else {
             partsCam.toTy = partsCam.prevTy ?? -CUBE_HEIGHT / 2;
             partsCam.toDist = partsCam.prevDist ?? dist;
@@ -1737,32 +1744,6 @@ export function mountAssembly() {
         dir.normalize();
         camera.position.copy(controls.target).addScaledVector(dir, d);
     }
-
-    // one clickable name label per floating piece, on the west side at that
-    // piece's parts-step height -- clicking it opens the dig-down page
-    // (same destination as clicking the piece itself). Only shown on the
-    // "parts" step, so a plain visibility flag is enough.
-    const partsLabelX = lonLatToXZ(lonWest, latMid, lonMid, latMid)[0] - 25;
-    const partsLabelZ = 0;
-    function makePartsLabel(text, color, y, href) {
-        const div = document.createElement("div");
-        div.className = "parts-shelf-label";
-        div.style.color = color;
-        div.textContent = text;
-        div.addEventListener("click", () => { window.location.href = href; });
-        const label = new CSS2DObject(div);
-        label.position.set(partsLabelX, y, partsLabelZ);
-        return label;
-    }
-    const partsLabelGroup = new THREE.Group();
-    partsLabelGroup.add(
-        makePartsLabel("Weather", PROV.rebuilt.color, 150, "dig_weather.html"),
-        makePartsLabel("Open boundaries", PROV.rebuilt.color, 80, "dig_boundary.html"),
-        makePartsLabel("Tides", PROV.rebuilt.color, 20, "dig_tides.html"),
-        makePartsLabel("Rivers", PROV.reconstructed.color, -140, "dig_rivers.html"),
-    );
-    partsLabelGroup.visible = false;
-    scene.add(partsLabelGroup);
 
     // -- river inspection (the one step with a real per-object drill-down) --
     const raycaster = new THREE.Raycaster();
@@ -1874,7 +1855,7 @@ export function mountAssembly() {
         renderArgoPanel(float, model);
     });
 
-    // -- "The parts" step: clicking a rebuilt/reconstructed shelf opens its
+    // -- "The parts" step: clicking a forcing shelf opens its
     // own dig-deeper page. Only these four respond -- the "original" shelves
     // (terrain, nudging border) are exactly as given by the hindcast, so
     // there's nothing further to dig into and clicks on them are ignored.
@@ -1906,6 +1887,9 @@ export function mountAssembly() {
     let stepIdx = -1; // -1 = empty cube, before step 0
 
     function renderStepUI() {
+        document.getElementById("viewport").dataset.step = stepIdx < 0 ? "empty" : STEPS[stepIdx].id;
+        document.getElementById("step-prev").disabled = stepIdx < 0;
+        document.getElementById("step-next").disabled = stepIdx >= STEPS.length - 1;
         const dots = document.getElementById("step-dots");
         const titleEl = document.getElementById("step-title");
         const kidEl = document.getElementById("step-kid");
@@ -1939,8 +1923,8 @@ export function mountAssembly() {
         const argoVarButtons = document.getElementById("argo-var-buttons");
 
         if (stepIdx < 0) {
-            if (titleEl) titleEl.textContent = "An empty model";
-            if (kidEl) kidEl.textContent = "";
+            if (titleEl) titleEl.textContent = "An ocean in layers";
+            if (kidEl) kidEl.textContent = "Explore the water, weather and tides that shape the model.";
             if (detailBody) detailBody.innerHTML = "";
             if (limitEl) limitEl.style.display = "none";
             if (fieldButtons) fieldButtons.classList.remove("visible");
@@ -1976,9 +1960,12 @@ export function mountAssembly() {
         const partsLegendEl = document.getElementById("parts-legend");
         if (partsLegendEl) {
             partsLegendEl.innerHTML = s.id === "parts"
-                ? [PROV.rebuilt, PROV.reconstructed].map(p =>
-                    `<span class="prov-badge" style="--c:${p.color}"><span class="dot"></span>${p.label}</span>`
-                  ).join("")
+                ? `<nav class="component-links" aria-labelledby="step-title">
+                    <a href="dig_weather.html">Weather</a>
+                    <a href="dig_boundary.html">Ocean exchange</a>
+                    <a href="dig_tides.html">Tides</a>
+                    <a href="dig_rivers.html">Rivers</a>
+                  </nav>`
                 : "";
         }
         if (detailBody) {
@@ -2028,18 +2015,10 @@ export function mountAssembly() {
         setLayerVisible(windPlane, id === "meteo");
         setLayerVisible(iniSliceGroup, id === "ini" && iniSlicesApplicable);
         setLayerVisible(framesMesh, id === "frames");
-        // -- "The parts": only the rebuilt/reconstructed forcing pieces,
+        // -- "The parts": the forcing components,
         // floating in empty space. Everything else -- terrain, nudging, the
         // cube wireframe, model-output layers (ini slices, run-forward
-        // frames, Argo) -- hides: this step is about the pieces that were
-        // rebuilt or reconstructed, each a doorway to its dig-down page.
-        // CSS2DRenderer checks each CSS2DObject's OWN .visible when
-        // traversing -- it does not stop descending (or consult) at an
-        // invisible parent group the way the WebGL renderer does, so the
-        // group flag alone leaves every label showing on every step. Each
-        // label's own flag has to be set directly.
-        partsLabelGroup.visible = id === "parts";
-        partsLabelGroup.children.forEach((lbl) => { lbl.visible = id === "parts"; });
+        // frames, Argo) -- hides. Each component opens its own detail page.
         cubeWire.visible = id !== "parts";
         if (id === "parts") {
             setLayerVisible(terrainMesh, false);

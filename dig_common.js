@@ -44,6 +44,7 @@ export const SALT_STOPS = ["#1a3a2e", "#2f7a6e", "#5cd6c4", "#a8e6da", "#e8f7f0"
 export const BATHY_STOPS = ["#d8f2ea", "#5cd6c4", "#2e8fc9", "#1a4a8e", "#0a1230"];
 export const DIVERGING_STOPS = ["#2166ac", "#67a9cf", "#f7f7f7", "#ef8a62", "#b2182b"];
 export const PROV = {
+    metocean: { label: "MetOcean", color: "#5dcaa5" },
     original: { label: "Original", color: "#5dcaa5" },
     rebuilt: { label: "Rebuilt", color: "#4fa8ff" },
     reconstructed: { label: "Reconstructed", color: "#f2a63c" },

@@ -96,7 +96,7 @@ const DRAPES = {
     nudging: { field: nudgLog, range: nudgRange, stops: NUDG_STOPS,
         label: "log10 nudging rate (1/day)", prov: "nz5km_nudg_N50.nc — recovered Souza et al. 4DVar nudging file; 1/day at the edge, 0.001/day floor inland" },
     tide_amp: { field: TIDE_AMP, range: tideRange, stops: TIDE_STOPS,
-        label: "M2 elevation amplitude (m)", prov: "nz5km-tide.nc — reconstructed from archived output, validated vs EOT20 (M2 ratio ~1.002)" },
+        label: "M2 elevation amplitude (m)", prov: "nz5km-tide.nc — tidal forcing provided by MetOcean" },
 };
 
 // ---------------------------------------------------------------------------
@@ -421,7 +421,7 @@ export function mountExplorer(config = {}) {
         ]);
         inspectorBody.insertAdjacentHTML("beforeend", `<div class="k" style="margin-top:8px">Vertical injection profile (surface plume)</div><canvas class="chart" id="riverChart"></canvas>`);
         inspectorBody.insertAdjacentHTML("beforeend",
-            `<div class="prov">nz5km_N50_rivers.nc — Vshape chosen empirically against archived salinity fingerprints (top 10 m, thickness-weighted)</div>`);
+            `<div class="prov">nz5km_N50_rivers.nc — river forcing provided by MetOcean</div>`);
         const sLevels = r.vshape.map((_, idx) => idx / (r.vshape.length - 1) - 1);
         drawLineChart(document.getElementById("riverChart"), r.vshape, sLevels, "#4fa8ff");
     }

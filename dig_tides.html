@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tides &middot; ROMS extension domain explorer</title>
-    <link rel="stylesheet" href="explorer.css">
+    <link rel="stylesheet" href="explorer.css?v=20261112-labels">
     <style>
         body { min-height: 100vh; padding: 24px; }
         #dig-wrap {
@@ -106,7 +106,7 @@
         #constituent-info { font-size: 11.5px; color: var(--muted); margin-top: 8px; min-height: 15px; }
         #constituent-info code { color: var(--ink); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
     </style>
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261110-reo1"></script></head>
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-metocean"></script></head>
 
 <body>
     <div id="dig-wrap">
@@ -127,7 +127,7 @@
                     <span class="sw"><span class="dot" style="background:#5cb3ff"></span>harmonics</span>
                     <span class="sw"><span class="dot" style="background:#f2a63c"></span><span id="validation-ref-label">TPXO8</span></span>
                 </div>
-                <div id="validation-caption" class="dig-caption">M2 amplitude around the open boundary: harmonics fit from the hindcast's own output vs the tide forcing used.</div>
+                <div id="validation-caption" class="dig-caption">M2 amplitude around the open boundary: harmonics fitted from the archived hindcast output and the independent tide atlas.</div>
                 <div id="validation-note" class="dig-caption" style="color:#f2a63c;"></div>
             </div>
             <div id="table-card" class="dig-card glass">
@@ -141,7 +141,7 @@
 
     <script src="error_banner.js"></script>
     <script src="scene_data.js"></script>
-    <script type="module" src="./dig_tides.js"></script>
+    <script type="module" src="./dig_tides.js?v=20261112-metocean"></script>
 </body>
 
 </html>
