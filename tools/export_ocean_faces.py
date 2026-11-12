@@ -116,6 +116,7 @@ def main():
     parser.add_argument("--dates", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--stride", type=int, default=4)
+    parser.add_argument("--probes", type=Path, required=True)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     dates = json.loads(args.dates.read_text())
@@ -141,6 +142,8 @@ def main():
     wet = grid_edges(mask, native).astype(bool)
     manifest["initial"] = {name: pack_field(args.out, "initial-" + name + ".u16.gz", values[name], wet) for name in FIELDS}
 
+    probes = json.loads(args.probes.read_text())
+    checks = {"temp": [], "salt": [], "zeta": []}
     records = {name: [] for name in (*FIELDS, "zeta")}
     grouped = {}
     for text in dates:
@@ -156,6 +159,9 @@ def main():
                 actual = num2date(clock[time], clock.units, calendar=getattr(clock, "calendar", "standard"))
                 if (actual.year, actual.month, actual.day) != (date.year, date.month, date.day):
                     raise ValueError("Model output and explorer dates disagree")
+                for name in checks:
+                    surface = dataset[name][time, -1] if name != "zeta" else dataset[name][time]
+                    checks[name].append(np.asarray(surface)[probes["j"], probes["i"]].astype("f4"))
                 values = read_fields(dataset, time, sampled, ny, nx)
                 for name in records:
                     records[name].append(values[name])
@@ -166,6 +172,7 @@ def main():
         for name in FIELDS
     }
     manifest["zeta"] = write_array(args.out, "frames-zeta.f32.gz", np.stack(records["zeta"]), "<f4")
+    np.savez_compressed(args.out / "surface-probes.npz", **{key: np.stack(value) for key, value in checks.items()})
     manifest["vertical_method"] = "ROMS Vtransform=2, native sigma levels, per-frame free surface."
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print("validated " + str(len(dates)) + " frames", flush=True)
