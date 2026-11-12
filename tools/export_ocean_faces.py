@@ -181,10 +181,10 @@ def main():
                     surface = dataset[name][time, -1] if name != "zeta" else dataset[name][time]
                     surface = np.asarray(surface, dtype="f4")
                     checks[name].append(surface[probes["j"], probes["i"]])
-                    surfaces[name].append(surface[::args.stride, ::args.stride])
+                    surfaces[name].append(surface[np.ix_(sampled["east"], sampled["north"])])
                 u = pad_to_rho(dataset["u"][time, -1], nx)
                 v = pad_to_rho(dataset["v"][time, -1].T, ny).T
-                surfaces["speed"].append(np.hypot(u,v)[::args.stride, ::args.stride])
+                surfaces["speed"].append(np.hypot(u,v)[np.ix_(sampled["east"], sampled["north"])])
                 values = read_fields(dataset, time, sampled, ny, nx)
                 for name in records:
                     records[name].append(values[name])
@@ -194,7 +194,7 @@ def main():
         name: pack_field(args.out, "frames-" + name + ".u16.gz", np.stack(records[name]), wet)
         for name in FIELDS
     }
-    surface_mask = mask[::args.stride, ::args.stride].astype(bool)
+    surface_mask = mask[np.ix_(sampled["east"], sampled["north"])].astype(bool)
     manifest["surface"] = {
         name: pack_surface(args.out, "surface-" + name + ".u8.gz", np.stack(surfaces[name]), surface_mask)
         for name in surfaces
