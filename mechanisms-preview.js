@@ -1,6 +1,17 @@
 import { potentialDensityAnomaly } from './budget-physics.js?v=20261112-density';
 
 const $ = selector => document.querySelector(selector);
+// Keep the budget's painting aligned with the model controls selected at loading.
+try {
+  const art=JSON.parse(sessionStorage.getItem('ocean-model-active-art'));
+  if(art?.url?.startsWith('/assets/monet/')) {
+    const root=document.documentElement;
+    root.style.setProperty('--ocean-painting','url("'+art.url+'")');
+    root.style.setProperty('--ocean-strip-size',art.size);
+    root.style.setProperty('--ocean-strip-position',art.position);
+  }
+} catch(_) {}
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const processes = [
   { id:'heat', name:'Surface heat', keys:['heat'], colour:'#bc714e' },

@@ -12,8 +12,9 @@ export function observedTracks(floats) {
 export function trackPosition(track,time) {
  const p=track.points;
  time=Math.max(time,p[0].time);
- let index=0;
- while(index+1<p.length && p[index+1].time<=time)index++;
+ let lo=0,hi=p.length-1;
+ while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(p[mid].time<=time)lo=mid;else hi=mid-1;}
+ const index=lo;
  const a=p[index],b=p[Math.min(index+1,p.length-1)];
  const weight=b.time===a.time?0:Math.max(0,Math.min(1,(time-a.time)/(b.time-a.time)));
  const previous=p[Math.max(0,index-1)],after=p[Math.min(p.length-1,index+2)];

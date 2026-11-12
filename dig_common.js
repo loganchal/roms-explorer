@@ -113,12 +113,5 @@ export function mountHeader(el, { prov, title, sentence, source }) {
         ${source ? `<code class="src">${source}</code>` : ""}
       </div>
       <div class="layer-note">${sentence}</div>`;
-    el.querySelector(".back-link").addEventListener("click",event=>{
-        try {
-            const ref=new URL(document.referrer);
-            if(ref.origin===location.origin && /\/roms-explorer\/(index\.html)?$/.test(ref.pathname) && history.length>1) {
-                event.preventDefault(); history.back();
-            }
-        } catch(_) {}
-    });
+
 }

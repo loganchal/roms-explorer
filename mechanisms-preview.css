@@ -77,7 +77,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible {
 }
 .painted-band {
  height:68px;
- background:#42666b url('/assets/monet/ngv.webp') 50% 74% / cover no-repeat;
+ background-color:#42666b;
+ background-image:var(--ocean-painting,url('/assets/monet/ngv.webp'));
+ background-position:var(--ocean-strip-position,50% 74%);
+ background-size:var(--ocean-strip-size,cover);
+ background-repeat:no-repeat;
 }
 @media(max-width:480px) { .painted-band { height:46px; } }
 html[data-embedded] header { display:none; }

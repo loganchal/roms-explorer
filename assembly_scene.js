@@ -56,7 +56,7 @@ const TAIR_STOPS = ["#1a3a6b", "#4f8ab0", "#dbe4a0", "#e0782f", "#a8281f"];
 const QAIR_STOPS = ["#3a2a12", "#8a6a3c", "#c8d8dc", "#4f9ab0", "#1a5a8e"];
 const RAIN_STOPS = ["#0a0e14", "#0a0e14", "#2f6690", "#5cb3ff", "#dbe9ee"];
 const LWRAD_STOPS = ["#140b1f", "#5b2a86", "#c05c3e", "#e0a83c", "#fff4cf"];
-const TIDE_WAVE_STOPS = ["#0b2545", "#2f6690", "#dbe9ee", "#f2a154", "#c1440e"];
+const TIDE_WAVE_STOPS = ["#315a70", "#72a5ac", "#c6d9ce", "#d8bc9d", "#c4876c"];
 const WIND_SPEED_STOPS = ["#3d4a5c", "#7c8ea3", "#d9e4ee", "#ffffff", "#ffffff"];
 const ZETA_STOPS = ["#123a6b", "#5c9bc9", "#eef1e8", "#e6934a", "#a8281f"]; // diverging blue-white-red for sea-surface height (below MSL / above MSL)
 // fast numeric colormap for hot per-frame loops (tide, wind particles) --
@@ -330,8 +330,8 @@ const STEPS = [
     {
         id: "tides", title: "Tides", kid: "11 constituents on the open boundary.",
         prov: "metocean", source: "nz5km-tide.nc",
-        detail: "Tidal forcing provided by MetOcean.",
-        limitation: "Amplitude and cycle speed normalized per constituent.",
+        detail: "Tidal forcing provided by MetOcean. Amplitude and cycle speed normalized per constituent.",
+        limitation: null,
     },
     {
         id: "rivers", title: "Rivers", kid: "47 point sources.",
@@ -1031,7 +1031,7 @@ export function mountAssembly() {
     let tideAmpMax = TIDE_CONSTITUENTS[tideKey].range[1] || 1e-6;
     let tideCosPhi = TIDE_CONSTITUENTS[tideKey].cosPhi;
     let tideSinPhi = TIDE_CONSTITUENTS[tideKey].sinPhi;
-    let tideDemoPeriod = 9;
+    let tideDemoPeriod = 12;
     function setTideConstituent(key) {
         if (!TIDE_CONSTITUENTS[key]) return;
         tideKey = key;
@@ -1040,7 +1040,7 @@ export function mountAssembly() {
         tideAmpMax = c.range[1] || 1e-6;
         tideCosPhi = c.cosPhi;
         tideSinPhi = c.sinPhi;
-        tideDemoPeriod = Math.min(22, Math.max(4, 9 * (TIDE_PERIOD_HOURS[TIDE_NAMES.indexOf(key)] / 12.4206012)));
+        tideDemoPeriod = Math.min(28, Math.max(6, 12 * (TIDE_PERIOD_HOURS[TIDE_NAMES.indexOf(key)] / 12.4206012)));
         const select = document.getElementById("tide-constituent-select");
         if (select) select.value = key;
     }
@@ -1051,84 +1051,84 @@ export function mountAssembly() {
         west: (idx) => idx * NX,
     };
     function buildTideWall(name, spec) {
-        const n = spec.along.length;
-        const positions = new Float32Array(n * 2 * 3);
-        const colors = new Float32Array(n * 2 * 3);
-        const index = [];
-        for (let i = 0; i < n; i++) {
-            const [x, z] = spec.axis === "ns"
-                ? lonLatToXZ(spec.along[i], spec.fixed, lonMid, latMid)
-                : lonLatToXZ(spec.fixed, spec.along[i], lonMid, latMid);
-            positions[i * 6] = x; positions[i * 6 + 1] = 0; positions[i * 6 + 2] = z;
-            positions[i * 6 + 3] = x; positions[i * 6 + 4] = 0; positions[i * 6 + 5] = z;
+        const n=spec.along.length, positions=new Float32Array(n*6);
+        const colors=new Float32Array(n*6), edges=new Float32Array(n*2);
+        const crestPositions=new Float32Array(n*3), baselinePositions=new Float32Array(n*3);
+        const index=[],lineIndex=[],kOf=WALL_K[name];
+        for(let i=0;i<n;i++) {
+            const [x,z]=spec.axis==="ns"
+                ? lonLatToXZ(spec.along[i],spec.fixed,lonMid,latMid)
+                : lonLatToXZ(spec.fixed,spec.along[i],lonMid,latMid);
+            positions.set([x,0,z,x,0,z],i*6);
+            crestPositions.set([x,0,z],i*3);
+            baselinePositions.set([x,0,z],i*3);
+            edges[i*2]=0;edges[i*2+1]=1;
+            if(i<n-1 && MASK[kOf(i)]>.5 && MASK[kOf(i+1)]>.5) {
+                const a=i*2,b=a+1,c=a+2,d=a+3;
+                index.push(a,b,c,b,d,c);lineIndex.push(i,i+1);
+            }
         }
-        for (let i = 0; i < n - 1; i++) {
-            const a = i * 2, b = i * 2 + 1, c = (i + 1) * 2, d = (i + 1) * 2 + 1;
-            index.push(a, b, c, b, d, c);
-        }
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-        geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        const geo=new THREE.BufferGeometry();
+        geo.setAttribute("position",new THREE.BufferAttribute(positions,3));
+        geo.setAttribute("color",new THREE.BufferAttribute(colors,3));
+        geo.setAttribute("tideEdge",new THREE.BufferAttribute(edges,1));
         geo.setIndex(index);
-        // polygonOffset pulls this mesh slightly forward in the depth buffer
-        // only -- it sits at the true wall coordinates (no world-space offset)
-        // but wins the z-fight against the coplanar boundary-curtain mesh.
-        // -16, widened 4x along with the rest of the stack (see buildWall)
-        // for grazing-angle headroom.
-        const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-            vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.95,
-            polygonOffset: true, polygonOffsetFactor: -16, polygonOffsetUnits: -16,
-        }));
-        mesh.userData = { kOf: WALL_K[name], n };
+        const material=new THREE.MeshBasicMaterial({
+            vertexColors:true,side:THREE.DoubleSide,transparent:true,opacity:.88,depthWrite:false,
+            polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2
+        });
+        // A wash of colour resolves into a fine crest; the zero line stays quiet.
+        material.onBeforeCompile=shader=>{
+            shader.vertexShader="attribute float tideEdge; varying float vTideEdge;\n"+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvTideEdge=tideEdge;");
+            shader.fragmentShader="varying float vTideEdge;\n"+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace("#include <color_fragment>","#include <color_fragment>\ndiffuseColor.a *= 0.07 + 0.65 * pow(vTideEdge, 1.5);");
+        };
+        const mesh=new THREE.Mesh(geo,material);
+        const crestGeometry=new THREE.BufferGeometry();
+        crestGeometry.setAttribute("position",new THREE.BufferAttribute(crestPositions,3));
+        crestGeometry.setIndex(lineIndex);
+        const crest=new THREE.LineSegments(crestGeometry,new THREE.LineBasicMaterial({color:0xe5edda,transparent:true,opacity:.92,depthWrite:false}));
+        const baselineGeometry=new THREE.BufferGeometry();
+        baselineGeometry.setAttribute("position",new THREE.BufferAttribute(baselinePositions,3));
+        baselineGeometry.setIndex(lineIndex);
+        const baseline=new THREE.LineSegments(baselineGeometry,new THREE.LineBasicMaterial({color:0x668e91,transparent:true,opacity:.3,depthWrite:false}));
+        mesh.renderOrder=2;crest.renderOrder=3;baseline.renderOrder=1;
+        mesh.frustumCulled=crest.frustumCulled=baseline.frustumCulled=false;
+        mesh.add(baseline,crest);
+        mesh.userData={kOf,n,crest};
         return mesh;
     }
-    const tideWallGroup = new THREE.Group();
-    Object.entries(WALLS).forEach(([name, spec]) => tideWallGroup.add(buildTideWall(name, spec)));
-    tideWallGroup.position.y = 0;
-    tideWallGroup.visible = false;
+    const tideWallGroup=new THREE.Group();
+    Object.entries(WALLS).forEach(([name,spec])=>tideWallGroup.add(buildTideWall(name,spec)));
+    tideWallGroup.visible=false;
     scene.add(tideWallGroup);
-    let tideClock = 0;
-    const tideCol = [0, 0, 0];
+    let tideClock=0;
+    const tideCol=[0,0,0];
     function updateTide(dt) {
-        tideClock += dt;
-        const omega = (2 * Math.PI) / tideDemoPeriod;
-        const cosWt = Math.cos(omega * tideClock), sinWt = Math.sin(omega * tideClock);
-        tideWallGroup.children.forEach((mesh) => {
-            const { kOf, n } = mesh.userData;
-            const pos = mesh.geometry.attributes.position.array;
-            const col = mesh.geometry.attributes.color.array;
-            for (let i = 0; i < n; i++) {
-                const k = kOf(i);
-                if (MASK[k] < 0.5) {
-                    pos[i * 6 + 4] = 0;
-                    col[i * 6] = LAND_COLOR.r; col[i * 6 + 1] = LAND_COLOR.g; col[i * 6 + 2] = LAND_COLOR.b;
-                    col[i * 6 + 3] = LAND_COLOR.r; col[i * 6 + 4] = LAND_COLOR.g; col[i * 6 + 5] = LAND_COLOR.b;
-                    continue;
-                }
-                // baseline row (index i*6+1) stays at the sea surface; the second
-                // row (i*6+4) rides the wave, so the ribbon's height *is* the
-                // instantaneous elevation -- it visibly flattens to nothing at
-                // amphidromic points instead of just changing colour. Height and
-                // colour both use elev normalized by THIS constituent's own peak
-                // amplitude -- without that, weak constituents (Mf, Mm, M4) would
-                // barely move next to strong ones (M2, S2) at a shared world scale.
-                const elev = tideAmp[k] * (cosWt * tideCosPhi[k] + sinWt * tideSinPhi[k]);
-                const ratio = Math.max(-1, Math.min(1, elev / tideAmpMax));
-                pos[i * 6 + 4] = ratio * TIDE_EXAG;
-                // colour uses a sqrt-stretched magnitude, not the raw ratio -- most
-                // boundary points have far smaller amplitude than the few resonant
-                // hotspots that set tideAmpMax, so a linear scale reads as flat
-                // white almost everywhere. Perceptual stretch, still monotonic,
-                // still zero at zero.
-                const stretched = Math.sign(ratio) * Math.sqrt(Math.abs(ratio));
-                fastColormap((stretched + 1) / 2, tideWaveRGB, tideCol);
-                const glow = Math.abs(stretched) * 0.28;
-                const r = Math.min(1, tideCol[0] + glow), g = Math.min(1, tideCol[1] + glow), b = Math.min(1, tideCol[2] + glow);
-                col[i * 6] = r; col[i * 6 + 1] = g; col[i * 6 + 2] = b;
-                col[i * 6 + 3] = r; col[i * 6 + 4] = g; col[i * 6 + 5] = b;
+        tideClock+=dt;
+        const phase=2*Math.PI*tideClock/tideDemoPeriod;
+        const cosWt=Math.cos(phase),sinWt=Math.sin(phase);
+        tideWallGroup.children.forEach(mesh=>{
+            const {kOf,n,crest}=mesh.userData;
+            const pos=mesh.geometry.attributes.position.array;
+            const col=mesh.geometry.attributes.color.array;
+            const rim=crest.geometry.attributes.position;
+            for(let i=0;i<n;i++) {
+                const k=kOf(i);
+                const elev=MASK[k]>.5?tideAmp[k]*(cosWt*tideCosPhi[k]+sinWt*tideSinPhi[k]):0;
+                const ratio=Math.max(-1,Math.min(1,elev/tideAmpMax));
+                pos[i*6+4]=ratio*TIDE_EXAG;
+                rim.setY(i,pos[i*6+4]);
+                const stretched=Math.sign(ratio)*Math.pow(Math.abs(ratio),.65);
+                fastColormap((stretched+1)/2,tideWaveRGB,tideCol);
+                const offset=i*6;
+                col[offset]=tideCol[0]*.58;col[offset+1]=tideCol[1]*.68;col[offset+2]=tideCol[2]*.72;
+                col[offset+3]=tideCol[0];col[offset+4]=tideCol[1];col[offset+5]=tideCol[2];
             }
-            mesh.geometry.attributes.position.needsUpdate = true;
-            mesh.geometry.attributes.color.needsUpdate = true;
+            mesh.geometry.attributes.position.needsUpdate=true;
+            mesh.geometry.attributes.color.needsUpdate=true;
+            rim.needsUpdate=true;
         });
     }
     const tideSelectEl = document.getElementById("tide-constituent-select");
@@ -1599,78 +1599,27 @@ export function mountAssembly() {
     // are never null (model side, interpolated); the observation itself may
     // be, so the diff is left null wherever the float didn't measure that
     // level, rather than treated as a fabricated zero.
-    const ARGO_DIFFS = ARGO_FLOATS.map((fl, idx) => {
-        const model = ARGO_MODEL[idx];
-        const n = fl.pressure.length;
-        const temp = new Array(n).fill(null);
-        const salt = new Array(n).fill(null);
-        const density = new Array(n).fill(null);
-        for (let i = 0; i < n; i++) {
-            const t = fl.temperature[i], s = fl.salinity[i], sig = model.obsSig[i];
-            if (t !== null && t !== undefined) temp[i] = model.tempAtObs[i] - t;
-            if (s !== null && s !== undefined) salt[i] = model.saltAtObs[i] - s;
-            if (sig !== null && sig !== undefined) density[i] = model.sigAtObs[i] - sig;
-        }
-        return { temp, salt, density };
-    });
-    // symmetric colour limit per variable = 95th percentile of |diff| across
-    // ALL floats' valid levels, computed once and cached -- clamp beyond it
-    // rather than letting one outlier float stretch the ramp for everyone.
-    function percentile95Abs(values) {
-        if (!values.length) return 1e-6;
-        values.sort((a, b) => a - b);
-        return Math.max(values[Math.min(values.length - 1, Math.floor(0.95 * (values.length - 1)))], 1e-6);
-    }
+    let argoFloats = ARGO_FLOATS, argoModels = ARGO_MODEL;
+    let ARGO_DIFFS = [];
     const ARGO_VAR_SCALE = {};
-    ["temp", "salt", "density"].forEach((key) => {
-        const vals = [];
-        ARGO_DIFFS.forEach(d => d[key].forEach(v => { if (v !== null && Number.isFinite(v)) vals.push(Math.abs(v)); }));
-        ARGO_VAR_SCALE[key] = percentile95Abs(vals);
-    });
-
+    function refreshArgoDifferences() {
+        ARGO_DIFFS = argoFloats.map((fl, idx) => {
+            const model = argoModels[idx];
+            return Object.fromEntries(["temp", "salt", "density"].map(key => {
+                const observed = key === "temp" ? fl.temperature : key === "salt" ? fl.salinity : model.obsSig;
+                const simulated = model[key === "temp" ? "tempAtObs" : key === "salt" ? "saltAtObs" : "sigAtObs"];
+                return [key, fl.pressure.map((_, i) => observed[i] != null && simulated[i] != null && Number.isFinite(observed[i]) && Number.isFinite(simulated[i]) ? simulated[i] - observed[i] : null)];
+            }));
+        });
+        ["temp", "salt", "density"].forEach(key => {
+            const values = ARGO_DIFFS.flatMap(d => d[key].filter(v => v != null && Number.isFinite(v)).map(Math.abs)).sort((a,b)=>a-b);
+            ARGO_VAR_SCALE[key] = Math.max(values[Math.floor(.95 * (values.length-1))] || 0, 1e-6);
+        });
+    }
+    refreshArgoDifferences();
     const argoGroup = new THREE.Group();
     const argoMarkers = [];
-    const argoLineEntries = []; // { mesh, x, z, n, pressures, diffs } -- one per float, parallel to ARGO_FLOATS
-    ARGO_FLOATS.forEach((fl, idx) => {
-        // per-marker material instance (not shared), matching the river
-        // markers' convention -- keeps each float independently tintable
-        // later without affecting the rest, and fadeInfo's per-child
-        // traversal doesn't end up writing the same material 134x/frame.
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(1.3, 10, 10), new THREE.MeshBasicMaterial({ color: 0xf2a63c, transparent: true, opacity: 1 }));
-        const [x, z] = lonLatToXZ(fl.lon, fl.lat, lonMid, latMid);
-        mesh.position.set(x, 3, z);
-        mesh.userData = { kind: "argo", float: fl, model: ARGO_MODEL[idx] };
-        argoGroup.add(mesh);
-        argoMarkers.push(mesh);
-
-        // difference-profile line: two thin perpendicular ribbons (a "+"
-        // cross-section in plan view) rather than a THREE.Line -- plain
-        // WebGL line width is unreliable across platforms/GPUs, so this is
-        // what keeps the ~1.8-world-unit width actually readable from any
-        // orbit angle. Pressure (dbar) is used directly as depth in metres
-        // for the y position via depthToY -- fine at this precision, same
-        // convention the panel chart below already uses (1 dbar =~ 1 m in
-        // the upper ocean).
-        const n = fl.pressure.length;
-        const segCount = Math.max(0, n - 1);
-        const vertsPerSeg = 12; // 2 ribbon planes x 2 triangles x 3 verts
-        const positions = new Float32Array(segCount * vertsPerSeg * 3);
-        const colors = new Float32Array(segCount * vertsPerSeg * 3);
-        const lineGeo = new THREE.BufferGeometry();
-        lineGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-        lineGeo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-        const lineMesh = new THREE.Mesh(lineGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 1 }));
-        lineMesh.userData = { kind: "argo", float: fl, model: ARGO_MODEL[idx] };
-        // floats were intermittently vanishing during orbit: 268 small
-        // transparent meshes are exactly the worst case for per-object
-        // frustum culling + distance sorting, so (a) never cull them --
-        // they're tiny, culling buys nothing -- and (b) pin them to render
-        // after every other transparent surface instead of interleaving.
-        mesh.frustumCulled = false; mesh.renderOrder = 11;
-        lineMesh.frustumCulled = false; lineMesh.renderOrder = 10;
-        argoGroup.add(lineMesh);
-        argoLineEntries.push({ mesh: lineMesh, x, z, n, pressures: fl.pressure, diffs: ARGO_DIFFS[idx] });
-    });
+    const argoLineEntries = [];
     argoGroup.visible = false;
     scene.add(argoGroup);
 
@@ -1735,10 +1684,11 @@ export function mountAssembly() {
     makeFieldButtons("argo-var-buttons", ARGO_VAR_FIELDS, argoVar, setArgoVar);
     argoLineEntries.forEach(entry => fillArgoLineGeometry(entry, argoVar)); // paint at the default variable before first reveal
 
-    const argoTracks = observedTracks(ARGO_FLOATS);
-    const argoStart = Math.min(...argoTracks.map(t=>t.points[0].time));
-    const argoEnd = Math.max(...argoTracks.map(t=>t.points.at(-1).time));
+    let argoTracks = [];
+    let argoStart = Math.min(...observedTracks(argoFloats).map(t=>t.points[0].time));
+    let argoEnd = Math.max(...observedTracks(argoFloats).map(t=>t.points.at(-1).time));
     let argoTime = argoStart, argoPlaying = false, argoDrop = 1;
+    let argoLastDate = "", argoLastPlaying = null;
     const argoSlider = document.getElementById("argo-time");
     const argoPlay = document.getElementById("argo-play");
     function sampleArgoDepth(pressure,values,target) {
@@ -1749,15 +1699,27 @@ export function mountAssembly() {
         const weight=n===k?0:Math.max(0,Math.min(1,(target-pressure[k])/(pressure[n]-pressure[k]||1)));
         return a+(b-a)*weight;
     }
+    function buildArgoTracks() {
+        argoGroup.traverse(child=>{if(child.geometry)child.geometry.dispose();if(child.material)child.material.dispose();});
+        argoGroup.clear();argoMarkers.length=0;
+        argoTracks=observedTracks(argoFloats);
     argoTracks.forEach(track=>{
-        track.marker=argoMarkers[track.points[0].index];
-        const maxPressure=Math.max(...track.points.flatMap(p=>ARGO_FLOATS[p.index].pressure));
+        track.marker=new THREE.Mesh(new THREE.SphereGeometry(.95,14,10),new THREE.MeshBasicMaterial({color:0xeee3c9,transparent:true,opacity:1}));
+        track.marker.renderOrder=11;track.marker.frustumCulled=false;
+        argoMarkers.push(track.marker);argoGroup.add(track.marker);
+        const headRing=new THREE.Mesh(
+            new THREE.RingGeometry(1.3,1.48,32),
+            new THREE.MeshBasicMaterial({color:0xaac9c5,side:THREE.DoubleSide,transparent:true,opacity:.48,depthWrite:false})
+        );
+        headRing.rotation.x=-Math.PI/2;
+        headRing.renderOrder=12;
+        track.marker.add(headRing);
         track.pressureProfiles=track.points.map(p=>{
-            const measured=ARGO_FLOATS[p.index].pressure,min=Math.min(...measured),max=Math.max(...measured);
+            const measured=argoFloats[p.index].pressure,min=Math.min(...measured),max=Math.max(...measured);
             return Array.from({length:100},(_,i)=>min+(max-min)*i/99);
         });
         const pressures=track.pressureProfiles[0];
-        track.samples=track.points.map((p,index)=>Object.fromEntries(["temp","salt","density"].map(key=>[key,track.pressureProfiles[index].map(depth=>sampleArgoDepth(ARGO_FLOATS[p.index].pressure,ARGO_DIFFS[p.index][key],depth))])));
+        track.samples=track.points.map((p,index)=>Object.fromEntries(["temp","salt","density"].map(key=>[key,track.pressureProfiles[index].map(depth=>sampleArgoDepth(argoFloats[p.index].pressure,ARGO_DIFFS[p.index][key],depth))])));
         const geo=new THREE.BufferGeometry();
         geo.setAttribute("position",new THREE.BufferAttribute(new Float32Array(99*12*3),3));
         geo.setAttribute("color",new THREE.BufferAttribute(new Float32Array(99*12*3),3));
@@ -1777,17 +1739,53 @@ export function mountAssembly() {
         }
 
         const geometry=new THREE.BufferGeometry();
-        geometry.setAttribute("position",new THREE.BufferAttribute(new Float32Array((track.points.length+1)*3),3));
-        track.trail=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:0xd5e6df,transparent:true,opacity:.65}));
+        geometry.setAttribute("position",new THREE.BufferAttribute(new Float32Array(64*3),3));
+        const trailColors=new Float32Array(64*3);
+        const tail=new THREE.Color(0x315b65),head=new THREE.Color(0xb8d2cc);
+        for(let i=0;i<64;i++){const c=tail.clone().lerp(head,i/63);trailColors.set([c.r,c.g,c.b],i*3);}
+        geometry.setAttribute("color",new THREE.BufferAttribute(trailColors,3));
+        track.trail=new THREE.Line(geometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.45,depthWrite:false}));
         track.trail.frustumCulled=false;
         argoGroup.add(track.trail);
     });
+    }
+    buildArgoTracks();
+    let argoExtensionRequest = null;
+    function loadArgoExtension() {
+        if(argoExtensionRequest)return argoExtensionRequest;
+        argoExtensionRequest=fetch("data/argo-extension.json?v=20261113-extension").then(response=>{
+            if(!response.ok)throw new Error("Argo extension unavailable");
+            return response.json();
+        }).then(data=>{
+            if(!Array.isArray(data.floats)||data.floats.length!==data.models?.length||!data.floats.length)throw new Error("Invalid Argo extension");
+            if(data.floats.some((fl,i)=>!fl.pressure?.length||!Number.isFinite(Date.parse(fl.time))||data.models[i]?.id!==fl.id))throw new Error("Incomplete Argo extension");
+            argoFloats=data.floats;argoModels=data.models;
+            argoStart=Date.parse(FRAMES_DATES[0]+" UTC");argoEnd=Date.parse(FRAMES_DATES.at(-1)+" UTC");
+            refreshArgoDifferences();buildArgoTracks();
+            const info=fadeInfo.get(argoGroup);
+            info.mats=[];
+            argoGroup.traverse(child=>{if(child.material){const mat=child.material;info.mats.push({mat,full:mat.opacity});mat.opacity*=info.current;mat.depthWrite=false;}});
+            argoTime=argoStart;argoLastDate="";argoDrop=matchMedia("(prefers-reduced-motion: reduce)").matches?1:0;
+            argoPanelState=null;document.getElementById("argo-detail").style.display="none";
+            const argoStep=STEPS.find(step=>step.id==="argo");
+            argoStep.kid=`${argoFloats.length.toLocaleString("en-NZ")} independent float profiles.`;
+            argoStep.source="Argo profiles · 2021–2025";
+            if(STEPS[stepIdx]?.id==="argo")renderStepUI();
+            setArgoTime(argoTime);
+            if(window.__debug)Object.assign(window.__debug,{argoTracks,argoStart,argoEnd});
+            return true;
+        }).catch(error=>{console.warn(error.message);return false;});
+        return argoExtensionRequest;
+    }
     function argoDisplayPosition(track,lon,lat) {
         return lonLatToXZ(lon,lat,lonMid,latMid).map((v,i)=>Math.max(-146,Math.min(146,track.anchor[i]+track.driftScale*(v-track.origin[i]))));
     }
     function setArgoPlaying(value) {
         argoPlaying=value;
-        argoPlay.textContent=value?"Pause":"Play";
+        if(argoLastPlaying!==value) {
+            argoPlay.textContent=value?"Pause":"Play";
+            argoLastPlaying=value;
+        }
     }
     function setArgoTime(time) {
         argoTime=Math.max(argoStart,Math.min(argoEnd,time));
@@ -1801,11 +1799,11 @@ export function mountAssembly() {
             const [x,z]=argoDisplayPosition(track,position.lon,position.lat);
             track.marker.visible=true;
             track.marker.position.set(x,3,z);
-            track.marker.userData={kind:"argo",float:ARGO_FLOATS[position.profileIndex],model:ARGO_MODEL[position.profileIndex]};
+            track.marker.userData={kind:"argo",float:argoFloats[position.profileIndex],model:argoModels[position.profileIndex]};
             const curtain=track.curtain;
             curtain.mesh.position.set(x,0,z);
             curtain.mesh.scale.y=1-Math.pow(1-argoDrop,3);
-            curtain.mesh.userData={kind:"argo",float:ARGO_FLOATS[position.profileIndex],model:ARGO_MODEL[position.profileIndex]};
+            curtain.mesh.userData={kind:"argo",float:argoFloats[position.profileIndex],model:argoModels[position.profileIndex]};
             const key=argoVar+":"+Math.round((argoTime-argoStart)/(argoEnd-argoStart)*1000);
             if(track.morphKey!==key) {
                 const a=track.samples[position.pointIndex][argoVar],b=track.samples[Math.min(position.pointIndex+1,track.samples.length-1)][argoVar];
@@ -1815,23 +1813,27 @@ export function mountAssembly() {
                 fillArgoLineGeometry(curtain,argoVar);
                 track.morphKey=key;
             }
-            const observed=ARGO_FLOATS[position.profileIndex];
+            const observed=argoFloats[position.profileIndex];
             if(argoPanelState?.float.id.split("_")[0]===track.id && argoPanelState.float.id!==observed.id) {
-                renderArgoPanel(observed,ARGO_MODEL[position.profileIndex]);
+                renderArgoPanel(observed,argoModels[position.profileIndex]);
             }
             const vertices=track.trail.geometry.attributes.position;
-            for(let i=0;i<=position.pointIndex;i++) {
-                const point=track.points[i],xz=argoDisplayPosition(track,point.lon,point.lat);
-                vertices.setXYZ(i,xz[0],2.5,xz[1]);
+            const tailStart=Math.max(argoStart,argoTime-Math.min((argoEnd-argoStart)*.12,45*86400000));
+            for(let i=0;i<64;i++) {
+                const sample=trackPosition(track,tailStart+(argoTime-tailStart)*i/63);
+                const xz=argoDisplayPosition(track,sample.lon,sample.lat);
+                vertices.setXYZ(i,xz[0],2.8,xz[1]);
             }
-            vertices.setXYZ(position.pointIndex+1,x,2.5,z);
             vertices.needsUpdate=true;
-            track.trail.geometry.setDrawRange(0,position.pointIndex+2);
+            track.trail.geometry.setDrawRange(0,64);
         });
         argoSlider.value=(argoTime-argoStart)/(argoEnd-argoStart)*1000;
         const label=new Date(argoTime).toLocaleDateString("en-NZ",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
-        document.getElementById("argo-date").textContent=label;
-        argoSlider.setAttribute("aria-valuetext",label);
+        if(argoLastDate!==label) {
+            document.getElementById("argo-date").textContent=label;
+            argoSlider.setAttribute("aria-valuetext",label);
+            argoLastDate=label;
+        }
     }
     argoPlay.addEventListener("click",()=>{
         if(argoTime>=argoEnd)setArgoTime(argoStart);
@@ -1885,6 +1887,7 @@ export function mountAssembly() {
         if (!info) { obj.visible = show; return; }
         if (show) obj.visible = true; // must stay visible through the fade-in
         info.target = show ? 1 : 0;
+        if (!show && info.current === 0) obj.visible = false;
     }
     function updateFades(dt) {
         fadeInfo.forEach((info, obj) => {
@@ -2045,17 +2048,11 @@ export function mountAssembly() {
         });
         drawArgoProfile(document.getElementById("argoChart"), modelZ, modelVal, obsZ, obsVal);
     }
-    const MONTH_ABBR = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    function argoMonthLabel() {
-        if (typeof ARGO_MONTH === "undefined") return "";
-        const [y, mo] = ARGO_MONTH.split("-").map(Number);
-        return `${MONTH_ABBR[mo]} ${y}`;
-    }
     function renderArgoPanel(fl, model) {
         const panel = document.getElementById("argo-detail");
         if (!panel) return;
         panel.style.display = "block";
-        panel.innerHTML = `<div class="k">${fl.id} &middot; day ${model.day + 1} ${argoMonthLabel()} &middot; ${model.dist_km} km from model cell</div>
+        panel.innerHTML = `<div class="k">${fl.id} &middot; ${new Date(fl.time).toLocaleDateString("en-NZ",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"})} &middot; ${model.dist_km} km from model cell</div>
             <canvas class="chart" id="argoChart"></canvas>`;
         argoPanelState = { float: fl, model };
         drawArgoPanelChart();
@@ -2236,11 +2233,16 @@ export function mountAssembly() {
         setLayerVisible(windPlane, id === "meteo");
         setLayerVisible(iniSliceGroup, id === "ini" && iniSlicesApplicable);
         setLayerVisible(framesMesh, id === "frames");
+        if(id === "frames") setLayerVisible(riverGroup,false);
+        if(id === "tides") {
+            setLayerVisible(boundaryGroup,false);
+            setLayerVisible(nudgBorderGroup,false);
+        }
         // -- "The parts": the forcing components,
         // floating in empty space. Everything else -- terrain, nudging, the
         // cube wireframe, model-output layers (ini slices, run-forward
         // frames, Argo) -- hides. Each component opens its own detail page.
-        cubeWire.visible = !["parts", "ini", "frames"].includes(id);
+        cubeWire.visible = !["parts", "ini", "frames", "tides"].includes(id);
         if (id === "parts") {
             setLayerVisible(terrainMesh, false);
             setLayerVisible(nudgBorderGroup, false);
@@ -2278,7 +2280,14 @@ export function mountAssembly() {
         // pull the class shelves apart on entering "parts", collapse them
         // back together on leaving it.
         const curId = stepIdx >= 0 ? STEPS[stepIdx].id : null;
+        // Keep the current stage on this history entry for detail-page returns.
+        if (curId || prevId) {
+            const url = new URL(location.href);
+            url.hash = curId || "";
+            history.replaceState({...history.state, modelStep:curId}, "", url);
+        }
         if(curId === "argo" && prevId !== "argo") {
+            loadArgoExtension();
             const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
             argoDrop=reduced?1:0;
             setArgoTime(argoTime);
@@ -2311,7 +2320,7 @@ export function mountAssembly() {
     goTo(-1);
     // the dig-deeper pages' back-links point at index.html#parts -- land
     // straight on that step instead of the empty cube when arriving that way.
-    if (["#parts", "#frames", "#budget", "#argo"].includes(location.hash)) {
+    if (STEPS.some(s => "#" + s.id === location.hash)) {
         const partsStepIdx = STEPS.findIndex(s => s.id === location.hash.slice(1));
         if (partsStepIdx >= 0) goTo(partsStepIdx);
     }
@@ -2333,7 +2342,7 @@ export function mountAssembly() {
             argoTracks.forEach(t=>t.curtain.mesh.scale.y=scale);
         }
         if (stepIdx >= 0 && STEPS[stepIdx].id === "argo" && argoPlaying) {
-            setArgoTime(argoTime + dt*(argoEnd-argoStart)/40);
+            setArgoTime(argoTime + dt*(argoEnd-argoStart)/45);
             if(argoTime>=argoEnd)setArgoPlaying(false);
         }
         if (boundaryGroup.visible) updateBoundarySourceFade(dt);
@@ -2358,7 +2367,7 @@ export function mountAssembly() {
         tideWallGroup, riverGroup, windPlane, iniSliceGroup, initialOceanMesh, framesMesh, outerFaces, argoGroup, goTo, STEPS,
         setMeteoField, setBoundaryField, setBoundarySource, setClimField, setTideConstituent, setNudgDisplayMode,
         setIniField, setFrameField: setFramesField, setFramesDay, playFrames, pauseFrames,
-        setArgoVar, argoTracks, setArgoTime, argoStart, argoEnd, setArgoPlaying,
+        setArgoVar, argoTracks, setArgoTime, argoStart, argoEnd, setArgoPlaying, loadArgoExtension,
         gotoPart: (name) => {
             const hrefs = { boundary: "dig_boundary.html", weather: "dig_weather.html", tides: "dig_tides.html", rivers: "dig_rivers.html" };
             if (!hrefs[name]) return false;
@@ -2366,9 +2375,9 @@ export function mountAssembly() {
             return true;
         },
         selectArgoFloat: (id) => {
-            const idx = ARGO_FLOATS.findIndex(f => f.id === id);
+            const idx = argoFloats.findIndex(f => f.id === id);
             if (idx < 0) return false;
-            renderArgoPanel(ARGO_FLOATS[idx], ARGO_MODEL[idx]);
+            renderArgoPanel(argoFloats[idx], argoModels[idx]);
             return true;
         },
     };

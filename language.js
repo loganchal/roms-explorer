@@ -65,7 +65,7 @@
  }
  window.modelLanguage={get language(){return language},translate,refresh};
  const group=document.createElement('div');group.className='language-switch';group.setAttribute('role','group');group.setAttribute('aria-label','Language / Reo');
- for(const [code,label] of [['en','EN'],['mi','Te Reo Māori']]){
+ for(const [code,label] of [['en','English'],['mi','Te Reo Māori']]){
   const button=document.createElement('button');button.type='button';button.dataset.language=code;button.lang=code;button.textContent=label;button.onclick=()=>choose(code);group.append(button);
  }
  (document.querySelector('[data-language-controls]')||document.body).append(group);

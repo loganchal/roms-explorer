@@ -3,7 +3,7 @@
 // sources plotted as green dots. Click a dot to see its transport and
 // vertical injection profile (vshape).
 
-import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261112-direct-return";
+import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261113-stage-return";
 
 mountHeader(document.getElementById("header-mount"), {
     prov: "metocean",

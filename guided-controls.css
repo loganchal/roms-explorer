@@ -178,18 +178,24 @@ html[lang="mi"] #step-card #frames-controls-wrap.visible { grid-template-columns
 #frames-field-buttons > button:last-child:nth-child(odd) { grid-column:1 / -1; }
 #budget-link { order:4; display:block; margin:4px 0 8px; color:var(--ink); font:15px/1.4 Georgia,serif; text-underline-offset:4px; }
 #budget-link[hidden] { display:none; }
-#budget-stage { position:fixed; inset:0; z-index:10001; background:#f7f4e9; color:#293b3a; }
+#budget-stage { display:flex; flex-direction:column; padding-top:52px; box-sizing:border-box; position:fixed; inset:0; z-index:10001; background:#f7f4e9; color:#293b3a; }
 #budget-stage[hidden] { display:none; }
-.budget-flow { height:52px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; border-bottom:1px solid #cbd0c4; }
+.budget-flow { order:2; flex-shrink:0; height:52px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; border-top:1px solid #cbd0c4; }
 .budget-flow button { display:flex; align-items:center; gap:8px; border:0; padding:8px 0; background:none; color:inherit; font:15px Georgia,serif; cursor:pointer; }
 .budget-flow button:hover span { text-decoration:underline; text-underline-offset:4px; }
 .budget-flow svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.2; }
-#budget-frame { display:block; width:100%; height:calc(100% - 52px); border:0; background:#f7f4e9; }
-.budget-active #viewport,.budget-active .model-home { visibility:hidden; }
-.budget-active > .language-switch { z-index:10002; top:8px; left:50%; right:auto; transform:translateX(-50%); }
+#budget-frame { display:block; flex:1; min-height:0; width:100%; height:calc(100% - 104px); border:0; background:#f7f4e9; }
+.budget-active #viewport { visibility:hidden; }
+.budget-active .model-home { z-index:10002; color:#293b3a; }
+.budget-active > .language-switch { z-index:10002; top:8px; color:#293b3a; }
 @media(max-width:500px) { .budget-flow { padding-inline:12px; } .budget-flow button { font-size:12px; gap:4px; } .budget-active > .language-switch { gap:7px; font-size:12px; } }
 #argo-drift-controls { order:2; display:grid; grid-template-columns:55px minmax(60px,1fr) 100px; align-items:center; gap:10px; margin:6px 0 14px; }
 #argo-drift-controls[hidden] { display:none; }
 #argo-play { border:0; padding:8px 0; background:none; color:var(--ink); font:14px Georgia,serif; cursor:pointer; }
 #argo-time { width:100%; min-width:0; accent-color:var(--accent); }
 #argo-date { text-align:right; white-space:nowrap; font:11px Georgia,serif; font-variant-numeric:tabular-nums; }
+#step-card #tide-constituent-select {
+ appearance:none; border:0; border-bottom:1px solid var(--line); border-radius:0;
+ background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='10' viewBox='0 0 14 10'%3E%3Cpath d='m2 2 5 5 5-5' fill='none' stroke='%235d655b' stroke-width='1.1'/%3E%3C/svg%3E") right 8px center/14px 10px no-repeat;
+ padding:10px 30px 10px 0; color:var(--ink); font:18px/1.4 Georgia,serif;
+}
