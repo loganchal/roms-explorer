@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="etretat" data-ocean-cycle>
 
 <head>
     <meta charset="UTF-8">
@@ -8,15 +8,13 @@
     <link rel="stylesheet" href="explorer.css?v=20261112-labels">
     <link rel="stylesheet" href="entrance.css?v=20261111-model">
     <link rel="stylesheet" href="guided-controls.css?v=20261112-strat-metrics">
+    <link rel="stylesheet" href="themes/preview.css?v=20261112-ocean-live">
+    <script defer src="ocean-paintings.js?v=20261112-ocean-live"></script>
 <link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-strat-metrics"></script>
 <script>
     const previewTheme = new URLSearchParams(location.search).get("theme");
     if (["soundings", "watch", "etretat"].includes(previewTheme)) {
         document.documentElement.dataset.theme = previewTheme;
-        const sheet = document.createElement("link");
-        sheet.rel = "stylesheet";
-        sheet.href = "themes/preview.css?v=20261112-editorial";
-        document.head.append(sheet);
     }
 </script>
 </head>

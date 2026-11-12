@@ -40,13 +40,13 @@ html[data-theme="etretat"] {
     --muted:#5d655b; --accent:#476b70; --line:#b9b9ab;
 }
 [data-theme="etretat"] #entrance::before {
-    inset:0 0 47%; background:#a6b7bd url('/assets/monet/ngv.webp') center 48%/cover;
+    inset:0 0 47%; background:#a6b7bd var(--ocean-painting,url('/assets/monet/ngv.webp')) center 48%/cover;
 }
 [data-theme="etretat"] .entrance-copy { top:68%; }
 [data-theme="etretat"] #step-card { border-radius:2px; border:0; overflow:hidden; }
 [data-theme="etretat"] #step-card::before {
     content:""; display:block; height:16px; margin:-18px -20px 15px;
-    background:#b3bcb3 url('/assets/monet/ngv.webp') center 68%/cover;
+    background:#b3bcb3 var(--ocean-painting,url('/assets/monet/ngv.webp')) center 68%/cover;
 }
 #hint { color:#e2e7e5; }
 @media(max-width:640px){
@@ -81,3 +81,15 @@ html[data-theme="etretat"] {
 
 [data-theme="watch"] #step-card #step-nav button { font:400 13px/1.3 ui-monospace,monospace; }
 [data-theme="etretat"] #step-card::before { height:10px; margin:-22px -22px 20px; }
+
+html[data-ocean-cycle][data-theme="etretat"] #entrance::before,
+html[data-ocean-cycle][data-theme="etretat"] #step-card::before {
+    background-image:var(--ocean-painting,none);
+}
+html[data-ocean-cycle][data-theme="etretat"] #entrance::before {
+    opacity:0; transition:opacity .45s ease;
+}
+html[data-ocean-cycle][data-theme="etretat"][data-ocean-art="ready"] #entrance::before { opacity:1; }
+@media(prefers-reduced-motion:reduce) {
+    html[data-ocean-cycle] #entrance::before { transition:none; }
+}
