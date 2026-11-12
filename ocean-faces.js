@@ -7,28 +7,6 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
     const supported = new Set(["temp", "salt", "speed"]);
     const base = new URL("./data/ocean-faces/", import.meta.url);
     const cache = new Map(), pending = new Map(), failed = new Set();
-    // Run-forward's existing surface export has no matching depth export.
-    // Neutral cutaway faces close the domain without inventing tracer values.
-    const domain = new THREE.Group();
-    for (const side of ["north","south","east","west"]) {
-        const n=side==="north"||side==="south"?nx:ny;
-        const positions=[], colours=[], triangles=[];
-        const cells=Array.from({length:n},(_,i)=>side==="north"?(ny-1)*nx+i:side==="south"?i:side==="east"?i*nx+nx-1:i*nx);
-        cells.forEach(cell=>{
-            positions.push(x[cell],surfaceY,z[cell],x[cell],depthToY(depth[cell]),z[cell]);
-            const top=new THREE.Color("#8db7c5");
-            const bottom=top.clone().lerp(new THREE.Color("#2b4b6f"),Math.min(1,-depthToY(depth[cell])/150));
-            colours.push(top.r,top.g,top.b,bottom.r,bottom.g,bottom.b);
-        });
-        for(let i=0;i<n-1;i++) if(mask[cells[i]]>=.5&&mask[cells[i+1]]>=.5) {
-            const a=i*2; triangles.push(a,a+1,a+2,a+1,a+3,a+2);
-        }
-        const geometry=new THREE.BufferGeometry();
-        geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
-        geometry.setAttribute("color",new THREE.Float32BufferAttribute(colours,3));geometry.setIndex(triangles);
-        domain.add(new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide})));
-    }
-    domain.visible=false;
     let manifestPromise, manifest, desired = null, drawn = "", geometryKind, sides;
 
     async function getManifest() {
@@ -91,6 +69,13 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         const {values,zeta,info}=data, levels=manifest.s_rho.length, rows=levels+2;
         const total=info.shape[info.shape.length-1], frameOffset=kind==="frames"?frame*levels*total:0;
         const {range,stops}=style(kind,key);
+        if(!data.palette) {
+            data.palette=new Float32Array(65536*3);
+            for(let q=0;q<65536;q++) {
+                const c=color((q*info.scale+info.minimum-range[0])/(range[1]-range[0]||1),stops);
+                data.palette.set([c.r,c.g,c.b],q*3);
+            }
+        }
         for (const side of sides) {
             const {cells,n,offset,geometry}=side, positions=geometry.attributes.position, colors=geometry.attributes.color;
             for(let i=0;i<n;i++) {
@@ -101,9 +86,8 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
                     const y=row===0?depthToY(h):row===rows-1?surfaceY:Math.min(surfaceY,depthToY(-(eta+(eta+h)*zo)));
                     const vertex=row*n+i;
                     positions.setXYZ(vertex,x[cell],y,z[cell]);
-                    const value=values[frameOffset+level*total+offset+i]*info.scale+info.minimum;
-                    const c=color((value-range[0])/(range[1]-range[0]||1),stops);
-                    colors.setXYZ(vertex,c.r,c.g,c.b);
+                    const q=values[frameOffset+level*total+offset+i]*3;
+                    colors.setXYZ(vertex,data.palette[q],data.palette[q+1],data.palette[q+2]);
                 }
             }
             positions.needsUpdate=colors.needsUpdate=true;
@@ -111,8 +95,8 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         group.visible=true; drawn=signature;
     }
     function show(kind,key,frame=0) {
-        domain.visible=kind==="frames" && supported.has(key);
-        desired=kind==="initial" && supported.has(key)?{kind,key,frame}:null;
+        desired=kind && supported.has(key)?{kind,key,frame}:null;
+        if(kind==="frames" && key==="ssh") loadSeaLevel();
         if (!desired) { group.visible=false; return; }
         const id=kind+":"+key;
         if (cache.has(id)) { paint(); return; }
@@ -120,14 +104,29 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         if (pending.has(id)||failed.has(id)) return;
         const request=(async()=>{
             const m=await getManifest(), info=m[kind][key];
-            const [values,zeta]=await Promise.all([array(info,Uint16Array),kind==="frames"?getZeta(m):null]);
+            const surfaceInfo=kind==="frames"?m.surface[key]:null;
+            const [values,zeta,surface]=await Promise.all([
+                array(info,Uint16Array),kind==="frames"?getZeta(m):null,
+                surfaceInfo?array(surfaceInfo,Uint8Array):null
+            ]);
             cache.set(id,{values,zeta,info});
-            onRange(kind,key,[info.minimum,info.maximum]);
+            onRange(kind,key,[info.minimum,info.maximum],surfaceInfo?{values:surface,info:surfaceInfo}:null);
             paint();
         })().catch(error=>{failed.add(id); console.warn("Outer model faces:",error.message);}).finally(()=>pending.delete(id));
         pending.set(id,request);
     }
+    function loadSeaLevel() {
+        const id="frames:ssh";
+        if(cache.has(id)||pending.has(id)||failed.has(id)) return;
+        const request=(async()=>{
+            const m=await getManifest(), info=m.surface.zeta;
+            const values=await array(info,Uint8Array);
+            cache.set(id,{surfaceOnly:true});
+            onRange("frames","ssh",[info.minimum,info.maximum],{values,info});
+        })().catch(error=>{failed.add(id);console.warn("Sea-level frames:",error.message);}).finally(()=>pending.delete(id));
+        pending.set(id,request);
+    }
     let zetaPromise;
     function getZeta(m) { return zetaPromise ||= array(m.zeta,Float32Array); }
-    return {group,domain,show};
+    return {group,show,state:()=>({desired:desired?{...desired}:null,drawn,pending:[...pending.keys()]})};
 }

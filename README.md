@@ -29,7 +29,12 @@ and wall colour ranges. `data/ocean-faces/manifest.json` records source revision
 checksums, quantization error and the initial-surface validation. Aoraki export
 job 6421028 used committed source 12ce3db.
 
-Run-forward side panels show domain geometry with a blue depth gradient. The frozen research release
-has a different trajectory from the website's historical animation; its depth
-fields were checked and excluded rather than mixed with those surface frames.
-Sea level and anomaly views do not display depth-coloured side panels.
+Run-forward temperature, salinity and currents use synchronized surface and
+50-level side fields from the frozen `hindcast_199401_202605_v1` release.
+Both update on the same frame selection; depth palettes are cached once per
+field, and arrays load only when their field is selected. The surface texture
+retains native outer endpoints so it meets the side faces at identical cells.
+Sea level is refreshed from the same release without depth faces. Historical
+surface anomaly views are retained without depth faces.
+The manifest records source files, quantization errors and checksums; export
+job 6421525 ran committed source d820421 on Aoraki.

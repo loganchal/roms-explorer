@@ -5,6 +5,7 @@ export function oceanSurfaceGeometry(nx, ny, mask, x, z, stride, textureWidth, t
     const positions = [];
     const uv = [];
     const samples = [];
+    const gridCoordinates = [];
     const coastal = [];
     const triangles = [];
     const crossings = new Map();
@@ -15,6 +16,7 @@ export function oceanSurfaceGeometry(nx, ny, mask, x, z, stride, textureWidth, t
         uv.push((Math.min(i / stride, textureWidth - 1) + 0.5) / textureWidth,
             (Math.min(j / stride, textureHeight - 1) + 0.5) / textureHeight);
         samples.push(k);
+        gridCoordinates.push(i,j);
         coastal.push(0);
     }
 
@@ -25,6 +27,7 @@ export function oceanSurfaceGeometry(nx, ny, mask, x, z, stride, textureWidth, t
         positions.push((x[a] + x[b]) * 0.5, 0, (z[a] + z[b]) * 0.5);
         uv.push((uv[a * 2] + uv[b * 2]) * 0.5, (uv[a * 2 + 1] + uv[b * 2 + 1]) * 0.5);
         samples.push(mask[a] >= 0.5 ? a : b);
+        gridCoordinates.push((gridCoordinates[a*2]+gridCoordinates[b*2])*.5,(gridCoordinates[a*2+1]+gridCoordinates[b*2+1])*.5);
         coastal.push(1);
         crossings.set(key, index);
         return index;
@@ -57,7 +60,7 @@ export function oceanSurfaceGeometry(nx, ny, mask, x, z, stride, textureWidth, t
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
     geometry.setIndex(triangles);
-    return { geometry, samples: new Uint32Array(samples), coastal: new Uint8Array(coastal) };
+    return { geometry, samples: new Uint32Array(samples), coastal: new Uint8Array(coastal), gridCoordinates: new Float32Array(gridCoordinates) };
 }
 
 /* Fill non-visible land texels from the nearest wet sample to prevent dark seams. */

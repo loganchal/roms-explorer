@@ -368,5 +368,5 @@
   "Hindcast evaluation": "Aromātai tauira o mua",
   "Upper-200 m PEA RMSE is 12.3% lower in the paired 1994–2020 comparison (95% confidence interval 6.9–18.8%), using 13,809 common in-situ profile matchups outside the outer nudging region.": "He 12.3% iti ake te RMSE PEA o te 200 m o runga i te whakataurite takirua 1994–2020 (awhe whakapono 95% he 6.9–18.8%), mā ngā kōtaha inenga takirua 13,809 kei waho o te rohe whakatikatika o waho.",
   "Home": "Te kāinga",
-  "Surface colours show model output; the side panels indicate depth.": "Ka whakaatu ngā tae o te mata i ngā putanga tauira; ka tohu ngā papa taha i te hōhonutanga."
+  "Surface and side colours show the same dated model output.": "Ka whakaatu ngā tae o te mata me ngā taha i ngā putanga tauira mō te rā kotahi."
 }

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { modelFaces } from "./ocean-faces.js";
-import { oceanSurfaceGeometry, nearestWetSamples } from "./ocean-surface.js";
+import { modelFaces } from "./ocean-faces.js?v=20261112-animated-faces";
+import { oceanSurfaceGeometry, nearestWetSamples } from "./ocean-surface.js?v=20261112-animated-faces";
 import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 
 // Guided assembly of the model's forcing, initial state and output.
@@ -361,7 +361,7 @@ const STEPS = [
     {
         id: "frames", title: "Run forward", kid: "The model's own output, month by month.",
         prov: "original", source: "nz5km_avg_*.nc",
-        detail: "A few daily-mean snapshots per month, across the whole run so far. Surface colours show model output; the side panels indicate depth.",
+        detail: "A few daily-mean snapshots per month, across the whole run so far. Surface and side colours show the same dated model output.",
         limitation: null,
     },
     {
@@ -1400,9 +1400,11 @@ export function mountAssembly() {
 
     // The native shoreline and linearly sampled frame texture share one geometry.
     const FNY = FRAMES_NY, FNX = FRAMES_NX, FN = FRAMES_N, FCOUNT = FNY * FNX;
-    const nearestFrameSample = nearestWetSamples(FRAMES_MASK_ARR, FNX, FNY);
-    const framePixels = new Uint8Array(FCOUNT * 4);
-    const frameTexture = new THREE.DataTexture(framePixels, FNX, FNY, THREE.RGBAFormat);
+    let frameWidth=FNX, frameHeight=FNY, frameCount=FCOUNT;
+    let nearestFrameSample=nearestWetSamples(FRAMES_MASK_ARR,FNX,FNY);
+    let framePixels=new Uint8Array(FCOUNT*4);
+    let frameTexture=new THREE.DataTexture(framePixels,FNX,FNY,THREE.RGBAFormat);
+    const frameSurfaceInfo={};
     frameTexture.minFilter = frameTexture.magFilter = THREE.LinearFilter;
     frameTexture.generateMipmaps = false;
     const framesGeo = oceanSurface.geometry;
@@ -1447,10 +1449,41 @@ export function mountAssembly() {
     // finishes in a reasonable time instead of taking the single-month pace
     // (~10 s) and stretching it out to minutes.
     const FRAMES_FPS = FN <= 40 ? 3 : Math.min(12, Math.max(6, Math.round(FN / 20)));
+    function configureFrameGrid(key) {
+        const shape=frameSurfaceInfo[key]?.shape;
+        const height=shape?shape[1]:FNY, width=shape?shape[2]:FNX;
+        if(width===frameWidth && height===frameHeight) return;
+        frameWidth=width; frameHeight=height; frameCount=width*height;
+        const endpointGrid=!!shape;
+        const sample=(i,n,size)=>endpointGrid && i===n-1?size-1:i*FRAMES_SUB;
+        const wet=new Uint8Array(frameCount);
+        for(let j=0;j<height;j++) for(let i=0;i<width;i++) wet[j*width+i]=MASK[sample(j,height,NY)*NX+sample(i,width,NX)]>=.5?1:0;
+        nearestFrameSample=nearestWetSamples(wet,width,height);
+        frameTexture.dispose();
+        framePixels=new Uint8Array(frameCount*4);
+        frameTexture=new THREE.DataTexture(framePixels,width,height,THREE.RGBAFormat);
+        frameTexture.minFilter=frameTexture.magFilter=THREE.LinearFilter;
+        frameTexture.generateMipmaps=false;
+        framesMesh.material.map=frameTexture; framesMesh.material.needsUpdate=true;
+        const uv=framesGeo.attributes.uv;
+        function coordinate(value,size,count) {
+            if(!endpointGrid) return Math.min(value/FRAMES_SUB,count-1);
+            const lastBase=(count-2)*FRAMES_SUB;
+            return value<=lastBase?value/FRAMES_SUB:(count-2)+(value-lastBase)/(size-1-lastBase);
+        }
+        // Use logical grid coordinates: the model's latitude spacing is nonuniform.
+        const logical=oceanSurface.gridCoordinates;
+        for(let k=0;k<logical.length/2;k++) {
+            const i=logical[k*2], j=logical[k*2+1];
+            uv.setXY(k,(coordinate(i,NX,width)+.5)/width,(coordinate(j,NY,height)+.5)/height);
+        }
+        uv.needsUpdate=true;
+    }
     function paintFramesFrame() {
+        configureFrameGrid(framesFieldKey);
         const raw = FRAMES_RAW[framesFieldKey], table = frameColorTable(framesFieldKey);
-        const start = framesDayIdx * FCOUNT;
-        for (let k = 0; k < FCOUNT; k++) {
+        const start = framesDayIdx * frameCount;
+        for (let k = 0; k < frameCount; k++) {
             const sample = nearestFrameSample[k];
             const color = raw[start + Math.max(0, sample)] * 4;
             const pixel = k * 4;
@@ -1513,7 +1546,12 @@ export function mountAssembly() {
             range:(kind==="initial"?initialDisplayRanges:frameDisplayRanges)[key],
             stops:(kind==="initial"?INI_FIELDS:FRAMES_FIELDS)[key].stops
         }),
-        onRange:(kind,key,range)=>{
+        onRange:(kind,key,range,surface)=>{
+            if(surface) {
+                FRAMES_RAW[key]=surface.values;
+                frameSurfaceInfo[key]=surface.info;
+                FRAMES_FIELDS[key].range=[surface.info.minimum,surface.info.maximum];
+            }
             const fields=kind==="initial"?INI_FIELDS:FRAMES_FIELDS;
             const combined=[Math.min(range[0],fields[key].range[0]),Math.max(range[1],fields[key].range[1])];
             if(kind==="initial") {
@@ -1526,7 +1564,7 @@ export function mountAssembly() {
             }
         }
     });
-    scene.add(outerFaces.group,outerFaces.domain);
+    scene.add(outerFaces.group);
     function syncFaces() {
         const id=stepIdx>=0?STEPS[stepIdx].id:null;
         outerFaces.show(id==="ini"?"initial":id==="frames"?"frames":null,
@@ -2081,7 +2119,7 @@ export function mountAssembly() {
         // floating in empty space. Everything else -- terrain, nudging, the
         // cube wireframe, model-output layers (ini slices, run-forward
         // frames, Argo) -- hides. Each component opens its own detail page.
-        cubeWire.visible = id !== "parts";
+        cubeWire.visible = !["parts", "ini", "frames"].includes(id);
         if (id === "parts") {
             setLayerVisible(terrainMesh, false);
             setLayerVisible(nudgBorderGroup, false);

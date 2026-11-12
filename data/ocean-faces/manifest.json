@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": "12ce3db1819725a7d8ba30ce9e2eed43b2b273da",
+  "revision": "d82042117e8e30dcfa06863259962675fc4557ed",
   "ny": 467,
   "nx": 397,
   "dates": [
@@ -2422,6 +2422,276 @@
       "file": "nz5km_ini_20210101_audited.nc",
       "bytes": 313682498,
       "mtime_ns": 1784264840310654000
+    },
+    {
+      "file": "nz5km_avg_202101.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789943591109793758
+    },
+    {
+      "file": "nz5km_avg_202102.nc",
+      "bytes": 6561047136,
+      "mtime_ns": 1789943193684785421
+    },
+    {
+      "file": "nz5km_avg_202103.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789946420117343928
+    },
+    {
+      "file": "nz5km_avg_202104.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789948266219793492
+    },
+    {
+      "file": "nz5km_avg_202105.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789949534170379939
+    },
+    {
+      "file": "nz5km_avg_202106.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789951535391138933
+    },
+    {
+      "file": "nz5km_avg_202107.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789951973635680012
+    },
+    {
+      "file": "nz5km_avg_202108.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789955414578292127
+    },
+    {
+      "file": "nz5km_avg_202109.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789956390591625167
+    },
+    {
+      "file": "nz5km_avg_202110.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789957773919890093
+    },
+    {
+      "file": "nz5km_avg_202111.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789960279724189482
+    },
+    {
+      "file": "nz5km_avg_202112.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789960722669140774
+    },
+    {
+      "file": "nz5km_avg_202201.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789964588793030982
+    },
+    {
+      "file": "nz5km_avg_202202.nc",
+      "bytes": 6561047140,
+      "mtime_ns": 1789740365974301265
+    },
+    {
+      "file": "nz5km_avg_202203.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789965093064176364
+    },
+    {
+      "file": "nz5km_avg_202204.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789965557119468161
+    },
+    {
+      "file": "nz5km_avg_202205.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789969081412658012
+    },
+    {
+      "file": "nz5km_avg_202206.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789969178977480681
+    },
+    {
+      "file": "nz5km_avg_202207.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789973729168155779
+    },
+    {
+      "file": "nz5km_avg_202208.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789973872926061280
+    },
+    {
+      "file": "nz5km_avg_202209.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789973454238272955
+    },
+    {
+      "file": "nz5km_avg_202210.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789979051971201977
+    },
+    {
+      "file": "nz5km_avg_202211.nc",
+      "bytes": 7027893208,
+      "mtime_ns": 1789977411743158758
+    },
+    {
+      "file": "nz5km_avg_202212.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789981680045054829
+    },
+    {
+      "file": "nz5km_avg_202301.nc",
+      "bytes": 7261316244,
+      "mtime_ns": 1789982767594401492
+    },
+    {
+      "file": "nz5km_avg_202302.nc",
+      "bytes": 6561047136,
+      "mtime_ns": 1789981427496544097
+    },
+    {
+      "file": "nz5km_avg_202303.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051369880538474
+    },
+    {
+      "file": "nz5km_avg_202304.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051368530539415
+    },
+    {
+      "file": "nz5km_avg_202305.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051372262536814
+    },
+    {
+      "file": "nz5km_avg_202306.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051372848536406
+    },
+    {
+      "file": "nz5km_avg_202307.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051375548534525
+    },
+    {
+      "file": "nz5km_avg_202308.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051378295532611
+    },
+    {
+      "file": "nz5km_avg_202309.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051383819528762
+    },
+    {
+      "file": "nz5km_avg_202310.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051390886523939
+    },
+    {
+      "file": "nz5km_avg_202311.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051406413515123
+    },
+    {
+      "file": "nz5km_avg_202312.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051410052513057
+    },
+    {
+      "file": "nz5km_avg_202401.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051421872506345
+    },
+    {
+      "file": "nz5km_avg_202402.nc",
+      "bytes": 6794470208,
+      "mtime_ns": 1790051421954506299
+    },
+    {
+      "file": "nz5km_avg_202403.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051431411500929
+    },
+    {
+      "file": "nz5km_avg_202404.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051434987498899
+    },
+    {
+      "file": "nz5km_avg_202405.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051441741495064
+    },
+    {
+      "file": "nz5km_avg_202406.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051454299487933
+    },
+    {
+      "file": "nz5km_avg_202407.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051456111486905
+    },
+    {
+      "file": "nz5km_avg_202408.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051472221477757
+    },
+    {
+      "file": "nz5km_avg_202409.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051473108477254
+    },
+    {
+      "file": "nz5km_avg_202410.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051480665472963
+    },
+    {
+      "file": "nz5km_avg_202411.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051487192469257
+    },
+    {
+      "file": "nz5km_avg_202412.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051490783467218
+    },
+    {
+      "file": "nz5km_avg_202501.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051505693458752
+    },
+    {
+      "file": "nz5km_avg_202502.nc",
+      "bytes": 6561047172,
+      "mtime_ns": 1790051515042453444
+    },
+    {
+      "file": "nz5km_avg_202503.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051522603449013
+    },
+    {
+      "file": "nz5km_avg_202504.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051527471446046
+    },
+    {
+      "file": "nz5km_avg_202505.nc",
+      "bytes": 7261316280,
+      "mtime_ns": 1790051535493441157
+    },
+    {
+      "file": "nz5km_avg_202506.nc",
+      "bytes": 7027893244,
+      "mtime_ns": 1790051545167435262
     }
   ],
   "velocity_method": "Edge-replicated adjacent average of staggered u/v, then speed magnitude.",
@@ -2574,17 +2844,128 @@
       "max_error": 3.3485000930193187e-06
     }
   },
-  "frames": {},
-  "vertical_method": "ROMS Vtransform=2, native sigma levels, per-frame free surface.",
-  "frame_faces": "Neutral domain geometry only. The current release differs from the historical website surface export; its depth fields were excluded.",
-  "validation": {
-    "initial_surface_match": true,
-    "initial_maximum_errors": {
-      "temp": 0.000180854,
-      "salt": 1.35541e-05,
-      "speed": 3.34788e-06
+  "frames": {
+    "temp": {
+      "file": "frames-temp.u16.gz",
+      "dtype": "<u2",
+      "shape": [
+        216,
+        50,
+        436
+      ],
+      "bytes": 8835404,
+      "sha256": "f7c6acc92cd873f746b448b4d4f7595f49f6ac3053fda0da005950807beae7f1",
+      "minimum": 0.3831072449684143,
+      "maximum": 26.134939193725586,
+      "scale": 0.0003929477675861322,
+      "max_error": 0.00019647380239007362
     },
-    "slurm_job": "6421028",
-    "source_revision": "12ce3db1819725a7d8ba30ce9e2eed43b2b273da"
-  }
+    "salt": {
+      "file": "frames-salt.u16.gz",
+      "dtype": "<u2",
+      "shape": [
+        216,
+        50,
+        436
+      ],
+      "bytes": 8691781,
+      "sha256": "863f7aec5af0bfb8f2c6a39fcf913b1217647153055ac41c7ecd39f346fa70e2",
+      "minimum": 33.813079833984375,
+      "maximum": 36.032135009765625,
+      "scale": 3.386061151722362e-05,
+      "max_error": 1.6930305761775344e-05
+    },
+    "speed": {
+      "file": "frames-speed.u16.gz",
+      "dtype": "<u2",
+      "shape": [
+        216,
+        50,
+        436
+      ],
+      "bytes": 8789717,
+      "sha256": "55705add6db461992deaa936112a3cd75fd9741f7d1ee2e6afacb90683d6f0ec",
+      "minimum": 1.8119686501449905e-05,
+      "maximum": 1.2977769374847412,
+      "scale": 1.9802530217414202e-05,
+      "max_error": 9.901263524278447e-06
+    }
+  },
+  "surface": {
+    "temp": {
+      "file": "surface-temp.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 1920879,
+      "sha256": "93bea0e2b4b5f622156cfd18d67eb5ba90ece2114d5c1c51606d3a570f29b056",
+      "minimum": 7.162265582084656,
+      "maximum": 23.417999897003174,
+      "scale": 0.06374797770556283,
+      "max_error": 0.03187397317325491,
+      "clipped_fraction": 0.020000600168047056
+    },
+    "salt": {
+      "file": "surface-salt.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 2111528,
+      "sha256": "94692e8d48dfe5f9a03978056f6cd25df6535360869dd6cd7aff1ee673e33f7d",
+      "minimum": 34.11046806335449,
+      "maximum": 35.81646800994873,
+      "scale": 0.006690195868997019,
+      "max_error": 0.0033450968125308123,
+      "clipped_fraction": 0.020000600168047056
+    },
+    "speed": {
+      "file": "surface-speed.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 2280733,
+      "sha256": "7bb07ba06384fa5cd37dc132d570059ed9e656c71dffdb944bed9c6e89d15f3b",
+      "minimum": 0.01659667570143938,
+      "maximum": 0.5738787120580672,
+      "scale": 0.0021854197504181483,
+      "max_error": 0.0010927095870469916,
+      "clipped_fraction": 0.020000600168047056
+    },
+    "zeta": {
+      "file": "surface-zeta.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 1972033,
+      "sha256": "fbb99425c98ae38566f50309116e900c04ce967ca264a7be3cab085c1db65247",
+      "minimum": -0.4100568661093712,
+      "maximum": 0.5974466001987457,
+      "scale": 0.003950993985522027,
+      "max_error": 0.001975496773626406,
+      "clipped_fraction": 0.020000600168047056
+    }
+  },
+  "zeta": {
+    "file": "frames-zeta.f32.gz",
+    "dtype": "<f4",
+    "shape": [
+      216,
+      436
+    ],
+    "bytes": 339689,
+    "sha256": "8e78f185dd024a2294e1ea6c5d38b7ae708a81e90669e39fe2137374497e7e7a"
+  },
+  "vertical_method": "ROMS Vtransform=2, native sigma levels, per-frame free surface."
 }
