@@ -370,7 +370,7 @@ const STEPS = [
     {
         id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
         prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
-        detail: "Model minus observed at each depth: red model-high, blue model-low. Thesis evaluation uses CORA 5.2 profiles in paired 1994–2020 comparisons, excluding the outer nudging region. Correlations use 324 monthly means. PEA RMSE uses 13,809 profile matchups. PEA is potential energy anomaly over the upper 200 m.",
+        detail: "Model minus observed at each depth: red model-high, blue model-low. SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%.",
         limitation: null,
     },
     {
@@ -1446,11 +1446,18 @@ export function mountAssembly() {
     }
     function updateFramesUI() {
         const slider = document.getElementById("frames-day-slider");
-        if (slider) { slider.max = String(FN); slider.value = String(framesDayIdx + 1); }
+        if (slider) {
+            slider.max = String(FN);
+            slider.value = String(framesDayIdx + 1);
+            slider.style.setProperty("--frame-progress", (FN > 1 ? 100 * framesDayIdx / (FN - 1) : 0) + "%");
+        }
         const label = document.getElementById("frames-day-label");
         if (label) label.textContent = formatFramesDay(framesDayIdx);
         const playBtn = document.getElementById("frames-play-btn");
-        if (playBtn) playBtn.textContent = framesPlaying ? "Pause" : "Play";
+        if (playBtn) {
+            playBtn.textContent = framesPlaying ? "Pause" : "Play";
+            playBtn.dataset.playing = String(framesPlaying);
+        }
     }
     function setFramesDay(idx) {
         framesDayIdx = Math.max(0, Math.min(FN - 1, idx));

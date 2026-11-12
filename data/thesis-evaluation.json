@@ -2,47 +2,16 @@
   "source_thesis": "Thesis_V37.docx",
   "source_thesis_sha256": "60f7684661df6d4b96098628fbdf0e87d74a49d48e33d54d3f9b67ac69adcf39",
   "period": "1994–2020",
-  "comparison": "Paired new and published hindcasts against common in-situ observations; outer nudging region excluded.",
-  "monthly_source": "outputs/pea_evaluation_20261022/map_inputs/component_timeseries.mat",
-  "monthly_source_sha256": "0b8dcf6554ca309d2159e3f2c84e2208a4900912e6c5ae1b935943ffe4f1a139",
-  "profile_source": "outputs/pea_evaluation_20261022/scores.json",
-  "profile_source_sha256": "e2eecea8ce21b56d66c26e879ccc8a47ffc31327dcbd04a3add811de13a3a1ac",
-  "metrics": [
-    {
-      "label": "Monthly thermal PEA, r",
-      "new": 0.9915036567639866,
-      "old": 0.9891294240109195,
-      "decimals": 3,
-      "units": "",
-      "months": 324,
-      "figure": 6
-    },
-    {
-      "label": "Monthly MLD, r",
-      "new": 0.9693544663905106,
-      "old": 0.9623447993377409,
-      "decimals": 3,
-      "units": "",
-      "months": 324,
-      "figure": 6
-    },
-    {
-      "label": "Thermal PEA anomaly, r",
-      "new": 0.9486796506986513,
-      "old": 0.9353502168241628,
-      "decimals": 3,
-      "units": "",
-      "months": 324,
-      "figure": 7
-    },
-    {
-      "label": "Profile PEA RMSE",
-      "new": 32.20343396666705,
-      "old": 36.732689814872465,
-      "decimals": 2,
-      "units": "J m⁻³",
-      "profiles": 13809,
-      "figure": 5
-    }
+  "figure": 1,
+  "reference": "NOAA OISST v2.1, 0.25° grid",
+  "comparison": "Identical months and locations, January 1994–December 2020.",
+  "source": "outputs/evaluation_frozen_20260923/sst/scores/sst_validation.json",
+  "source_sha256": "8df5b0200c16493b9ecd5ea70e1a6e1eaceb363969472045daa0e263ddba345c",
+  "sst_rmse_new_c": 0.625441383887736,
+  "sst_rmse_old_c": 0.6943712297900209,
+  "rmse_reduction_pct": 9.926944398766265,
+  "rmse_reduction_ci95_pct": [
+    8.880103419255395,
+    11.065275019573008
   ]
 }

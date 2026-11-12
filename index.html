@@ -7,8 +7,8 @@
     <title>ROMS extension domain explorer</title>
     <link rel="stylesheet" href="explorer.css?v=20261112-labels">
     <link rel="stylesheet" href="entrance.css?v=20261111-model">
-    <link rel="stylesheet" href="guided-controls.css?v=20261112-argo-metrics">
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-argo-metrics"></script>
+    <link rel="stylesheet" href="guided-controls.css?v=20261112-sst-timeline">
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-sst-timeline"></script>
 <script>
     const previewTheme = new URLSearchParams(location.search).get("theme");
     if (["soundings", "watch", "etretat"].includes(previewTheme)) {
@@ -68,15 +68,16 @@
                 <div id="ini-field-buttons" class="field-buttons"></div>
                 <div id="frames-controls-wrap" class="field-buttons frames-controls">
                     <button id="frames-play-btn" class="play-btn">Play</button>
-                    <input id="frames-day-slider" type="range" min="1" max="31" value="1" step="1">
+                    <input id="frames-day-slider" aria-labelledby="frames-day-label" type="range" min="1" max="31" value="1" step="1">
                     <span id="frames-day-label">1 Jan 2021</span>
                 </div>
                 <div id="frames-field-buttons" class="field-buttons"></div>
                 <div id="argo-var-buttons" class="field-buttons"></div>
-                <section id="argo-evaluation" aria-labelledby="argo-evaluation-heading">
-                    <h2 id="argo-evaluation-heading">Thesis evaluation</h2>
-                    <p class="evaluation-context">1994–2020 · Old hindcast in parentheses</p>
-                    <table><tbody><tr><th scope="row">Monthly thermal PEA, r</th><td>0.992 <span>(0.989)</span></td></tr><tr><th scope="row">Monthly MLD, r</th><td>0.969 <span>(0.962)</span></td></tr><tr><th scope="row">Thermal PEA anomaly, r</th><td>0.949 <span>(0.935)</span></td></tr><tr><th scope="row">Profile PEA RMSE</th><td>32.20 <span>(36.73)</span> J m⁻³</td></tr></tbody></table>
+                <section id="argo-evaluation" aria-labelledby="argo-evaluation-label">
+                    <p class="evaluation-value">9.9<span>%</span></p>
+                    <p id="argo-evaluation-label" class="evaluation-label">lower SST RMSE</p>
+                    <p class="evaluation-comparison">0.625°C <span>(0.694°C old hindcast)</span></p>
+                    <p class="evaluation-context">NOAA OISST v2.1 · 1994–2020</p>
                 </section>
                 <div id="step-nav">
                     <button id="step-prev">&larr; Back</button>
@@ -96,7 +97,7 @@
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }}
     </script>
-    <script type="module" src="entrance.js?v=20261112-argo-metrics"></script>
+    <script type="module" src="entrance.js?v=20261112-sst-timeline"></script>
 </body>
 
 </html>

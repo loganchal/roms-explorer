@@ -359,11 +359,7 @@
   "river forcing provided by MetOcean": "nā MetOcean ngā raraunga awa",
   "Drag to turn · pinch to zoom ·": "Tōia hei huri · topa mā ngā matimati ·",
   "Drag to orbit · scroll to zoom ·": "Tōia hei huri · panukuhia hei topa ·",
-  "Thesis evaluation": "Aromātai tuhinga roa",
-  "1994–2020 · Old hindcast in parentheses": "1994–2020 · Kei ngā taiapa te tauira o mua",
-  "Monthly thermal PEA, r": "PEA ā-wera ā-marama, r",
-  "Monthly MLD, r": "MLD ā-marama, r",
-  "Thermal PEA anomaly, r": "Rerekētanga PEA ā-wera, r",
-  "Profile PEA RMSE": "RMSE PEA kōtaha",
-  "Thesis evaluation uses CORA 5.2 profiles in paired 1994–2020 comparisons, excluding the outer nudging region. Correlations use 324 monthly means. PEA RMSE uses 13,809 profile matchups. PEA is potential energy anomaly over the upper 200 m.": "Ka whakamahi te aromātai tuhinga roa i ngā kōtaha CORA 5.2 mō ngā whakataurite takirua 1994–2020, me te whakakore i te rohe whakatikatika o waho. E 324 ngā toharite ā-marama mō ngā pānga. E 13,809 ngā kōtaha takirua mō te RMSE PEA. Ko te PEA te rerekētanga pūngao tū i roto i te 200 m o runga."
+  "lower SST RMSE": "he iti ake te RMSE SST",
+  "old hindcast": "tauira o mua",
+  "SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%.": "Ka aromātaihia te RMSE SST ki NOAA OISST v2.1 i tōna tukutuku 0.25°, mā ngā marama me ngā wāhi takirua 1994–2020. Ko te hekenga RMSE he 9.9%, me te awhe whakapono 95% mai i te 8.9 ki te 11.1%."
 }

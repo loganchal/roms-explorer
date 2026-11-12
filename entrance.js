@@ -32,7 +32,7 @@ try {
         data.onerror = () => reject(new Error("The model data could not be downloaded. Check your connection and try again."));
         document.body.appendChild(data);
     });
-    const { mountAssembly } = await import("./assembly_scene.js?v=20261112-argo-metrics");
+    const { mountAssembly } = await import("./assembly_scene.js?v=20261112-sst-timeline");
     mountAssembly(); // Returns after UI setup and the first successful WebGL render.
     await nextFrame();
     await nextFrame();
