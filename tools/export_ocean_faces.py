@@ -87,7 +87,7 @@ def write_array(folder, name, values, dtype):
 
 
 def pack_field(folder, name, values, wet):
-    selected = values[..., wet]
+    selected = values[..., wet].astype("f8")
     if not np.isfinite(selected).all() or (np.abs(selected) > 1e30).any():
         raise ValueError("Invalid wet-cell values in " + name)
     lo, hi = float(selected.min()), float(selected.max())

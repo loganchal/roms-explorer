@@ -117,7 +117,7 @@ html:not([data-theme]) #step-card {
 #argo-evaluation .evaluation-source { font:400 10px/1.5 system-ui,sans-serif; color:var(--muted); margin-top:5px; }
 
 #step-card #frames-controls-wrap.visible {
-    display:grid; grid-template-columns:max-content minmax(60px,1fr) max-content;
+    display:grid; grid-template-columns:48px minmax(60px,1fr) 88px;
     gap:12px; align-items:center; margin:10px 0 12px;
 }
 #step-card #frames-play-btn {
@@ -160,3 +160,16 @@ html:not([data-theme]) #step-card {
 @media(pointer:coarse) {
     #step-card #frames-day-slider, #step-card #frames-play-btn { min-height:44px; }
 }
+
+html[lang="mi"] #step-card #frames-controls-wrap.visible { grid-template-columns:80px minmax(50px,1fr) 110px; }
+#step-card #frames-play-btn { justify-content:flex-start; }
+
+.model-home {
+    position:fixed; z-index:6; top:22px; left:24px; display:inline-flex;
+    align-items:center; gap:8px; color:#f2ede2; text-decoration:none; font:400 13px/1.4 Georgia,serif;
+}
+.model-home:hover { text-decoration:underline; text-underline-offset:4px; }
+.model-home:focus-visible { outline:1px solid currentColor; outline-offset:5px; }
+#entrance ~ .model-home { visibility:hidden; }
+@media(min-width:641px) { #viewport[data-step="parts"] #step-panel { top:68px; } }
+@media(max-width:640px) { .model-home { top:16px; left:16px; } }

@@ -3,8 +3,23 @@
     const root = document.documentElement;
     if (root.dataset.theme !== "etretat") return;
 
+    let locked = false;
+    let timer;
+    document.addEventListener("model-entrance-finished", () => {
+        locked = true;
+        clearInterval(timer);
+    });
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
     const storageKey = "ocean-model-next-painting";
+    const stripCrops = {
+        ngv: ["150% auto", "0% 75%"],
+        courtauld: ["180% auto", "100% 78%"],
+        "port-coton": ["200% auto", "100% 82%"],
+        varengeville: ["100% auto", "50% 20%"],
+        bordighera: ["600% auto", "70% 49%"],
+        "cliff-walk": ["320% auto", "0% 62%"],
+        etretat: ["300% auto", "0% 72%"]
+    };
     let paintings = [{ id: "ngv", url: "/assets/monet/ngv.webp" }];
     try {
         const response = await fetch("/assets/monet/rotation.json");
@@ -22,7 +37,6 @@
 
     let prepared;
     let busy = false;
-    let timer;
 
     function prepare(index) {
         if (prepared?.index === index) return prepared.promise;
@@ -35,13 +49,17 @@
     }
 
     async function advance() {
-        if (busy) return;
+        if (busy || locked) return;
         busy = true;
         const index = nextIndex;
         nextIndex = (index + 1) % paintings.length;
         try {
             await prepare(index);
+            if (locked) return;
             root.style.setProperty("--ocean-painting", 'url("' + paintings[index].url + '")');
+            const crop = stripCrops[paintings[index].id] || ["100% auto", "50% 68%"];
+            root.style.setProperty("--ocean-strip-size", crop[0]);
+            root.style.setProperty("--ocean-strip-position", crop[1]);
             root.dataset.oceanPainting = paintings[index].id;
             root.dataset.oceanArt = "ready";
             try {
@@ -57,7 +75,7 @@
 
     function schedule() {
         clearInterval(timer);
-        if (!preference.matches && !document.hidden) timer = setInterval(advance, 8000);
+        if (!locked && !preference.matches && !document.hidden) timer = setInterval(advance, 8000);
     }
 
     await advance();

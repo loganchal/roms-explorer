@@ -7,10 +7,10 @@
     <title>ROMS extension domain explorer</title>
     <link rel="stylesheet" href="explorer.css?v=20261112-labels">
     <link rel="stylesheet" href="entrance.css?v=20261111-model">
-    <link rel="stylesheet" href="guided-controls.css?v=20261112-strat-metrics">
-    <link rel="stylesheet" href="themes/preview.css?v=20261112-profile-descent">
-    <script defer src="ocean-paintings.js?v=20261112-ocean-live"></script>
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-strat-metrics"></script>
+    <link rel="stylesheet" href="guided-controls.css?v=20261112-control-qc">
+    <link rel="stylesheet" href="themes/preview.css?v=20261112-control-qc">
+    <script defer src="ocean-paintings.js?v=20261112-control-qc"></script>
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-control-qc"></script>
 <script>
     const previewTheme = new URLSearchParams(location.search).get("theme");
     if (["soundings", "watch", "etretat"].includes(previewTheme)) {
@@ -108,6 +108,7 @@
         <div id="err"></div>
     </div>
 
+    <a class="model-home" href="/"><svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 20 20"><path d="M12 4 6 10l6 6M6 10h10" fill="none" stroke="currentColor" stroke-width="1.25"/></svg><span>Home</span></a>
     <script src="error_banner.js"></script>
     <script type="importmap">
     { "imports": {
@@ -115,7 +116,7 @@
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }}
     </script>
-    <script type="module" src="entrance.js?v=20261112-strat-metrics"></script>
+    <script type="module" src="entrance.js?v=20261112-control-qc"></script>
 </body>
 
 </html>

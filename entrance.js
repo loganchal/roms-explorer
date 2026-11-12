@@ -25,6 +25,7 @@ const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 try {
     await nextFrame();
     await nextFrame();
+    const minimumEntranceEnd = performance.now() + 3500;
     await new Promise((resolve, reject) => {
         const data = document.createElement("script");
         data.src = "scene_data.js";
@@ -36,9 +37,11 @@ try {
     mountAssembly(); // Returns after UI setup and the first successful WebGL render.
     await nextFrame();
     await nextFrame();
+    await new Promise(resolve => setTimeout(resolve, Math.max(0, minimumEntranceEnd - performance.now())));
     if (!failed) {
         viewport.classList.remove("scene-pending");
         viewport.setAttribute("aria-busy", "false");
+        document.dispatchEvent(new Event("model-entrance-finished"));
         veil.classList.add("is-leaving");
         // Keep input/focus behind the veil until its visual exit finishes.
         const finish = () => {

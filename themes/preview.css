@@ -131,3 +131,8 @@ html[data-ocean-cycle][data-theme="etretat"][data-ocean-art="ready"] #entrance::
     .argo-profile-trace { stroke-dashoffset:0; opacity:.18; }
     .argo-profile-head { display:none; }
 }
+
+[data-theme="etretat"] #step-card::before {
+    background-size:var(--ocean-strip-size,100% auto);
+    background-position:var(--ocean-strip-position,50% 68%);
+}
