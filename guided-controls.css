@@ -176,3 +176,5 @@ html[lang="mi"] #step-card #frames-controls-wrap.visible { grid-template-columns
 
 /* The column-integrated stratification field gets its own final row. */
 #frames-field-buttons > button:last-child:nth-child(odd) { grid-column:1 / -1; }
+#budget-link { order:4; display:block; margin:4px 0 8px; color:var(--ink); font:15px/1.4 Georgia,serif; text-underline-offset:4px; }
+#budget-link[hidden] { display:none; }

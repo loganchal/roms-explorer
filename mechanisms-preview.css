@@ -75,3 +75,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible {
  .heading h1 { font-size:clamp(25px,5.8vw,36px); }
  .locator { width:90px; height:110px; }
 }
+.painted-band {
+ height:68px;
+ background:#42666b url('/assets/monet/ngv.webp') 50% 74% / cover no-repeat;
+}
+@media(max-width:480px) { .painted-band { height:46px; } }

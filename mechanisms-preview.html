@@ -4,33 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Online stratification budget construction</title>
-  <link rel="stylesheet" href="mechanisms-preview.css?v=20261112-locator">
+  <link rel="stylesheet" href="mechanisms-preview.css?v=20261112-monet-live">
 </head>
 <body>
-  <header><a href="./index.html">Ocean model</a></header>
+  <div class="painted-band" aria-hidden="true"></div>
+  <header><a href="./index.html#frames">Ocean model</a></header>
   <main>
     <div class="heading"><h1>Online stratification budget construction</h1><img class="locator" src="data/methods-demo/locator.svg?v=20261112" alt="Offshore study site west of New Zealand’s lower North Island" width="160" height="160"></div>
-    <p id="status" role="status">Reading the seasonal example…</p>
+    <p id="status" role="status">Reading the annual example…</p>
     <div id="demo" hidden>
       <div class="timeline">
-        <button id="play" type="button" aria-label="Play seasonal development"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 3 7 5-7 5Z"/></svg><span>Play</span></button>
+        <button id="play" type="button" aria-label="Play annual development"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 3 7 5-7 5Z"/></svg><span>Play</span></button>
         <input id="day" type="range" min="0" max="180" value="0" aria-label="Date">
         <output id="date" for="day"></output>
       </div>
       <div class="upper">
-        <section class="profiles" aria-label="Temperature, salinity and density profiles"><div id="profiles"></div><p class="note">Faint lines: 1 September. Dotted line: 200 m.</p></section>
+        <section class="profiles" aria-label="Temperature, salinity and density profiles"><div id="profiles"></div><p class="note">Faint lines: 1 July. Dotted line: 200 m.</p></section>
         <section class="processes" aria-labelledby="processes-title"><h2 id="processes-title">Daily contributions <span>J m⁻³ day⁻¹</span></h2><div class="direction"><span>Destratifying</span><span>Stratifying</span></div><div id="processes"></div></section>
       </div>
-      <section class="season" aria-labelledby="season-title"><div class="season-heading"><h2 id="season-title">Accumulated through the season <span>J m⁻³</span></h2><p>PEA <strong id="pea"></strong></p></div><div id="season"></div><p class="note">Dark line: model PEA. Coloured lines: accumulated process contributions from 1 September. Point to a process to follow its line.</p></section>
+      <section class="season" aria-labelledby="season-title"><div class="season-heading"><h2 id="season-title">Accumulated through the year <span>J m⁻³</span></h2><p>PEA <strong id="pea"></strong></p></div><div id="season"></div><p class="note">Dark line: model PEA. Coloured lines: accumulated process contributions from 1 July. Point to a process to follow its line.</p></section>
     </div>
     <details class="method"><summary>How the budget is constructed</summary>
       <p>Each physical process changes temperature and salinity. The model converts these tracer tendencies to density tendencies, then calculates each process’s contribution to the change in potential energy anomaly (PEA).</p>
       <div class="equations"><p>ρ̇<sub>j</sub> = ρ<sub>0</sub>(−αṪ<sub>j</sub> + βṠ<sub>j</sub>)</p><p>φ̇<sub>j</sub> = (g/H) ∫<sub>−H</sub><sup>0</sup> (ρ̄̇<sub>j</sub> − ρ̇<sub>j</sub>) z dz</p></div>
       <p>Integrating these contributions through time, and adding the initial PEA and closure corrections, reconstructs the developing stratification. The layer extends from the surface to 200 m. Corrections account for nonlinear density, moving geometry and tracer-update residuals.</p>
-      <p>This example uses an offshore column, September 2008–February 2009. The budget uses online model diagnostics. The profile snapshots are daily means; surface-referenced potential density is calculated from their T and S and shown as σθ = ρθ − 1000 kg m⁻³. Accumulated contributions are relative to the start of the season, not a climatological anomaly.</p>
+      <p>This example uses an offshore column, July 2008–June 2009. The budget uses online model diagnostics. The profile snapshots are daily means; surface-referenced potential density is calculated from their T and S and shown as σθ = ρθ − 1000 kg m⁻³. Accumulated contributions are relative to the start of the year, not a climatological anomaly.</p>
       <p id="validation"></p>
     </details>
   </main>
-  <script type="module" src="mechanisms-preview.js?v=20261112-locator"></script>
+  <script type="module" src="mechanisms-preview.js?v=20261112-july-year"></script>
 </body>
 </html>

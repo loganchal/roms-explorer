@@ -1982,6 +1982,7 @@ export function mountAssembly() {
     function renderStepUI() {
         document.getElementById("viewport").dataset.step = stepIdx < 0 ? "empty" : STEPS[stepIdx].id;
         document.getElementById("argo-evaluation").hidden = stepIdx < 0 || STEPS[stepIdx].id !== "argo";
+        document.getElementById("budget-link").hidden = stepIdx < 0 || STEPS[stepIdx].id !== "frames";
         document.getElementById("step-prev").disabled = stepIdx < 0;
         document.getElementById("step-next").disabled = stepIdx >= STEPS.length - 1;
         const dots = document.getElementById("step-dots");
@@ -2163,8 +2164,8 @@ export function mountAssembly() {
     goTo(-1);
     // the dig-deeper pages' back-links point at index.html#parts -- land
     // straight on that step instead of the empty cube when arriving that way.
-    if (location.hash === "#parts") {
-        const partsStepIdx = STEPS.findIndex(s => s.id === "parts");
+    if (location.hash === "#parts" || location.hash === "#frames") {
+        const partsStepIdx = STEPS.findIndex(s => s.id === location.hash.slice(1));
         if (partsStepIdx >= 0) goTo(partsStepIdx);
     }
 

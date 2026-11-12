@@ -11,7 +11,7 @@ const processes = [
   { id:'nudg', name:'Relaxation', keys:['nudg'], colour:'#a47c8c' },
   { id:'cor', name:'Corrections', keys:['dilut','geom','tlres','slres','eos'], colour:'#8a877e' }
 ];
-let data, day = 60, playing = false, previousTime = 0;
+let data, day = 0, playing = false, previousTime = 0;
 let highlighted = null;
 const profiles = [
   { key:'temp', title:'Temperature', unit:'°C', colour:'#bc714e' },
@@ -118,7 +118,7 @@ function updateProcesses() {
     bar.style.left=(value<0?50-extent:50)+'%';
     bar.style.width=extent+'%';
     process.row.querySelector('.process-value').textContent=(value>0?'+':'')+format(value,2);
-    process.row.setAttribute('aria-label',`${process.name}: ${format(value,3)} joules per cubic metre per day. Follow contribution in the seasonal plot.`);
+    process.row.setAttribute('aria-label',`${process.name}: ${format(value,3)} joules per cubic metre per day. Follow contribution in the annual plot.`);
   });
 }
 function highlight(id) {
@@ -130,7 +130,7 @@ function highlight(id) {
 }
 
 function drawSeason() {
-  const {svg,width} = figure('#season',240,'Model potential energy anomaly and accumulated process contributions since 1 September');
+  const {svg,width} = figure('#season',240,'Model potential energy anomaly and accumulated process contributions since 1 July');
   const left=40, right=width-15, top=14, bottom=202;
   const x=index=>left+index/data.days.length*(right-left);
   const y=value=>bottom-(value-data.seasonMin)/(data.seasonMax-data.seasonMin)*(bottom-top);
@@ -173,7 +173,7 @@ function play(enabled) {
   playing=enabled;
   previousTime=0;
   $('#play span').textContent=enabled?'Pause':'Play';
-  $('#play').setAttribute('aria-label',enabled?'Pause seasonal development':'Play seasonal development');
+  $('#play').setAttribute('aria-label',enabled?'Pause annual development':'Play annual development');
   $('#play path').setAttribute('d',enabled?'M4 3h3v10H4ZM9 3h3v10H9Z':'m5 3 7 5-7 5Z');
 }
 $('#play').addEventListener('click',()=>{
@@ -201,9 +201,10 @@ function tick(time) {
   requestAnimationFrame(tick);
 }
 try {
-  const response=await fetch('./data/methods-demo/season.json?v=20261112');
-  if (!response.ok) throw Error('The seasonal data could not be loaded.');
+  const response=await fetch('./data/methods-demo/season.json?v=20261112-july-year');
+  if (!response.ok) throw Error('The annual data could not be loaded.');
   data=await response.json();
+  if (data.days.length!==365 || data.days[0].date!=="2008-07-01") throw Error("Updating the July–June example…");
   for (const record of data.days) record.density=record.temp.map((t,i)=>potentialDensityAnomaly(t,record.salt[i]));
   for (const profile of profiles) {
     const values=data.days.flatMap(record=>record[profile.key]);
