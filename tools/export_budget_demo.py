@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""One preselected column/season for a methods demonstration, never composites.
+"""One column/year for a stratification-budget methods demonstration.
 Run under Slurm. Online PEA rates are retained; daily-mean state profiles are
 for orientation only and are not used to reconstruct tracer process budgets.
 """
 import argparse,json,subprocess
 from pathlib import Path
-from datetime import timedelta
+from datetime import datetime, timedelta
 import numpy as np
 from netCDF4 import Dataset,num2date
 
@@ -15,8 +15,8 @@ with Dataset(a.grid) as g:
  lon=np.asarray(g['lon_rho'][:]);lat=np.asarray(g['lat_rho'][:]);h=np.asarray(g['h'][:]);wet=np.asarray(g['mask_rho'][:])==1
  dist=((lon-170)*np.cos(np.deg2rad(-40)))**2+(lat+40)**2
  dist[~wet|(h<200)]=np.inf;j,i=np.unravel_index(dist.argmin(),dist.shape)
-result={'title':'A spring–summer stratification budget','period':'September 2008–February 2009','selection':'Nearest wet column deeper than 200 m to a preselected coordinate, 170°E 40°S. Season selected before inspecting its budget.','location':{'lon':float(lon[j,i]),'lat':float(lat[j,i]),'h':float(h[j,i])},'revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'days':[],'terms':{},'sources':[],'state_profile_note':'Daily-mean T and S snapshots, not process tendencies. Attribution uses archived online PEA diagnostics.','units':{'pea':'J m⁻³','rate':'W m⁻³'},'anomaly_note':'Departure from the beginning of this season; not a climatological anomaly.'}
-for month in ['200809','200810','200811','200812','200901','200902']:
+result={'title':'Online stratification budget construction','period':'July 2008–June 2009','selection':'Nearest wet column deeper than 200 m to 170°E 40°S.','location':{'lon':float(lon[j,i]),'lat':float(lat[j,i]),'h':float(h[j,i])},'revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'days':[],'terms':{},'sources':[],'state_profile_note':'Daily-mean T and S snapshots, not process tendencies. Attribution uses archived online PEA diagnostics.','units':{'pea':'J m⁻³','rate':'W m⁻³'},'anomaly_note':'Departure from 1 July 2008; not a climatological anomaly.'}
+for month in ['200807','200808','200809','200810','200811','200812','200901','200902','200903','200904','200905','200906']:
  dp=a.outputs/('nz5km_dia_'+month+'.nc');ap=a.outputs/('nz5km_avg_'+month+'.nc')
  print('Reading',month,flush=True)
  with Dataset(dp) as d, Dataset(ap) as avg:
@@ -36,7 +36,9 @@ for month in ['200809','200810','200811','200812','200901','200902']:
  result['sources'] += [{'file':x.name,'bytes':x.stat().st_size} for x in [dp,ap]]
 days=result['days'];rates=np.array([[d['rates'][k] for k in TERMS] for d in days]);actual=np.array([d['rate'] for d in days]);delta=np.array([d['pea_end']-d['pea_start'] for d in days]);closures=np.array([d['closure'] for d in days])
 result['validation']={'n_days':len(days),'max_rate_sum_error':float(np.max(abs(rates.sum(axis=1)-actual))),'max_daily_change_error':float(np.max(abs(delta-actual*86400))),'max_state_boundary_gap':float(max(abs(days[n]['pea_start']-days[n-1]['pea_end']) for n in range(1,len(days)))),'max_archived_closure':float(abs(closures).max())}
-if len(days)!=181:raise ValueError('Unexpected day count')
+if len(days)!=365:raise ValueError('Unexpected day count')
+if [d['date'] for d in days] != [(datetime(2008,7,1)+timedelta(days=n)).strftime('%Y-%m-%d') for n in range(365)]:raise ValueError('Non-consecutive dates')
+result['validation']['final_accumulated_reconstruction_error']=float(days[0]['pea_start']+sum(sum(d['rates'].values())*d['seconds'] for d in days)-days[-1]['pea_end'])
 # Do not release a misleading decomposition if any process is missing/duplicated.
 if result['validation']['max_rate_sum_error']>max(1e-8,abs(actual).max()*.001):raise ValueError(result['validation'])
 a.out.mkdir(parents=True,exist_ok=False);(a.out/'season.json').write_text(json.dumps(result,ensure_ascii=False,allow_nan=False,separators=(',',':'))+'\n');print(json.dumps(result['validation']),flush=True)
