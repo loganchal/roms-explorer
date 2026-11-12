@@ -222,7 +222,6 @@ try {
   data.seasonMin=min-pad;
   data.seasonMax=max+pad;
   $('#day').max=data.days.length-1;
-  $('#location').textContent=`${Math.abs(data.location.lat).toFixed(2)}°S · ${data.location.lon.toFixed(2)}°E`;
   $('#validation').textContent='The accumulated contributions reconstruct the final PEA to within '+format(Math.abs(data.validation.final_accumulated_reconstruction_error),4)+' J m⁻³, consistent with archived field precision.';
   $('#status').hidden=true;
   $('#demo').hidden=false;
