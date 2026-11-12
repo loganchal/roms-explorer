@@ -370,7 +370,7 @@ const STEPS = [
     {
         id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
         prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
-        detail: "Model minus observed at each depth: red model-high, blue model-low.",
+        detail: "Model minus observed at each depth: red model-high, blue model-low. Thesis evaluation uses CORA 5.2 profiles in paired 1994–2020 comparisons, excluding the outer nudging region. Correlations use 324 monthly means. PEA RMSE uses 13,809 profile matchups. PEA is potential energy anomaly over the upper 200 m.",
         limitation: null,
     },
     {
@@ -1888,6 +1888,7 @@ export function mountAssembly() {
 
     function renderStepUI() {
         document.getElementById("viewport").dataset.step = stepIdx < 0 ? "empty" : STEPS[stepIdx].id;
+        document.getElementById("argo-evaluation").hidden = stepIdx < 0 || STEPS[stepIdx].id !== "argo";
         document.getElementById("step-prev").disabled = stepIdx < 0;
         document.getElementById("step-next").disabled = stepIdx >= STEPS.length - 1;
         const dots = document.getElementById("step-dots");

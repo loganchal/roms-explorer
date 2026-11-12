@@ -358,5 +358,12 @@
   "tidal forcing provided by MetOcean": "nā MetOcean ngā raraunga tai",
   "river forcing provided by MetOcean": "nā MetOcean ngā raraunga awa",
   "Drag to turn · pinch to zoom ·": "Tōia hei huri · topa mā ngā matimati ·",
-  "Drag to orbit · scroll to zoom ·": "Tōia hei huri · panukuhia hei topa ·"
+  "Drag to orbit · scroll to zoom ·": "Tōia hei huri · panukuhia hei topa ·",
+  "Thesis evaluation": "Aromātai tuhinga roa",
+  "1994–2020 · Old hindcast in parentheses": "1994–2020 · Kei ngā taiapa te tauira o mua",
+  "Monthly thermal PEA, r": "PEA ā-wera ā-marama, r",
+  "Monthly MLD, r": "MLD ā-marama, r",
+  "Thermal PEA anomaly, r": "Rerekētanga PEA ā-wera, r",
+  "Profile PEA RMSE": "RMSE PEA kōtaha",
+  "Thesis evaluation uses CORA 5.2 profiles in paired 1994–2020 comparisons, excluding the outer nudging region. Correlations use 324 monthly means. PEA RMSE uses 13,809 profile matchups. PEA is potential energy anomaly over the upper 200 m.": "Ka whakamahi te aromātai tuhinga roa i ngā kōtaha CORA 5.2 mō ngā whakataurite takirua 1994–2020, me te whakakore i te rohe whakatikatika o waho. E 324 ngā toharite ā-marama mō ngā pānga. E 13,809 ngā kōtaha takirua mō te RMSE PEA. Ko te PEA te rerekētanga pūngao tū i roto i te 200 m o runga."
 }

@@ -103,3 +103,16 @@ html:not([data-theme]) #step-card {
     .gesture-touch { display:inline; }
 }
 #viewport[data-step="empty"] #step-card > details { display:none; }
+
+#argo-evaluation { order:1; margin:12px 0 8px; }
+#argo-evaluation[hidden] { display:none; }
+#argo-evaluation h2 {
+    font:400 16px/1.25 Georgia,serif; letter-spacing:0; color:var(--ink);
+    text-transform:none; margin:0 0 6px;
+}
+.evaluation-context { font:400 10px/1.4 system-ui,sans-serif; color:var(--muted); margin:0 0 8px; }
+#argo-evaluation table { width:100%; border-collapse:collapse; font:400 11px/1.5 system-ui,sans-serif; }
+#argo-evaluation th, #argo-evaluation td { padding:6px 0; border-bottom:1px solid var(--line); }
+#argo-evaluation th { text-align:left; font-weight:400; padding-right:10px; }
+#argo-evaluation td { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+#argo-evaluation td span { color:var(--muted); }
