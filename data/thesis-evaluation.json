@@ -2,7 +2,6 @@
   "source_thesis": "Thesis_V37.docx",
   "source_thesis_sha256": "60f7684661df6d4b96098628fbdf0e87d74a49d48e33d54d3f9b67ac69adcf39",
   "period": "1994–2020",
-  "figure": 1,
   "reference": "NOAA OISST v2.1, 0.25° grid",
   "comparison": "Identical months and locations, January 1994–December 2020.",
   "source": "outputs/evaluation_frozen_20260923/sst/scores/sst_validation.json",
@@ -13,5 +12,23 @@
   "rmse_reduction_ci95_pct": [
     8.880103419255395,
     11.065275019573008
-  ]
+  ],
+  "figures": [
+    1,
+    5
+  ],
+  "stratification": {
+    "metric": "Upper-200 m potential energy anomaly",
+    "units": "J m⁻³",
+    "paired_profiles": 13809,
+    "rmse_new": 32.20343396666705,
+    "rmse_old": 36.732689814872465,
+    "rmse_reduction_pct": 12.33031360086131,
+    "rmse_reduction_ci95_pct": [
+      6.878892761547353,
+      18.79464370219844
+    ],
+    "source": "outputs/pea_evaluation_20261022/scores.json",
+    "source_sha256": "e2eecea8ce21b56d66c26e879ccc8a47ffc31327dcbd04a3add811de13a3a1ac"
+  }
 }

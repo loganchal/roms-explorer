@@ -7,8 +7,8 @@
     <title>ROMS extension domain explorer</title>
     <link rel="stylesheet" href="explorer.css?v=20261112-labels">
     <link rel="stylesheet" href="entrance.css?v=20261111-model">
-    <link rel="stylesheet" href="guided-controls.css?v=20261112-sst-timeline">
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-sst-timeline"></script>
+    <link rel="stylesheet" href="guided-controls.css?v=20261112-strat-metrics">
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261112-strat-metrics"></script>
 <script>
     const previewTheme = new URLSearchParams(location.search).get("theme");
     if (["soundings", "watch", "etretat"].includes(previewTheme)) {
@@ -73,11 +73,20 @@
                 </div>
                 <div id="frames-field-buttons" class="field-buttons"></div>
                 <div id="argo-var-buttons" class="field-buttons"></div>
-                <section id="argo-evaluation" aria-labelledby="argo-evaluation-label">
-                    <p class="evaluation-value">9.9<span>%</span></p>
-                    <p id="argo-evaluation-label" class="evaluation-label">lower SST RMSE</p>
-                    <p class="evaluation-comparison">0.625°C <span>(0.694°C old hindcast)</span></p>
-                    <p class="evaluation-context">NOAA OISST v2.1 · 1994–2020</p>
+                <section id="argo-evaluation" aria-label="Hindcast evaluation">
+                    <div class="evaluation-metric">
+                        <p class="evaluation-value">9.9<span>%</span></p>
+                        <p class="evaluation-label">lower SST RMSE</p>
+                        <p class="evaluation-comparison">0.625°C <span>(0.694°C)</span></p>
+                        <p class="evaluation-source">NOAA OISST v2.1</p>
+                    </div>
+                    <div class="evaluation-metric">
+                        <p class="evaluation-value">12.3<span>%</span></p>
+                        <p class="evaluation-label">lower stratification RMSE</p>
+                        <p class="evaluation-comparison">32.20 J m⁻³ <span>(36.73 J m⁻³)</span></p>
+                        <p class="evaluation-source">Upper 200 m PEA</p>
+                    </div>
+                    <p class="evaluation-context">1994–2020 · Old hindcast in parentheses</p>
                 </section>
                 <div id="step-nav">
                     <button id="step-prev">&larr; Back</button>
@@ -97,7 +106,7 @@
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }}
     </script>
-    <script type="module" src="entrance.js?v=20261112-sst-timeline"></script>
+    <script type="module" src="entrance.js?v=20261112-strat-metrics"></script>
 </body>
 
 </html>

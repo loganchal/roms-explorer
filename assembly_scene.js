@@ -370,7 +370,7 @@ const STEPS = [
     {
         id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
         prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
-        detail: "Model minus observed at each depth: red model-high, blue model-low. SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%.",
+        detail: "Model minus observed at each depth: red model-high, blue model-low. SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%. Upper-200 m PEA RMSE is 12.3% lower in the paired 1994–2020 comparison (95% confidence interval 6.9–18.8%), using 13,809 common in-situ profile matchups outside the outer nudging region.",
         limitation: null,
     },
     {

@@ -361,5 +361,10 @@
   "Drag to orbit · scroll to zoom ·": "Tōia hei huri · panukuhia hei topa ·",
   "lower SST RMSE": "he iti ake te RMSE SST",
   "old hindcast": "tauira o mua",
-  "SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%.": "Ka aromātaihia te RMSE SST ki NOAA OISST v2.1 i tōna tukutuku 0.25°, mā ngā marama me ngā wāhi takirua 1994–2020. Ko te hekenga RMSE he 9.9%, me te awhe whakapono 95% mai i te 8.9 ki te 11.1%."
+  "SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%.": "Ka aromātaihia te RMSE SST ki NOAA OISST v2.1 i tōna tukutuku 0.25°, mā ngā marama me ngā wāhi takirua 1994–2020. Ko te hekenga RMSE he 9.9%, me te awhe whakapono 95% mai i te 8.9 ki te 11.1%.",
+  "lower stratification RMSE": "he iti ake te RMSE paparanga",
+  "Upper 200 m PEA": "PEA o te 200 m o runga",
+  "1994–2020 · Old hindcast in parentheses": "1994–2020 · Kei ngā taiapa te tauira o mua",
+  "Hindcast evaluation": "Aromātai tauira o mua",
+  "Upper-200 m PEA RMSE is 12.3% lower in the paired 1994–2020 comparison (95% confidence interval 6.9–18.8%), using 13,809 common in-situ profile matchups outside the outer nudging region.": "He 12.3% iti ake te RMSE PEA o te 200 m o runga i te whakataurite takirua 1994–2020 (awhe whakapono 95% he 6.9–18.8%), mā ngā kōtaha inenga takirua 13,809 kei waho o te rohe whakatikatika o waho."
 }

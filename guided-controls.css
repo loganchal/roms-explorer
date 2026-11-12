@@ -105,15 +105,16 @@ html:not([data-theme]) #step-card {
 #viewport[data-step="empty"] #step-card > details { display:none; }
 
 
-#argo-evaluation { order:1; margin:8px 0 16px; padding:4px 0 14px; border-bottom:1px solid var(--line); }
+#argo-evaluation { order:1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 16px; margin:8px 0 16px; padding:4px 0 14px; border-bottom:1px solid var(--line); }
 #argo-evaluation[hidden] { display:none; }
 #argo-evaluation p { margin:0; }
-#argo-evaluation .evaluation-value { font:400 46px/1.05 Georgia,serif; letter-spacing:-.04em; color:var(--ink); }
+#argo-evaluation .evaluation-value { font:400 38px/1.05 Georgia,serif; letter-spacing:-.04em; color:var(--ink); }
 .evaluation-value span { font-size:.65em; margin-left:2px; }
-#argo-evaluation .evaluation-label { font:400 16px/1.4 Georgia,serif; margin:2px 0 10px; }
+#argo-evaluation .evaluation-label { font:400 14px/1.4 Georgia,serif; margin:4px 0 8px; min-height:40px; }
 #argo-evaluation .evaluation-comparison { font:400 12px/1.5 system-ui,sans-serif; font-variant-numeric:tabular-nums; }
-.evaluation-comparison span { color:var(--muted); }
-#argo-evaluation .evaluation-context { font:400 10px/1.5 system-ui,sans-serif; color:var(--muted); margin-top:5px; }
+.evaluation-comparison span { display:block; color:var(--muted); }
+#argo-evaluation .evaluation-context { grid-column:1/-1; font:400 10px/1.5 system-ui,sans-serif; color:var(--muted); margin-top:5px; }
+#argo-evaluation .evaluation-source { font:400 10px/1.5 system-ui,sans-serif; color:var(--muted); margin-top:5px; }
 
 #step-card #frames-controls-wrap.visible {
     display:grid; grid-template-columns:max-content minmax(60px,1fr) max-content;
