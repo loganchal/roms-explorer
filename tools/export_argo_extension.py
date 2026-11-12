@@ -56,7 +56,7 @@ def fetch_all(args):
 
 def match(args):
     from netCDF4 import Dataset
-    payload=json.loads(pathlib.Path(args.observations).read_text()); floats=payload['floats'];models=[]
+    payload=json.loads(pathlib.Path(args.observations).read_text()); floats=[p for p in payload['floats'] if not args.month or p['time'][:7].replace('-','')==args.month];payload['floats']=floats;models=[]
     with Dataset(args.grid) as d:
         lon=np.asarray(d['lon_rho'][:]);lat=np.asarray(d['lat_rho'][:]);h=np.asarray(d['h'][:]);wet=np.asarray(d['mask_rho'][:])>.5
     groups={}
@@ -79,5 +79,5 @@ def match(args):
 if __name__=='__main__':
     ap=argparse.ArgumentParser();sub=ap.add_subparsers(dest='mode',required=True)
     f=sub.add_parser('fetch');f.add_argument('--cache',required=True);f.add_argument('--out',required=True)
-    m=sub.add_parser('match');m.add_argument('--observations',required=True);m.add_argument('--outputs',required=True);m.add_argument('--grid',required=True);m.add_argument('--out',required=True)
+    m=sub.add_parser('match');m.add_argument('--month');m.add_argument('--observations',required=True);m.add_argument('--outputs',required=True);m.add_argument('--grid',required=True);m.add_argument('--out',required=True)
     a=ap.parse_args();fetch_all(a) if a.mode=='fetch' else match(a)
