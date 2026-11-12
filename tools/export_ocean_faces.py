@@ -103,6 +103,23 @@ def pack_field(folder, name, values, wet):
     return info
 
 
+def pack_surface(folder, name, values, wet):
+    selected = values[:, wet].astype("f8")
+    lo, hi = np.nanpercentile(selected, [1, 99]).tolist()
+    scale = (hi - lo) / 255 if hi > lo else 1
+    quantized = np.zeros(values.shape, dtype="u1")
+    quantized[:, wet] = np.rint(np.clip((selected - lo) / scale, 0, 255)).astype("u1")
+    inside = (selected >= lo) & (selected <= hi)
+    errors = np.abs(quantized[:, wet].astype("f8") * scale + lo - selected)
+    error = float(errors[inside].max())
+    if error > scale * .501 + 1e-7:
+        raise ValueError("Surface quantization verification failed")
+    info = write_array(folder, name, quantized, "u1")
+    info.update({"minimum":lo, "maximum":hi, "scale":scale, "max_error":error,
+                 "clipped_fraction":float(1 - inside.mean())})
+    return info
+
+
 def file_receipt(path):
     stat = path.stat()
     return {"file": path.name, "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns}
@@ -145,6 +162,7 @@ def main():
     probes = json.loads(args.probes.read_text())
     checks = {"temp": [], "salt": [], "zeta": []}
     records = {name: [] for name in (*FIELDS, "zeta")}
+    surfaces = {name: [] for name in (*FIELDS, "zeta")}
     grouped = {}
     for text in dates:
         date = datetime.strptime(text, "%d %b %Y")
@@ -161,7 +179,12 @@ def main():
                     raise ValueError("Model output and explorer dates disagree")
                 for name in checks:
                     surface = dataset[name][time, -1] if name != "zeta" else dataset[name][time]
-                    checks[name].append(np.asarray(surface)[probes["j"], probes["i"]].astype("f4"))
+                    surface = np.asarray(surface, dtype="f4")
+                    checks[name].append(surface[probes["j"], probes["i"]])
+                    surfaces[name].append(surface[::args.stride, ::args.stride])
+                u = pad_to_rho(dataset["u"][time, -1], nx)
+                v = pad_to_rho(dataset["v"][time, -1].T, ny).T
+                surfaces["speed"].append(np.hypot(u,v)[::args.stride, ::args.stride])
                 values = read_fields(dataset, time, sampled, ny, nx)
                 for name in records:
                     records[name].append(values[name])
@@ -170,6 +193,11 @@ def main():
     manifest["frames"] = {
         name: pack_field(args.out, "frames-" + name + ".u16.gz", np.stack(records[name]), wet)
         for name in FIELDS
+    }
+    surface_mask = mask[::args.stride, ::args.stride].astype(bool)
+    manifest["surface"] = {
+        name: pack_surface(args.out, "surface-" + name + ".u8.gz", np.stack(surfaces[name]), surface_mask)
+        for name in surfaces
     }
     manifest["zeta"] = write_array(args.out, "frames-zeta.f32.gz", np.stack(records["zeta"]), "<f4")
     np.savez_compressed(args.out / "surface-probes.npz", **{key: np.stack(value) for key, value in checks.items()})
