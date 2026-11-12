@@ -11,7 +11,7 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
 
     async function getManifest() {
         if (!manifestPromise) manifestPromise = (async () => {
-            const response = await fetch(new URL("manifest.json?v=20261112-anomaly-faces", base));
+            const response = await fetch(new URL("manifest.json?v=20261112-pea-depth", base));
             if (!response.ok) throw new Error("Depth manifest unavailable");
             const m = await response.json();
             if (m.nx !== nx || m.ny !== ny || JSON.stringify(m.dates) !== JSON.stringify(dates)) throw new Error("Depth grid/timeline mismatch");
@@ -33,10 +33,10 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         if (bytes.byteLength !== info.shape.reduce((a,b)=>a*b,1) * Type.BYTES_PER_ELEMENT) throw new Error("Invalid depth array length");
         return new Type(bytes);
     }
-    function rebuild(kind) {
+    function rebuild(kind, info) {
         for (const mesh of [...group.children]) { group.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
         const indices = kind === "initial" ? manifest.initial_indices : manifest.frame_indices;
-        const levels = manifest.s_rho.length, rows = levels + 2;
+        const levels = info.depths?.length || manifest.s_rho.length, rows = levels + 2;
         let offset = 0;
         sides = manifest.sides.map(side => {
             const along = indices[side];
@@ -57,7 +57,7 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
             const spec={cells,n,offset,geometry}; offset+=n;
             return spec;
         });
-        geometryKind=kind;
+        geometryKind=kind+":"+(info.depths?.join(",")||"native");
     }
     function paint() {
         if (!desired) { group.visible=false; return; }
@@ -65,8 +65,8 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         if (!data) { group.visible=false; return; }
         const signature=id+":"+frame;
         if (signature===drawn) { group.visible=true; return; }
-        if (geometryKind!==kind) rebuild(kind);
-        const {values,zeta,info}=data, levels=manifest.s_rho.length, rows=levels+2;
+        const {values,zeta,info}=data, levels=info.depths?.length || manifest.s_rho.length, rows=levels+2;
+        if (geometryKind!==kind+":"+(info.depths?.join(",")||"native")) rebuild(kind,info);
         const total=info.shape[info.shape.length-1], sourceLevels=info.shape[info.shape.length-2], frameOffset=kind==="frames"?frame*sourceLevels*total:0;
         const {range,stops}=style(kind,key);
         if(!data.palette) {
@@ -83,7 +83,9 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
                 for(let row=0;row<rows;row++) {
                     const level=Math.max(0,Math.min(levels-1,row-1));
                     const zo=(manifest.hc*manifest.s_rho[level]+manifest.Cs_r[level]*h)/(manifest.hc+h);
-                    const y=row===0?depthToY(h):row===rows-1?surfaceY:Math.min(surfaceY,depthToY(-(eta+(eta+h)*zo)));
+                    const y=info.depths
+                        ? (row===rows-1?surfaceY:depthToY(Math.min(h,row===0?info.maximum_depth:info.depths[level])))
+                        : row===0?depthToY(h):row===rows-1?surfaceY:Math.min(surfaceY,depthToY(-(eta+(eta+h)*zo)));
                     const vertex=row*n+i;
                     positions.setXYZ(vertex,x[cell],y,z[cell]);
                     const q=values[frameOffset+(info.column_metric?0:level)*total+offset+i]*3;
@@ -104,6 +106,7 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         if (pending.has(id)||failed.has(id)) return;
         const request=(async()=>{
             const m=await getManifest(), info=m[kind][key];
+            if(key==="pea_anom" && info.column_metric) throw new Error("Refusing a column metric on depth-resolved faces");
             const surfaceInfo=kind==="frames"?m.surface[key]:null;
             const [values,zeta,surface]=await Promise.all([
                 array(info,Uint16Array),kind==="frames"?getZeta(m):null,

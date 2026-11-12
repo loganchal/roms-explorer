@@ -188,3 +188,8 @@ html[lang="mi"] #step-card #frames-controls-wrap.visible { grid-template-columns
 .budget-active #viewport,.budget-active .model-home { visibility:hidden; }
 .budget-active > .language-switch { z-index:10002; top:8px; left:50%; right:auto; transform:translateX(-50%); }
 @media(max-width:500px) { .budget-flow { padding-inline:12px; } .budget-flow button { font-size:12px; gap:4px; } .budget-active > .language-switch { gap:7px; font-size:12px; } }
+#argo-drift-controls { order:2; display:grid; grid-template-columns:55px minmax(60px,1fr) 100px; align-items:center; gap:10px; margin:6px 0 14px; }
+#argo-drift-controls[hidden] { display:none; }
+#argo-play { border:0; padding:8px 0; background:none; color:var(--ink); font:14px Georgia,serif; cursor:pointer; }
+#argo-time { width:100%; min-width:0; accent-color:var(--accent); }
+#argo-date { text-align:right; white-space:nowrap; font:11px Georgia,serif; font-variant-numeric:tabular-nums; }

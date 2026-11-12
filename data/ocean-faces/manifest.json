@@ -2921,20 +2921,358 @@
       "max_error": 1.527636804432575e-05
     },
     "pea_anom": {
-      "file": "frames-pea_anom.u16.gz",
+      "file": "frames-pea-depth-anomaly.u16.gz",
       "dtype": "<u2",
       "shape": [
         216,
-        1,
+        41,
         436
       ],
-      "bytes": 177753,
-      "sha256": "ff67da5dc9fc58495d829c24ccc77fdafef87125aac218586753c43b34db71f9",
-      "minimum": -128.6292724609375,
-      "maximum": 196.25213623046875,
-      "scale": 0.0049573725290517475,
-      "max_error": 0.002478673633248718,
-      "column_metric": true
+      "bytes": 6641623,
+      "sha256": "c0427078a27112a8b1e61edfdf9b237d2e1d697681fab765a8c3da9abf8cbd7c",
+      "minimum": -666.7440795898438,
+      "maximum": 1007.08935546875,
+      "scale": 0.02554106103698167,
+      "max_error": 0.012770526327471998,
+      "depths": [
+        200.0,
+        195.0,
+        190.0,
+        185.0,
+        180.0,
+        175.0,
+        170.0,
+        165.0,
+        160.0,
+        155.0,
+        150.0,
+        145.0,
+        140.0,
+        135.0,
+        130.0,
+        125.0,
+        120.0,
+        115.0,
+        110.0,
+        105.0,
+        100.0,
+        95.0,
+        90.0,
+        85.0,
+        80.0,
+        75.0,
+        70.0,
+        65.0,
+        60.0,
+        55.0,
+        50.0,
+        45.0,
+        40.0,
+        35.0,
+        30.0,
+        25.0,
+        20.0,
+        15.0,
+        10.0,
+        5.0,
+        0.0
+      ],
+      "maximum_depth": 200,
+      "column_metric": false,
+      "definition": "q(z)=g*(rho_bar-rho(z))*z; rho_bar is the mean potential density over 0--min(h,200m). Local PEA contribution, not a cumulative integral.",
+      "units": "J m-3",
+      "reference_years": [
+        1994,
+        2020
+      ],
+      "reference_method": "Compute density and local contribution for every daily T/S state, average q by month over 1994--2020, then interpolate month-centre means and subtract at each fixed physical depth.",
+      "revision": "efedbd4bec7a688fbedd788ea91c6cafe4ec48a4",
+      "sources": [
+        {
+          "file": "nz5km_avg_202101.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789943591109793758
+        },
+        {
+          "file": "nz5km_avg_202102.nc",
+          "bytes": 6561047136,
+          "mtime_ns": 1789943193684785421
+        },
+        {
+          "file": "nz5km_avg_202103.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789946420117343928
+        },
+        {
+          "file": "nz5km_avg_202104.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789948266219793492
+        },
+        {
+          "file": "nz5km_avg_202105.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789949534170379939
+        },
+        {
+          "file": "nz5km_avg_202106.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789951535391138933
+        },
+        {
+          "file": "nz5km_avg_202107.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789951973635680012
+        },
+        {
+          "file": "nz5km_avg_202108.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789955414578292127
+        },
+        {
+          "file": "nz5km_avg_202109.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789956390591625167
+        },
+        {
+          "file": "nz5km_avg_202110.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789957773919890093
+        },
+        {
+          "file": "nz5km_avg_202111.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789960279724189482
+        },
+        {
+          "file": "nz5km_avg_202112.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789960722669140774
+        },
+        {
+          "file": "nz5km_avg_202201.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789964588793030982
+        },
+        {
+          "file": "nz5km_avg_202202.nc",
+          "bytes": 6561047140,
+          "mtime_ns": 1789740365974301265
+        },
+        {
+          "file": "nz5km_avg_202203.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789965093064176364
+        },
+        {
+          "file": "nz5km_avg_202204.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789965557119468161
+        },
+        {
+          "file": "nz5km_avg_202205.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789969081412658012
+        },
+        {
+          "file": "nz5km_avg_202206.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789969178977480681
+        },
+        {
+          "file": "nz5km_avg_202207.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789973729168155779
+        },
+        {
+          "file": "nz5km_avg_202208.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789973872926061280
+        },
+        {
+          "file": "nz5km_avg_202209.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789973454238272955
+        },
+        {
+          "file": "nz5km_avg_202210.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789979051971201977
+        },
+        {
+          "file": "nz5km_avg_202211.nc",
+          "bytes": 7027893208,
+          "mtime_ns": 1789977411743158758
+        },
+        {
+          "file": "nz5km_avg_202212.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789981680045054829
+        },
+        {
+          "file": "nz5km_avg_202301.nc",
+          "bytes": 7261316244,
+          "mtime_ns": 1789982767594401492
+        },
+        {
+          "file": "nz5km_avg_202302.nc",
+          "bytes": 6561047136,
+          "mtime_ns": 1789981427496544097
+        },
+        {
+          "file": "nz5km_avg_202303.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051369880538474
+        },
+        {
+          "file": "nz5km_avg_202304.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051368530539415
+        },
+        {
+          "file": "nz5km_avg_202305.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051372262536814
+        },
+        {
+          "file": "nz5km_avg_202306.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051372848536406
+        },
+        {
+          "file": "nz5km_avg_202307.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051375548534525
+        },
+        {
+          "file": "nz5km_avg_202308.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051378295532611
+        },
+        {
+          "file": "nz5km_avg_202309.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051383819528762
+        },
+        {
+          "file": "nz5km_avg_202310.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051390886523939
+        },
+        {
+          "file": "nz5km_avg_202311.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051406413515123
+        },
+        {
+          "file": "nz5km_avg_202312.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051410052513057
+        },
+        {
+          "file": "nz5km_avg_202401.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051421872506345
+        },
+        {
+          "file": "nz5km_avg_202402.nc",
+          "bytes": 6794470208,
+          "mtime_ns": 1790051421954506299
+        },
+        {
+          "file": "nz5km_avg_202403.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051431411500929
+        },
+        {
+          "file": "nz5km_avg_202404.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051434987498899
+        },
+        {
+          "file": "nz5km_avg_202405.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051441741495064
+        },
+        {
+          "file": "nz5km_avg_202406.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051454299487933
+        },
+        {
+          "file": "nz5km_avg_202407.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051456111486905
+        },
+        {
+          "file": "nz5km_avg_202408.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051472221477757
+        },
+        {
+          "file": "nz5km_avg_202409.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051473108477254
+        },
+        {
+          "file": "nz5km_avg_202410.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051480665472963
+        },
+        {
+          "file": "nz5km_avg_202411.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051487192469257
+        },
+        {
+          "file": "nz5km_avg_202412.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051490783467218
+        },
+        {
+          "file": "nz5km_avg_202501.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051505693458752
+        },
+        {
+          "file": "nz5km_avg_202502.nc",
+          "bytes": 6561047172,
+          "mtime_ns": 1790051515042453444
+        },
+        {
+          "file": "nz5km_avg_202503.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051522603449013
+        },
+        {
+          "file": "nz5km_avg_202504.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051527471446046
+        },
+        {
+          "file": "nz5km_avg_202505.nc",
+          "bytes": 7261316280,
+          "mtime_ns": 1790051535493441157
+        },
+        {
+          "file": "nz5km_avg_202506.nc",
+          "bytes": 7027893244,
+          "mtime_ns": 1790051545167435262
+        }
+      ],
+      "climatology_sha256": {
+        "month-09.npz": "b97ac20825fa1eb658eb63324ebe293aadc0cf9cb914215b5f517a832a408a6d",
+        "month-10.npz": "b7cba9c852971ad06fcc48fe2c55bc5d42ab4fe42ddc853f84fb58dd1e028025",
+        "month-04.npz": "dd2bd8604a63b20e3293abc2b1e126183d7c3c25ea3a6cc57e66ec1ec67af389",
+        "month-12.npz": "613ed6019f10ee198d89fc7d584e54a1d4513cca7cb49929aa1c9217e7ae01ab",
+        "month-03.npz": "b92fa5c23b6497dd122ec8d3b0b2554ba60c531d63fec7360ba943af889ca4c5",
+        "month-07.npz": "1b8e352bc1edcc9cd13dbec34a4d00d09ed68c8e51e565270f28dfd3a946741e",
+        "month-02.npz": "45464d283e312352f11338a70c5b3c63f581ca8daff80ef9e9d4bcd33880fdf6",
+        "month-11.npz": "b235b84a90648804e8d9e56dbeaf64c0d6d774020e8704a1b4d6181cc9f77d71",
+        "month-06.npz": "1f67b2c930333d0bea9f9125f2bd73ab703102a24477a9765c8612ed2f563530",
+        "month-01.npz": "3c75dcbcb1c457e64723e31419f0161221f100133b15ee50f15e4f59f06021b2",
+        "month-08.npz": "4a6f8227a92c4443719186c422a4ee9f94f947fe93d3aa739ba5f59d3ccde13d",
+        "month-05.npz": "efa274b4e9501a5644c758693748a137deb5cb6c493f3a74b9a113a2dc1acfda"
+      }
     }
   },
   "surface": {
@@ -3068,7 +3406,7 @@
       2020
     ],
     "method": "Daily model output minus the 1994-2020 monthly model climatology, linearly interpolated between month centres. No detrending.",
-    "PEA": "Native daily-mean strat200_pea: upper 200 m or shallower seabed. Side colours represent this column metric, not a depth-resolved PEA profile. Unwritten outer ghost diagnostics are padded from the nearest interior sampled column, with matching surface-edge padding.",
+    "PEA": "Surface: native upper-200 m column PEA anomaly. Sides: depth-local PEA contribution anomaly q(z)=g*(rho_bar-rho(z))*z, over 0--min(h,200m), on fixed 5 m display depths. The layer mean of q is PEA; q is not cumulative. Density and q are computed for each daily T/S state before 1994--2020 monthly averaging. Side and surface scales are separate.",
     "revision": "7e09841141e4592ae723199d482d84ea4b892339",
     "sources": [
       {
@@ -3628,6 +3966,10 @@
     },
     "climatology_job": "6421897",
     "export_job": "6423006",
-    "baseline_days": 9862
+    "baseline_days": 9862,
+    "pea_depth_jobs": {
+      "climatology": "6424065",
+      "frames": "6424076"
+    }
   }
 }
