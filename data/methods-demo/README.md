@@ -1,8 +1,7 @@
 # Seasonal methods demonstration
 
-One preselected wet column nearest 170 E, 40 S, deeper than 200 m;
+One wet column nearest 170 E, 40 S, deeper than 200 m;
 1 September 2008 through 28 February 2009 (181 daily records).
-The coordinate and season were selected before examining their budget.
 This is not a climate-phase composite or a release of thesis interpretations.
 
 Generated on Aoraki with `tools/export_budget_demo.py`, source revision
