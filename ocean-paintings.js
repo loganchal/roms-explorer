@@ -2,6 +2,18 @@
 (async () => {
     const root = document.documentElement;
     if (root.dataset.theme !== "etretat") return;
+    if(root.dataset.modelReturn) {
+        try {
+            const art=JSON.parse(sessionStorage.getItem("ocean-model-active-art"));
+            if(art?.url?.startsWith("/assets/monet/")) {
+                root.style.setProperty("--ocean-painting",'url("'+art.url+'")');
+                root.style.setProperty("--ocean-strip-size",art.size);
+                root.style.setProperty("--ocean-strip-position",art.position);
+                root.dataset.oceanPainting=art.id;root.dataset.oceanArt="ready";
+            }
+        } catch(_) {}
+        return;
+    }
 
     let locked = false;
     let timer;
@@ -62,6 +74,7 @@
             root.style.setProperty("--ocean-strip-position", crop[1]);
             root.dataset.oceanPainting = paintings[index].id;
             root.dataset.oceanArt = "ready";
+            try { sessionStorage.setItem("ocean-model-active-art",JSON.stringify({url:paintings[index].url,id:paintings[index].id,size:crop[0],position:crop[1]})); } catch(_) {}
             try {
                 sessionStorage.setItem(storageKey, String(nextIndex));
             } catch {}

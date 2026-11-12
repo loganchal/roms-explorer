@@ -1,5 +1,5 @@
 // MetOcean tide forcing detail page, with the existing archived validation comparison.
-import { b64f32, drawSeries, mountHeader } from "./dig_common.js?v=20261112-metocean";
+import { b64f32, drawSeries, mountHeader } from "./dig_common.js?v=20261112-direct-return";
 
 const TIDEVAL_LABEL = typeof TIDEVAL_SOURCE !== "undefined" ? TIDEVAL_SOURCE : "EOT20";
 const validationRefLabelEl = document.getElementById("validation-ref-label");

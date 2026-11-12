@@ -2,7 +2,7 @@
 // Pure 2D canvas -- no three.js. Same decode-once-at-module-scope convention
 // as assembly_scene.js, and the same colour ramps so a field reads the same
 // here as it does in the guided flow.
-import { b64f32, colormap, WARM_STOPS, DIVERGING_STOPS, drawSeries, mountHeader } from "./dig_common.js";
+import { b64f32, colormap, WARM_STOPS, DIVERGING_STOPS, drawSeries, mountHeader } from "./dig_common.js?v=20261112-direct-return";
 
 const NX = GRID_NX, NY = GRID_NY;
 const MASK = b64f32(MASK_RHO_B64); // 1 = wet, 0 = land

@@ -2,6 +2,7 @@
 const veil = document.getElementById("entrance");
 const viewport = document.getElementById("viewport");
 let failed = false;
+const returningToModel=document.documentElement.dataset.modelReturn==="true";
 
 function showFailure(error) {
     if (failed || !veil.isConnected) return;
@@ -25,7 +26,7 @@ const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 try {
     await nextFrame();
     await nextFrame();
-    const minimumEntranceEnd = performance.now() + 3500;
+    const minimumEntranceEnd = performance.now() + (returningToModel ? 0 : 3500);
     await new Promise((resolve, reject) => {
         const data = document.createElement("script");
         data.src = "scene_data.js";
@@ -34,7 +35,8 @@ try {
         document.body.appendChild(data);
     });
     const { mountAssembly } = await import("./assembly_scene.js?v=20261112-animated-faces");
-    mountAssembly(); // Returns after UI setup and the first successful WebGL render.
+    mountAssembly();
+    history.replaceState({...history.state,modelVisited:true},"",location.href); // Returns after UI setup and the first successful WebGL render.
     await nextFrame();
     await nextFrame();
     await new Promise(resolve => setTimeout(resolve, Math.max(0, minimumEntranceEnd - performance.now())));
@@ -49,7 +51,7 @@ try {
             viewport.inert = false;
             veil.remove();
         };
-        if (matchMedia("(prefers-reduced-motion: reduce)").matches) finish();
+        if (returningToModel || matchMedia("(prefers-reduced-motion: reduce)").matches) finish();
         else veil.addEventListener("transitionend", event => {
             if (event.target === veil && event.propertyName === "opacity") finish();
         });
