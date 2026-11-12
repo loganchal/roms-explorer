@@ -9,6 +9,11 @@ import argparse,collections,datetime as dt,json,math,pathlib,re
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--cache',required=True);ap.add_argument('--profiles',required=True);ap.add_argument('--out',required=True);ap.add_argument('--filtered-profiles-out');args=ap.parse_args()
     profiles=json.loads(pathlib.Path(args.profiles).read_text());identities={p['id'].split('_')[0] for p in profiles['floats']}
+    # Verified against Argovis metadata and original GDAC profiles 108/110:
+    # this metadata group is Iridium network positioning, not a GPS fix.
+    # Keep these scientific profiles; omit only their coarse motion anchors.
+    estimated_metadata={'5906259_m1'}
+    estimated_ids=set()
     records={};counts=collections.Counter()
     for file in sorted(pathlib.Path(args.cache).glob('????-??.json')):
         for r in json.loads(file.read_text()):
@@ -22,6 +27,7 @@ def main():
             point={'id':r['_id'],'time':timestamp,'lon':round(lon,6),'lat':round(lat,6)}
             if r['_id'] in records:assert records[r['_id']]==point
             records[r['_id']]=point
+            if estimated_metadata.intersection(r.get('metadata',[])):estimated_ids.add(r['_id'])
     if args.filtered_profiles_out:
         pairs=[(f,m) for f,m in zip(profiles['floats'],profiles['models']) if f['id'] in records]
         counts['model_profiles_removed_for_position_time_qc']=len(profiles['floats'])-len(pairs)
@@ -29,6 +35,8 @@ def main():
         records={key:p for key,p in records.items() if p['id'].split('_')[0] in identities}
         filtered={**profiles,'floats':[f for f,m in pairs],'models':[m for f,m in pairs]}
         pathlib.Path(args.filtered_profiles_out).write_text(json.dumps(filtered,separators=(',',':')))
+    counts['known_iridium_trajectory_positions_omitted']=sum(key in estimated_ids for key in records)
+    records={key:point for key,point in records.items() if key not in estimated_ids}
     tracks=[];speed=[];gaps=[]
     for wmo in sorted(identities):
         points=sorted((p for p in records.values() if p['id'].split('_')[0]==wmo),key=lambda p:p['time'])
@@ -41,7 +49,7 @@ def main():
             speed.append({'wmo':wmo,'from':a['id'],'to':b['id'],'days':round(days,3),'km':round(km,2),'km_day':round(km/days,2)})
             gaps.append(days)
         tracks.append({'id':wmo,'points':points})
-    payload={'version':1,'period':profiles['period'],'source':'Argovis v3 argo_core; every available position within requested domain, geolocation/time QC1 or2; grouped by WMO; no position thinning or invented points','tracks':tracks}
+    payload={'version':1,'period':profiles['period'],'source':'Argovis v3 argo_core; native recorded fixes within requested domain, geolocation/time QC1 or2; known coarse5906259_m1 Iridium estimates omitted from motion anchors only; grouped by WMO; no position thinning or invented points','tracks':tracks}
     pathlib.Path(args.out).write_text(json.dumps(payload,separators=(',',':')))
     print(json.dumps({'tracks':len(tracks),'positions':len(records),'qc':dict(counts),'largest_gaps_days':sorted(gaps,reverse=True)[:10],'fastest_segments_km_day':sorted(speed,key=lambda s:s['km_day'],reverse=True)[:10]},indent=2))
 

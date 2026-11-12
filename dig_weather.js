@@ -2,7 +2,7 @@
 // Pure 2D canvas -- no three.js. Same decode-once-at-module-scope convention
 // as assembly_scene.js, and the same colour ramps so a field reads the same
 // here as it does in the guided flow.
-import { b64f32, colormap, WARM_STOPS, DIVERGING_STOPS, drawSeries, mountHeader } from "./dig_common.js?v=20261113-stage-return";
+import { b64f32, colormap, WARM_STOPS, DIVERGING_STOPS, drawSeries, mountHeader } from "./dig_common.js?v=20261113-native-final2";
 
 const NX = GRID_NX, NY = GRID_NY;
 const MASK = b64f32(MASK_RHO_B64); // 1 = wet, 0 = land
@@ -34,24 +34,15 @@ function symmetricRange(arr) {
     return [-m, m];
 }
 
-const uwind = b64f32(MET_UWIND_SNAP_B64);
-const vwind = b64f32(MET_VWIND_SNAP_B64);
-const swrad = b64f32(MET_SWRAD_SNAP_B64);
-const pair = b64f32(MET_PAIR_SNAP_B64);
-const tair = b64f32(MET_TAIR_SNAP_B64);
-const qair = b64f32(MET_QAIR_SNAP_B64);
-const rain = b64f32(MET_RAIN_SNAP_B64);
-const lwradDown = b64f32(MET_LWRAD_DOWN_SNAP_B64);
-
 const FIELDS = {
-    uwind: { label: "Uwind", unit: "m/s", field: uwind, stops: DIVERGING_STOPS, range: symmetricRange(uwind) },
-    vwind: { label: "Vwind", unit: "m/s", field: vwind, stops: DIVERGING_STOPS, range: symmetricRange(vwind) },
-    swrad: { label: "Shortwave", unit: "W/m²", field: swrad, stops: WARM_STOPS, range: minMaxAll(swrad) },
-    pair: { label: "Pressure", unit: "Pa", field: pair, stops: PAIR_STOPS, range: minMaxAll(pair) },
-    tair: { label: "Air temp", unit: "°C", field: tair, stops: WARM_STOPS, range: minMaxAll(tair) },
-    qair: { label: "Humidity", unit: "kg/kg", field: qair, stops: QAIR_STOPS, range: minMaxAll(qair) },
-    rain: { label: "Rain", unit: "kg/m²/s", field: rain, stops: RAIN_STOPS, range: minMaxAll(rain) },
-    lwradDown: { label: "Longwave", unit: "W/m²", field: lwradDown, stops: LWRAD_STOPS, range: minMaxAll(lwradDown) },
+    uwind: { label: "Eastward wind", stops: DIVERGING_STOPS },
+    vwind: { label: "Northward wind", stops: DIVERGING_STOPS },
+    swrad: { label: "Shortwave", stops: WARM_STOPS },
+    pair: { label: "Pressure", stops: PAIR_STOPS },
+    tair: { label: "Air temp", stops: WARM_STOPS },
+    qair: { label: "Humidity", stops: QAIR_STOPS },
+    rain: { label: "Rain", stops: RAIN_STOPS },
+    lwradDown: { label: "Longwave", stops: LWRAD_STOPS },
 };
 
 // -- main map: an off-screen NX x NY ImageData is far cheaper than NX*NY
@@ -71,6 +62,7 @@ const offCtx = offCanvas.getContext("2d");
 
 function renderField(key) {
     const f = FIELDS[key];
+    renderComparison(key);
     const [lo, hi] = f.range;
     const span = (hi - lo) || 1;
     const img = offCtx.createImageData(NX, NY);
@@ -97,8 +89,10 @@ function renderField(key) {
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     mapCtx.drawImage(offCanvas, 0, 0, NX, NY, 0, 0, mapCanvas.width, mapCanvas.height);
 
+    mapCanvas.dataset.field = key;
+    mapCanvas.setAttribute("aria-label", f.label);
     const readout = document.getElementById("map-readout");
-    readout.innerHTML = `<span>${f.label}</span><span>${lo.toFixed(2)} &ndash; ${hi.toFixed(2)} ${f.unit}</span>`;
+    readout.innerHTML = `<span>${f.label}</span><span>${formatRange(lo, hi)} ${f.unit}</span>`;
 }
 
 function makeFieldButtons(activeKey, onPick) {
@@ -107,17 +101,21 @@ function makeFieldButtons(activeKey, onPick) {
         const btn = document.createElement("button");
         btn.textContent = f.label;
         btn.className = key === activeKey ? "active" : "";
+        btn.dataset.key = key;
+        btn.setAttribute("aria-pressed", String(key === activeKey));
         btn.addEventListener("click", () => {
-            el.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+            el.querySelectorAll("button").forEach(b => {
+                b.classList.remove("active");
+                b.setAttribute("aria-pressed", "false");
+            });
             btn.classList.add("active");
+            btn.setAttribute("aria-pressed", "true");
             onPick(key);
         });
         el.appendChild(btn);
     });
 }
 
-makeFieldButtons("tair", renderField);
-renderField("tair");
 
 // -- point series: one grid point sampled hourly across the whole month.
 drawSeries(document.getElementById("wind-canvas"), [
@@ -136,20 +134,13 @@ mountHeader(document.getElementById("dig-header"), {
     source: "nz5km_N50_meteo_202101.nc",
 });
 
-// -- regrid visual: native CFSR air temperature vs the same hour regridded
-// onto the model grid, one shared colour scale so a warm cell reads the
-// same warmth on both. Same treatment as the boundary dig page's GLORYS
-// slice, just a flat map instead of a depth curtain.
-function minMaxFinite(arr) {
-    let lo = Infinity, hi = -Infinity;
-    for (let k = 0; k < arr.length; k++) {
-        const v = arr[k];
-        if (!Number.isFinite(v)) continue;
-        if (v < lo) lo = v; if (v > hi) hi = v;
-    }
-    return [lo, hi];
-}
-function paintRaster(canvasEl, field, nx, ny, lo, hi, flipRows) {
+// Native and regridded snapshots come from the same source field/hour.
+// Keep this payload separate from scene_data.js: it is only needed here.
+let comparisons;
+function paintRaster(canvasEl, raster, lo, hi, stops, key) {
+    const field = raster.values || b64f32(raster.b64);
+    const { nx, ny, flipRows } = raster;
+    if (field.length !== nx * ny) throw new Error(`Invalid weather raster: ${key}`);
     const c = canvasEl.getContext("2d");
     canvasEl.width = nx; canvasEl.height = ny;
     const img = c.createImageData(nx, ny);
@@ -160,7 +151,7 @@ function paintRaster(canvasEl, field, nx, ny, lo, hi, flipRows) {
         for (let i = 0; i < nx; i++) {
             const v = field[j * nx + i];
             const t = Number.isFinite(v) ? (v - lo) / span : 0;
-            const col = colormap(t, WARM_STOPS);
+            const col = colormap(t, stops);
             const idx = (row * nx + i) * 4;
             data[idx] = Math.round(col.r * 255);
             data[idx + 1] = Math.round(col.g * 255);
@@ -169,20 +160,64 @@ function paintRaster(canvasEl, field, nx, ny, lo, hi, flipRows) {
         }
     }
     c.putImageData(img, 0, 0);
+    canvasEl.dataset.field = key;
+    canvasEl.setAttribute("aria-label", FIELDS[key].label);
 }
-if (typeof WX_NATIVE_T2M_SNAP_B64 !== "undefined") {
-    const nativeT = b64f32(WX_NATIVE_T2M_SNAP_B64);
-    const regridT = b64f32(WX_REGRID_T2M_SNAP_B64);
-    const nativeLon = b64f32(WX_NATIVE_LON_B64);
-    const nativeLat = b64f32(WX_NATIVE_LAT_B64);
-    const [loN, hiN] = minMaxFinite(nativeT);
-    const [loR, hiR] = minMaxFinite(regridT);
-    const lo = Math.min(loN, loR), hi = Math.max(hiN, hiR);
-    // native rows run north->south already in most CFSR crops -- check
-    // against its own lat vector rather than assume, same care as the
-    // model grid's own row-flip above.
-    const nativeFlip = nativeLat[0] < nativeLat[nativeLat.length - 1];
-    paintRaster(document.getElementById("native-canvas"), nativeT,
-        nativeLon.length, nativeLat.length, lo, hi, nativeFlip);
-    paintRaster(document.getElementById("regrid-canvas"), regridT, NX, NY, lo, hi, true);
+function renderComparison(key) {
+    const pair = comparisons.fields[key], f = FIELDS[key];
+    const nativeRange = minMaxAll(pair.native.values);
+    const regridRange = minMaxAll(pair.regrid.values);
+    let lo = Math.min(nativeRange[0], regridRange[0]);
+    let hi = Math.max(nativeRange[1], regridRange[1]);
+    if (key === "uwind" || key === "vwind") {
+        hi = Math.max(Math.abs(lo), Math.abs(hi)); lo = -hi;
+    }
+    paintRaster(document.getElementById("native-canvas"), pair.native, lo, hi, f.stops, key);
+    paintRaster(document.getElementById("regrid-canvas"), pair.regrid, lo, hi, f.stops, key);
+    const caption = document.getElementById("regrid-caption");
+    caption.replaceChildren();
+    const label = document.createElement("span"); label.textContent = f.label;
+    const range = document.createElement("span");
+    range.textContent = ` · ${formatRange(lo, hi)} ${pair.unit}`;
+    caption.append(label, range);
+    const time = document.createElement("span");
+    time.textContent = ` · ${pair.snapshot_utc || comparisons.snapshot_utc}`;
+    caption.append(time);
+    const card = document.getElementById("regrid-card");
+    card.dataset.field = key;
+    card.dataset.source = pair.source;
+    card.title = pair.source;
 }
+function formatRange(lo, hi) {
+    const format = v => v !== 0 && Math.abs(v) < 0.01 ? v.toExponential(2) : v.toFixed(2);
+    return `${format(lo)} – ${format(hi)}`;
+}
+async function loadComparisons() {
+    const response = await fetch("data/weather-comparison.json?v=20261113-native-final2");
+    if (!response.ok) throw new Error(`Weather snapshots: HTTP ${response.status}`);
+    comparisons = await response.json();
+    for (const [key, f] of Object.entries(FIELDS)) {
+        const pair = comparisons.fields[key];
+        if (!pair?.native || !pair?.regrid) throw new Error(`Missing native weather field: ${key}`);
+        for (const raster of [pair.native, pair.regrid]) {
+            raster.values = b64f32(raster.b64);
+            if (raster.values.length !== raster.nx * raster.ny) throw new Error(`Invalid weather raster: ${key}`);
+        }
+        if (pair.regrid.nx !== NX || pair.regrid.ny !== NY) {
+            throw new Error(`Weather/model grid mismatch: ${key}`);
+        }
+        // Use the paired snapshot here as well, so every map shows the
+        // same hour and wind components (Earth-relative east/north).
+        f.field = pair.regrid.values;
+        f.unit = pair.unit;
+        f.range = key === "uwind" || key === "vwind" ? symmetricRange(f.field) : minMaxAll(f.field);
+    }
+    makeFieldButtons("tair", renderField);
+    renderField("tair");
+    document.getElementById("regrid-card").setAttribute("aria-busy", "false");
+}
+loadComparisons().catch(error => {
+    console.error(error);
+    document.getElementById("err").style.display = "block";
+    document.getElementById("err").textContent = error.message;
+});

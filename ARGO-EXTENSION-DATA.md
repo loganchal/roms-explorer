@@ -28,8 +28,8 @@ the endpoint value. The match distance is retained for each profile.
 
 This is an illustrative collection of individual model/observation comparisons;
 it does not export unpublished composite or mechanistic budget findings.
-Animation positions use every available QC-approved GPS fix for these WMOs
-(`data/argo-trajectories.json`: 8,234 fixes), without the 20-day value thinning.
+Animation positions use native recorded fixes for these WMOs
+(`data/argo-trajectories.json`: 8,206 fixes), without the 20-day value thinning.
 Only short gaps are interpolated; missing coverage does not fabricate movement.
 All positions use the same geographic projection as the model grid. Native measured
 depth ranges and observations remain intact in the payload.
@@ -52,6 +52,29 @@ To reproduce position QC and the unthinned trajectory payload, run
 --out data/argo-trajectories.json --filtered-profiles-out data/argo-extension.json`
 after combining the model matchups. The command accepts only position/time QC
 flags 1 or 2, verifies cycle numbers against source IDs, preserves ascent/descent
-record suffixes, and deduplicates exact source records. The full trajectory set
-contains no synthetic points. Long gaps (up to 794 days in this regional query)
+record suffixes, and deduplicates exact source records. The trajectory set contains no synthetic points. Known coarse Iridium
+position estimates for WMO 5906259 are excluded from motion anchors as detailed below. Long gaps (up to 794 days in this regional query)
 are gaps, not evidence of a straight route through the country.
+
+## Repeated Iridium positions: WMO 5906259
+
+The original GDAC profile [108](https://data-argo.ifremer.fr/dac/aoml/5906259/profiles/D5906259_108.nc)
+(26 June 2023) identifies its position as GPS, while profile
+[110](https://data-argo.ifremer.fr/dac/aoml/5906259/profiles/D5906259_110.nc)
+(16 July 2023) identifies its repeated position as IRIDIUM. Both carry position
+QC 1. The [Argovis metadata reference 5906259_m1](https://argovis-api.colorado.edu/argo/meta?id=5906259_m1)
+explicitly identifies an APEX float using IRIDIUM positioning. These repeated
+coarse estimates do not establish that the float stopped moving. The
+[Argo format manual](https://oneargo.github.io/argo-format-user-manual/04-format-trajectoire.html)
+distinguishes Iridium/estimated positions used when acceptable GPS fixes are
+unavailable.
+
+Only the 28 known Iridium motion anchors are omitted. All 2,932 comparison
+profiles, including the 11 associated with this metadata group, retain their
+original values, model matchups and source positions. The remaining trajectory
+contains 8,206 recorded fixes across the same 214 WMO identities. Interpolation
+uses gaps of at most 30 days; longer gaps are absent, without artificial drifting
+or a claim of true stationarity. Other floats are described as recorded
+positions because their positioning systems have not all been individually
+verified. Re-running the position exporter applies this documented, explicit
+metadata-ID exclusion after the scientific-profile QC selection.

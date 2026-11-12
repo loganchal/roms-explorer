@@ -1,5 +1,5 @@
 // MetOcean tidal forcing; no obsolete hindcast harmonic-fit comparison.
-import { b64f32, drawSeries, mountHeader } from "./dig_common.js?v=20261113-stage-return";
+import { b64f32, drawSeries, mountHeader } from "./dig_common.js?v=20261113-native-final2";
 
 mountHeader(document.getElementById("dig-header"), {
     prov: "metocean",

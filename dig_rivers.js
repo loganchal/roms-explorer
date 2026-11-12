@@ -1,9 +1,10 @@
+import { riverSources as RIVERS } from "./river-sources.js?v=20261113-native-final2";
 // MetOcean river forcing detail page.
-// Plan-view map of the domain (from MASK_RHO) with the 47 river point
+// Plan-view map of the domain (from MASK_RHO) with the current native river point
 // sources plotted as green dots. Click a dot to see its transport and
 // vertical injection profile (vshape).
 
-import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261113-stage-return";
+import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261113-native-final2";
 
 mountHeader(document.getElementById("header-mount"), {
     prov: "metocean",
@@ -83,7 +84,7 @@ function draw() {
 
     // rivers
     riverPositions = RIVERS.map(r => {
-        const [x, y] = project(r.lon, r.lat);
+        const [x, y] = project(r.face.lon, r.face.lat);
         return { r, x, y, radius: radiusFor(r.transport) };
     });
     riverPositions.forEach(({ r, x, y, radius }) => {
@@ -108,6 +109,7 @@ function resize() {
     canvas.width = Math.round(canvas.clientWidth * dpr);
     canvas.height = Math.round(canvas.clientHeight * dpr);
     draw();
+    if (selected) drawProfile(document.getElementById("riverChart"), selected.vshape);
 }
 window.addEventListener("resize", resize);
 resize();
@@ -152,9 +154,9 @@ function drawProfile(canvasEl, vshape) {
     c.fillStyle = "rgba(255,255,255,0.4)";
     c.font = "20px -apple-system, sans-serif";
     c.textBaseline = "top";
-    c.fillText("surface", padL + 4, padT + 2);
+    c.fillText(window.modelLanguage?.translate("surface") || "surface", padL + 4, padT + 2);
     c.textBaseline = "bottom";
-    c.fillText("seafloor", padL + 4, h - padB - 2);
+    c.fillText(window.modelLanguage?.translate("seafloor") || "seafloor", padL + 4, h - padB - 2);
 }
 
 function selectRiver(r) {
@@ -180,3 +182,5 @@ canvas.addEventListener("click", (ev) => {
     const thresh = 12 * dpr;
     if (best && bestDist <= thresh) selectRiver(best.r);
 });
+
+window.addEventListener("site-language-change", () => { if (selected) drawProfile(document.getElementById("riverChart"), selected.vshape); });

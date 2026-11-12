@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { b64f32, colormap, WARM_STOPS, SALT_STOPS, mountHeader } from "./dig_common.js?v=20261113-stage-return";
+import { b64f32, colormap, WARM_STOPS, SALT_STOPS, mountHeader } from "./dig_common.js?v=20261113-native-final2";
 
 // Dig page: the north wall's open-boundary story, GLORYS source vs the
 // finished ROMS boundary file, side by side as two parallel curtains. Same

@@ -416,5 +416,12 @@
   "Play seasonal development": "Whakatangi i te whanaketanga ā-kaupeka",
   "Pause seasonal development": "Whakatā i te whanaketanga ā-kaupeka",
   "Argo observation date": "Te rā o te inenga Argo",
-  "Argo profiles": "Ngā kōtaha Argo"
+  "Argo profiles": "Ngā kōtaha Argo",
+  "seafloor": "papa moana",
+  "Float positions follow recorded Argo fixes. Profile colours interpolate between dated comparisons; gaps longer than 30 days are left blank.": "Ka whai ngā tūranga pūrere i ngā tūranga Argo kua tuhia. Ka whakawhiti ngā tae kōtaha i waenga i ngā whakataurite kua tohua ki te rā; ka waiho kia wātea ngā āputa neke atu i te 30 rā.",
+  "Eastward wind": "Hau whaka-te-rāwhiti",
+  "Northward wind": "Hau whaka-te-raki",
+  "42 point sources.": "42 ngā puna ira.",
+  "Native model source faces.": "Ngā mata puna taketake o te tauira.",
+  "Native vertical injection profile.": "Te kōtaha tāpiri wai poutū taketake."
 }

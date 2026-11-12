@@ -1,0 +1,28 @@
+{
+  "exporter_revision": "3e4ed0968a39358ebe76920685147517ad87ed46",
+  "slurm_job": "6428909",
+  "slurm_state": "COMPLETED",
+  "slurm_exit_code": "0:0",
+  "source": "Extension_Run/inputs/metocean_original/nz5km_N50_rivers.nc",
+  "native_source_sha256": "b0d6f8c72f46564cbfc29c55e6bbfc4fa0b7f3a94577696433e913a06d3e0b12",
+  "snapshot": "2021-01-01T00:00:00Z",
+  "count": 42,
+  "coastal_count": 19,
+  "wet_wet_count": 23,
+  "grid": {
+    "source": "Extension_Run/inputs/nz5km_grd_horizontal.nc",
+    "ny": 467,
+    "nx": 397
+  },
+  "bytes": 57701,
+  "sha256": "7a3942d54146e3f7816bffce78778abb8176f48d586bd53d9e576f0ad29c4117",
+  "checks": [
+    "42 finite source records",
+    "all 42 native source rho cells wet",
+    "19 wet/dry and 23 wet/wet native faces",
+    "50 native Vshape levels per source; each sum one",
+    "exact requested native Jan1 2021 timestamp",
+    "All 42 native mask pairs match browser scene_data; rho-coordinate differences below 0.00001 degrees (Float32 precision)"
+  ],
+  "browser_rho_coordinate_max_error_degrees": 7.571741662104614e-06
+}

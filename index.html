@@ -10,17 +10,18 @@
         const nav=performance.getEntriesByType("navigation")[0];
         let fromDetail=false;
         try { const ref=new URL(document.referrer); fromDetail=ref.origin===location.origin && /\/dig_(boundary|weather|tides|rivers)\.html$/.test(ref.pathname) && location.hash==="#parts"; } catch(_) {}
-        if(!fromDetail) { try { const ref=new URL(document.referrer); fromDetail=ref.origin===location.origin && /\/mechanisms-preview\.html$/.test(ref.pathname) && location.hash==="#frames"; } catch(_) {} }
+        if(!fromDetail) { try { const ref=new URL(document.referrer); fromDetail=ref.origin===location.origin && /\/mechanisms-preview\.html$/.test(ref.pathname) && ["#frames","#argo"].includes(location.hash); } catch(_) {} }
         if(fromDetail || (nav?.type==="back_forward" && history.state?.modelVisited)) document.documentElement.dataset.modelReturn="true";
     })();
     </script>
     <style>html[data-model-return] #entrance:not(.has-error){display:none}</style>
     <link rel="stylesheet" href="explorer.css?v=20261112-labels">
+    <link rel="stylesheet" href="parts-labels.css?v=20261113-native-final2">
     <link rel="stylesheet" href="entrance.css?v=20261111-model">
-    <link rel="stylesheet" href="guided-controls.css?v=20261113-tides">
+    <link rel="stylesheet" href="guided-controls.css?v=20261113-native-final2">
     <link rel="stylesheet" href="themes/preview.css?v=20261112-float-drop">
     <script defer src="ocean-paintings.js?v=20261112-hires"></script>
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261113-english"></script>
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261113-native-final2"></script>
 <script>
     const previewTheme = new URLSearchParams(location.search).get("theme");
     if (["soundings", "watch", "etretat"].includes(previewTheme)) {
@@ -133,7 +134,7 @@
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }}
     </script>
-    <script type="module" src="entrance.js?v=20261113-tides"></script>
+    <script type="module" src="entrance.js?v=20261113-native-final2"></script>
 </body>
 
 </html>

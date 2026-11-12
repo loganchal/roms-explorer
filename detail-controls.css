@@ -1,0 +1,116 @@
+/* Detail pages share the guided model's warm paper and open controls. */
+:is(#step-card, #dig-header-card, .dig-card) {
+    --panel:#faf5e9;
+    --panel-2:#e8e8dc;
+    --ink:#353e39;
+    --muted:#5d655b;
+    --line:#b9b9ab;
+    --accent:#476b70;
+    background:var(--panel);
+    color:var(--ink);
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    padding:24px;
+    font:400 14px/1.5 Georgia,serif;
+}
+body:has(#dig-wrap) { padding-top:72px; }
+#viewport { overflow:hidden; }
+#dig-wrap { gap:24px; }
+#dig-header-card { top:72px; }
+#dig-content { gap:24px; }
+#step-panel { width:340px; max-width:calc(100vw - 32px); }
+:is(#dig-header, #header-mount) { min-width:0; }
+.back-link {
+    color:var(--muted);
+    font:400 14px/1.4 Georgia,serif;
+    padding:6px 0;
+    margin:0 0 22px;
+    text-underline-offset:4px;
+}
+.back-link:hover { color:var(--ink); text-decoration:underline; }
+.layer-title {
+    font:400 29px/1.12 Georgia,serif;
+    letter-spacing:-.025em;
+    margin:0 0 12px;
+}
+.layer-note { font:400 13px/1.6 Georgia,serif; margin:0 0 12px; }
+.prov-pair { gap:4px 14px; margin:0 0 12px; }
+.prov-pair .prov-badge {
+    font:400 11px/1.5 system-ui,sans-serif;
+    color:var(--muted);
+    background:none;
+    border:0;
+    border-radius:0;
+    padding:0;
+}
+.prov-pair .dot { display:none; }
+code.src {
+    font:400 10px/1.6 ui-monospace,monospace;
+    color:var(--muted);
+    background:none;
+    padding:0;
+    max-width:100%;
+    overflow-wrap:anywhere;
+}
+:is(#step-card, #dig-header-card) .field-buttons {
+    gap:0 16px;
+    margin:18px 0 0;
+    padding:0;
+    border:0;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+}
+:is(#step-card, #dig-header-card) .field-buttons.visible { display:grid; }
+:is(#step-card, #dig-header-card) .field-buttons button,
+#constituent-picker .tide-chip {
+    min-width:0;
+    min-height:44px;
+    padding:10px 0;
+    border:0;
+    border-bottom:1px solid var(--line);
+    border-radius:0;
+    background:none;
+    color:var(--muted);
+    font:400 15px/1.35 Georgia,serif;
+    text-align:left;
+    cursor:pointer;
+}
+:is(#step-card, #dig-header-card) .field-buttons button:hover,
+#constituent-picker .tide-chip:hover { color:var(--ink); border-bottom-color:var(--accent); }
+:is(#step-card, #dig-header-card) .field-buttons button.active,
+#constituent-picker .tide-chip.active {
+    color:var(--ink);
+    background:none;
+    border-bottom:2px solid var(--accent);
+    padding-bottom:9px;
+}
+#constituent-picker { display:grid; grid-template-columns:repeat(auto-fit,minmax(50px,1fr)); gap:0 16px; }
+:is(button, a, summary):focus-visible { outline:2px solid #476b70; outline-offset:4px; }
+:is(.dig-caption, .dig-point, #constituent-info) { font:400 12px/1.6 Georgia,serif; }
+:is(.series-pane, .regrid-pane) .k { font:400 13px/1.5 Georgia,serif; margin-bottom:10px; }
+.dig-legend { flex-wrap:wrap; gap:8px 16px; }
+#map-readout { gap:8px 16px; flex-wrap:wrap; }
+/* Existing chart colours are designed for a dark plotting field. */
+canvas.dig-chart, #river-detail canvas.chart { border-radius:0; background:#10171b; }
+#map-canvas, .regrid-pane canvas { border-radius:0; }
+#river-detail .k { color:var(--ink); font:400 13px/1.6 Georgia,serif; }
+#placement-note { padding-top:16px; margin-top:16px; }
+#placement-note li { color:var(--muted); font:400 12px/1.6 Georgia,serif; }
+#hint { color:#c3cbc6; opacity:.85; text-align:center; max-width:calc(100% - 32px); width:max-content; font:11px/1.5 Georgia,serif; }
+.curtain-label { color:#e5e8e1; font:400 12px/1.4 Georgia,serif; }
+@media(max-width:860px) {
+    body:has(#dig-wrap) { padding:68px 16px 24px; }
+    #dig-wrap { grid-template-columns:minmax(0,1fr); gap:20px; }
+    #dig-header-card { position:static; }
+    :is(#step-card, #dig-header-card, .dig-card) { padding:22px; }
+}
+@media(max-width:640px) {
+    #step-panel { left:16px; bottom:54px; }
+    #step-card { max-height:46dvh; overflow-y:auto; overscroll-behavior:contain; }
+    .back-link { min-height:44px; display:flex; align-items:center; margin-bottom:12px; }
+    .layer-title { font-size:27px; }
+    .prov-pair { gap:4px 10px; }
+    #hint { bottom:14px; }
+}

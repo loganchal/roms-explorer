@@ -1,9 +1,9 @@
 {
   "tracks": 214,
-  "positions": 8234,
+  "positions": 8206,
   "qc": {
-    "rejected_qc": 58,
-    "model_profiles_removed_for_position_time_qc": 25
+    "rejected_qc": 50,
+    "known_iridium_trajectory_positions_omitted": 28
   },
   "largest_gaps_days": [
     793.6320900115742,
@@ -99,7 +99,21 @@
       "km_day": 37.21
     }
   ],
-  "payload_sha256": "0b464a3d2d9d40c8b4e4d91d9a4217b3bb51860d99d52be8da70b1ff87219959",
-  "payload_bytes": 712199,
-  "source": "Argovis v3 argo_core monthly domain requests 2021-01 through2025-06"
+  "payload_sha256": "f7c13cc8ce5a3d1deb4c846486e39a692c8535a32f23b1a5facb2e884ec89219",
+  "payload_bytes": 709958,
+  "source": "Argovis v3 argo_core monthly domain requests 2021-01 through2025-06",
+  "initial_model_profiles_removed_for_position_time_qc": 25,
+  "comparison_profiles_preserved": 2932,
+  "known_iridium_case": {
+    "wmo": "5906259",
+    "metadata_id": "5906259_m1",
+    "positioning_system": "IRIDIUM",
+    "platform_type": "APEX",
+    "trajectory_positions_omitted": 28,
+    "comparison_profiles_preserved": 11,
+    "verified_gps_profile": "https://data-argo.ifremer.fr/dac/aoml/5906259/profiles/D5906259_108.nc",
+    "verified_iridium_profile": "https://data-argo.ifremer.fr/dac/aoml/5906259/profiles/D5906259_110.nc",
+    "metadata_endpoint": "https://argovis-api.colorado.edu/argo/meta?id=5906259_m1",
+    "method": "Omit known coarse Iridium estimates from trajectory anchors only; retain original model/observation profile values and source locations; interpolate remaining native recorded fixes only across gaps of at most30days; no invented held movement."
+  }
 }

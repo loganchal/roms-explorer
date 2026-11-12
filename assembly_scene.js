@@ -1,5 +1,8 @@
-import { observedTracks, trackPosition } from "./argo-drift.js?v=20261112-drift";
+import { observedTracks, trackPosition, prepareSmoothTrack } from "./argo-drift.js?v=20261113-native-final2";
+import { createArgoTerrain } from "./argo-terrain.js?v=20261113-native-final2";
 import * as THREE from "three";
+import { riverFaces, riverSources as RIVERS } from "./river-sources.js?v=20261113-native-final2";
+import { createPartsLabels } from "./parts-labels.js?v=20261113-native-final2";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { modelFaces } from "./ocean-faces.js?v=20261112-pea-depth";
 import { oceanSurfaceGeometry, nearestWetSamples } from "./ocean-surface.js?v=20261112-anomaly-faces";
@@ -334,7 +337,7 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "rivers", title: "Rivers", kid: "47 point sources.",
+        id: "rivers", title: "Rivers", kid: `${RIVERS.length} point sources.`,
         prov: "metocean", source: "nz5km_N50_rivers.nc",
         detail: "River forcing provided by MetOcean.",
         limitation: null,
@@ -360,7 +363,7 @@ const STEPS = [
     {
         id: "argo", title: "Argo check", kid: `${ARGO_MODEL.length} independent float profiles.`,
         prov: "obs", source: `argo_floats_${ARGO_MONTH.replace("-", "")}.json`,
-        detail: "Model minus observed at each depth: red model-high, blue model-low. Float motion and profile transitions are illustrative. SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%. Upper-200 m PEA RMSE is 12.3% lower in the paired 1994–2020 comparison (95% confidence interval 6.9–18.8%), using 13,809 common in-situ profile matchups outside the outer nudging region.",
+        detail: "Model minus observed at each depth: red model-high, blue model-low. Float positions follow recorded Argo fixes. Profile colours interpolate between dated comparisons; gaps longer than 30 days are left blank. SST RMSE is evaluated against NOAA OISST v2.1 on its 0.25° grid using matched 1994–2020 months and locations. The 9.9% RMSE reduction has a 95% confidence interval of 8.9–11.1%. Upper-200 m PEA RMSE is 12.3% lower in the paired 1994–2020 comparison (95% confidence interval 6.9–18.8%), using 13,809 common in-situ profile matchups outside the outer nudging region.",
         limitation: null,
     },
     {
@@ -1146,12 +1149,24 @@ export function mountAssembly() {
     // -- rivers step ----------------------------------------------------
     const riverGroup = new THREE.Group();
     const maxTransport = Math.max(...RIVERS.map(r => r.transport));
-    RIVERS.forEach(r => {
-        const radius = 0.6 + 2.2 * Math.sqrt(r.transport / maxTransport);
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 12, 12), new THREE.MeshBasicMaterial({ color: 0x4fa8ff, transparent: true, opacity: 1 }));
-        const [x, z] = lonLatToXZ(r.lon, r.lat, lonMid, latMid);
-        mesh.position.set(x, 2, z);
-        mesh.userData = { kind: "river", river: r };
+    RIVERS.forEach((r, sourceIndex) => {
+        const discharge = Math.sqrt(r.transport / maxTransport);
+        // A generous invisible hit area keeps the fine source marks usable
+        // on a phone. Only the ivory centre and sea-glass outline render.
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(3.2, 12, 10), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, colorWrite: false, depthWrite: false }));
+        const centre = new THREE.Mesh(new THREE.CircleGeometry(.3 + .4 * discharge, 24), new THREE.MeshBasicMaterial({ color: 0xeee3c9, transparent: true, opacity: 1, depthWrite: false }));
+        const radius = .6 + 1.05 * discharge;
+        const outline = new THREE.Mesh(new THREE.RingGeometry(radius, radius + .13, 40), new THREE.MeshBasicMaterial({ color: 0xb8d2cc, side: THREE.DoubleSide, transparent: true, opacity: .68, depthWrite: false }));
+        centre.rotation.x = outline.rotation.x = -Math.PI / 2;
+        centre.renderOrder = 11; outline.renderOrder = 12;
+        mesh.add(centre, outline);
+        const face = riverFaces[sourceIndex];
+        const [x, z] = lonLatToXZ(face.lon, face.lat, lonMid, latMid);
+        // Use the native u/v source face; some input faces are wet/wet.
+        // Flat marks sit on sea level; the tiny offset only avoids z-fighting.
+        mesh.position.set(x, .015, z);
+        mesh.frustumCulled = false;
+        mesh.userData = { kind: "river", river: r, sourceIndex, face };
         riverGroup.add(mesh);
     });
     riverGroup.visible = false;
@@ -1599,7 +1614,8 @@ export function mountAssembly() {
     // are never null (model side, interpolated); the observation itself may
     // be, so the diff is left null wherever the float didn't measure that
     // level, rather than treated as a fabricated zero.
-    let argoFloats = ARGO_FLOATS, argoModels = ARGO_MODEL;
+    let argoFloats = ARGO_FLOATS, argoModels = ARGO_MODEL, argoTrajectories = null;
+    const argoTerrain = createArgoTerrain(terrainMesh);
     let ARGO_DIFFS = [];
     const ARGO_VAR_SCALE = {};
     function refreshArgoDifferences() {
@@ -1642,8 +1658,10 @@ export function mountAssembly() {
         const col = mesh.geometry.attributes.color.array;
         let o = 0;
         for (let i = 0; i < n - 1; i++) {
-            const v0 = diffArr[i], v1 = diffArr[i + 1];
-            const y0 = depthToY(pressures[i]), y1 = depthToY(pressures[i + 1]);
+            const depth0=Math.min(pressures[i],entry.maxDepth??Infinity),depth1=Math.min(pressures[i+1],entry.maxDepth??Infinity);
+            const v0 = depth0===pressures[i]?diffArr[i]:sampleArgoDepth(pressures,diffArr,depth0);
+            const v1 = depth1===pressures[i+1]?diffArr[i+1]:sampleArgoDepth(pressures,diffArr,depth1);
+            const y0 = depthToY(depth0), y1 = depthToY(depth1);
             const segValid = v0 !== null && v0 !== undefined && Number.isFinite(v0) && v1 !== null && v1 !== undefined && Number.isFinite(v1);
             if (!segValid) {
                 // no observation at (at least) one end of this segment --
@@ -1657,7 +1675,7 @@ export function mountAssembly() {
             const t0 = (Math.max(-scale, Math.min(scale, v0)) / scale + 1) / 2;
             const t1 = (Math.max(-scale, Math.min(scale, v1)) / scale + 1) / 2;
             const c0 = colormap(t0, ARGO_DIFF_STOPS), c1 = colormap(t1, ARGO_DIFF_STOPS);
-            const hw = ARGO_LINE_HALF_WIDTH;
+            const hw = entry.halfWidth??ARGO_LINE_HALF_WIDTH;
             // X-plane ribbon
             o = pushRibbonTri(pos, col, o, [x - hw, y0, z], [x - hw, y1, z], [x + hw, y1, z], c0, c1, c1);
             o = pushRibbonTri(pos, col, o, [x - hw, y0, z], [x + hw, y1, z], [x + hw, y0, z], c0, c1, c0);
@@ -1703,7 +1721,35 @@ export function mountAssembly() {
         argoGroup.traverse(child=>{if(child.geometry)child.geometry.dispose();if(child.material)child.material.dispose();});
         argoGroup.clear();argoMarkers.length=0;
         argoTracks=observedTracks(argoFloats);
+        const trajectoryMap=new Map((argoTrajectories?.tracks||[]).map(track=>[String(track.id),{points:track.points.map(point=>({...point,time:Date.parse(point.time)})).sort((a,b)=>a.time-b.time)}]));
     argoTracks.forEach(track=>{
+        track.positions=trajectoryMap.get(track.id)||track;
+        track.positions.breaks=[];
+        track.positions.trailStarts=[];
+        let trailStart=track.positions.points[0].time;
+        track.positions.points.forEach((point,i,points)=>{
+            if(i>0&&track.positions.breaks[i-1])trailStart=point.time;
+            track.positions.trailStarts[i]=trailStart;
+            const next=points[i+1];
+            if(!next)return;
+            let broken=next.time-point.time>30*86400000;
+            const a=argoDisplayPosition(track,point.lon,point.lat),b=argoDisplayPosition(track,next.lon,next.lat);
+            const samples=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/.35));
+            for(let j=0;!broken&&j<=samples;j++) {
+                const t=j/samples,sample=argoTerrain.sample(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t);
+                if(sample&&!sample.wet)broken=true;
+            }
+            track.positions.breaks[i]=broken;
+        });
+        prepareSmoothTrack(track.positions,(lon,lat)=>{
+            const [x,z]=argoDisplayPosition(track,lon,lat);
+            return argoTerrain.sample(x,z)?.wet===true;
+        },(lon,lat)=>argoDisplayPosition(track,lon,lat));
+        trailStart=track.positions.points[0].time;
+        track.positions.points.forEach((point,i)=>{
+            if(i>0&&track.positions.breaks[i-1])trailStart=point.time;
+            track.positions.trailStarts[i]=trailStart;
+        });
         track.marker=new THREE.Mesh(new THREE.SphereGeometry(.95,14,10),new THREE.MeshBasicMaterial({color:0xeee3c9,transparent:true,opacity:1}));
         track.marker.renderOrder=11;track.marker.frustumCulled=false;
         argoMarkers.push(track.marker);argoGroup.add(track.marker);
@@ -1727,17 +1773,6 @@ export function mountAssembly() {
         mesh.renderOrder=10;mesh.frustumCulled=false;
         argoGroup.add(mesh);
         track.curtain={mesh,x:0,z:0,n:100,pressures,diffs:{temp:[],salt:[],density:[]}};
-        track.origin=lonLatToXZ(track.points[0].lon,track.points[0].lat,lonMid,latMid);
-        track.anchor=track.origin.map(v=>Math.max(-140,Math.min(140,v)));
-        track.driftScale=3;
-        for(const point of track.points) {
-            const value=lonLatToXZ(point.lon,point.lat,lonMid,latMid);
-            for(let axis=0;axis<2;axis++) {
-                const delta=value[axis]-track.origin[axis];
-                if(delta!==0)track.driftScale=Math.min(track.driftScale,Math.abs(((delta>0?145:-145)-track.anchor[axis])/delta));
-            }
-        }
-
         const geometry=new THREE.BufferGeometry();
         geometry.setAttribute("position",new THREE.BufferAttribute(new Float32Array(64*3),3));
         const trailColors=new Float32Array(64*3);
@@ -1750,17 +1785,17 @@ export function mountAssembly() {
     });
     }
     buildArgoTracks();
-    let argoExtensionRequest = null;
+    let argoExtensionRequest = null, argoDataReady = false;
     function loadArgoExtension() {
         if(argoExtensionRequest)return argoExtensionRequest;
-        argoExtensionRequest=fetch("data/argo-extension.json?v=20261113-extension").then(response=>{
+        argoExtensionRequest=Promise.all(["data/argo-extension.json?v=20261113-native-final2","data/argo-trajectories.json?v=20261113-native-final2"].map(url=>fetch(url).then(response=>{
             if(!response.ok)throw new Error("Argo extension unavailable");
             return response.json();
-        }).then(data=>{
+        }))).then(([data,trajectories])=>{
             if(!Array.isArray(data.floats)||data.floats.length!==data.models?.length||!data.floats.length)throw new Error("Invalid Argo extension");
             if(data.floats.some((fl,i)=>!fl.pressure?.length||!Number.isFinite(Date.parse(fl.time))||data.models[i]?.id!==fl.id))throw new Error("Incomplete Argo extension");
-            argoFloats=data.floats;argoModels=data.models;
-            argoStart=Date.parse(FRAMES_DATES[0]+" UTC");argoEnd=Date.parse(FRAMES_DATES.at(-1)+" UTC");
+            argoFloats=data.floats;argoModels=data.models;argoTrajectories=trajectories;
+            argoStart=Date.parse(data.period.start+"T00:00:00Z");argoEnd=Date.parse(data.period.end+"T00:00:00Z");
             refreshArgoDifferences();buildArgoTracks();
             const info=fadeInfo.get(argoGroup);
             info.mats=[];
@@ -1774,11 +1809,11 @@ export function mountAssembly() {
             setArgoTime(argoTime);
             if(window.__debug)Object.assign(window.__debug,{argoTracks,argoStart,argoEnd});
             return true;
-        }).catch(error=>{console.warn(error.message);return false;});
+        }).catch(error=>{console.warn(error.message);return false;}).finally(()=>{argoDataReady=true;});
         return argoExtensionRequest;
     }
     function argoDisplayPosition(track,lon,lat) {
-        return lonLatToXZ(lon,lat,lonMid,latMid).map((v,i)=>Math.max(-146,Math.min(146,track.anchor[i]+track.driftScale*(v-track.origin[i]))));
+        return lonLatToXZ(lon,lat,lonMid,latMid);
     }
     function setArgoPlaying(value) {
         argoPlaying=value;
@@ -1796,15 +1831,35 @@ export function mountAssembly() {
             track.trail.visible=!!position;
             track.curtain.mesh.visible=!!position;
             if(!position)return;
-            const [x,z]=argoDisplayPosition(track,position.lon,position.lat);
+            const location=trackPosition(track.positions,argoTime);
+            const [x,z]=argoDisplayPosition(track,location.lon,location.lat);
+            const points=track.positions.points;
+            const padding=points.length===1?5*86400000:0;
+            const covered=argoTime>=points[0].time-padding&&argoTime<=points.at(-1).time+padding;
+            const inGap=location.weight>0&&track.positions.breaks[location.pointIndex];
+            const seabed=argoTerrain.sample(x,z);
+            if(!covered||inGap||!seabed?.wet) {
+                track.marker.visible=false;track.curtain.mesh.visible=false;track.trail.visible=false;
+                return;
+            }
             track.marker.visible=true;
             track.marker.position.set(x,3,z);
             track.marker.userData={kind:"argo",float:argoFloats[position.profileIndex],model:argoModels[position.profileIndex]};
             const curtain=track.curtain;
+            let halfWidth=ARGO_LINE_HALF_WIDTH,cross;
+            for(let attempt=0;attempt<16;attempt++) {
+                cross=argoTerrain.crossSample(x,z,halfWidth);
+                if(cross?.wet)break;
+                halfWidth*=.5;
+            }
+            if(!cross?.wet){halfWidth=0;cross=seabed;}
+            curtain.halfWidth=halfWidth;
+            const floorY=cross.y;
+            curtain.maxDepth=Number.isFinite(floorY)?Math.max(0,-floorY*MAX_DEPTH_M/CUBE_HEIGHT-.05):Infinity;
             curtain.mesh.position.set(x,0,z);
             curtain.mesh.scale.y=1-Math.pow(1-argoDrop,3);
             curtain.mesh.userData={kind:"argo",float:argoFloats[position.profileIndex],model:argoModels[position.profileIndex]};
-            const key=argoVar+":"+Math.round((argoTime-argoStart)/(argoEnd-argoStart)*1000);
+            const key=argoVar+":"+Math.round((argoTime-argoStart)/(argoEnd-argoStart)*1000)+":"+curtain.maxDepth.toFixed(3)+":"+halfWidth;
             if(track.morphKey!==key) {
                 const a=track.samples[position.pointIndex][argoVar],b=track.samples[Math.min(position.pointIndex+1,track.samples.length-1)][argoVar];
                 const p0=track.pressureProfiles[position.pointIndex],p1=track.pressureProfiles[Math.min(position.pointIndex+1,track.pressureProfiles.length-1)];
@@ -1818,9 +1873,9 @@ export function mountAssembly() {
                 renderArgoPanel(observed,argoModels[position.profileIndex]);
             }
             const vertices=track.trail.geometry.attributes.position;
-            const tailStart=Math.max(argoStart,argoTime-Math.min((argoEnd-argoStart)*.12,45*86400000));
+            const tailStart=Math.max(argoStart,track.positions.trailStarts[location.pointIndex],argoTime-Math.min((argoEnd-argoStart)*.12,45*86400000));
             for(let i=0;i<64;i++) {
-                const sample=trackPosition(track,tailStart+(argoTime-tailStart)*i/63);
+                const sample=trackPosition(track.positions,tailStart+(argoTime-tailStart)*i/63);
                 const xz=argoDisplayPosition(track,sample.lon,sample.lat);
                 vertices.setXYZ(i,xz[0],2.8,xz[1]);
             }
@@ -1828,6 +1883,7 @@ export function mountAssembly() {
             track.trail.geometry.setDrawRange(0,64);
         });
         argoSlider.value=(argoTime-argoStart)/(argoEnd-argoStart)*1000;
+        argoSlider.style.setProperty("--frame-progress", `${Number(argoSlider.value)/10}%`);
         const label=new Date(argoTime).toLocaleDateString("en-NZ",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
         if(argoLastDate!==label) {
             document.getElementById("argo-date").textContent=label;
@@ -1907,11 +1963,11 @@ export function mountAssembly() {
     // Offsets are ADDED to each object's own resting y, not
     // an absolute height.
     const PARTS_SHELF = new Map([
-        [surfaceMesh, { base: surfaceMesh.position.y, offset: 410 }],  // rebuilt (weather drape)
-        [windPlane, { base: windPlane.position.y, offset: 410 }],      // rebuilt
-        [boundaryGroup, { base: boundaryGroup.position.y, offset: 120 }], // rebuilt (walls span 0..-150)
-        [tideWallGroup, { base: tideWallGroup.position.y, offset: -240 }], // MetOcean tides
-        [riverGroup, { base: riverGroup.position.y, offset: -440 }],   // MetOcean rivers
+        [surfaceMesh, { base: surfaceMesh.position.y, offset: 240 }],  // rebuilt (weather drape)
+        [windPlane, { base: windPlane.position.y, offset: 240 }],      // rebuilt
+        [boundaryGroup, { base: boundaryGroup.position.y, offset: 70 }], // rebuilt (walls span 0..-150)
+        [tideWallGroup, { base: tideWallGroup.position.y, offset: -140 }], // MetOcean tides
+        [riverGroup, { base: riverGroup.position.y, offset: -240 }],   // MetOcean rivers
     ]);
     const PARTS_TWEEN_DURATION = 0.8; // seconds
     function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
@@ -1933,7 +1989,7 @@ export function mountAssembly() {
         });
     }
 
-    // The separated components span y +410..-440 -- the tour's default orbit
+    // The separated components span y +240..-240 -- the tour's default orbit
     // can't frame that, so entering "parts" recentres the orbit target on
     // the stack and dollies out (and both restore on leaving, keeping
     // whatever the user had before).
@@ -1946,7 +2002,7 @@ export function mountAssembly() {
             partsCam.prevDist = dist;
             partsCam.prevTy = controls.target.y;
             partsCam.toTy = -15;
-            partsCam.toDist = Math.max(dist, 1400 * viewScale);
+            partsCam.toDist = Math.max(dist, 1000 * viewScale);
         } else {
             partsCam.toTy = partsCam.prevTy ?? -CUBE_HEIGHT / 2;
             partsCam.toDist = partsCam.prevDist ?? dist;
@@ -1990,13 +2046,24 @@ export function mountAssembly() {
         raycaster.setFromCamera(pointer, camera);
         const hits = raycaster.intersectObjects(riverGroup.children, false);
         if (!hits.length) return;
-        const r = hits[0].object.userData.river;
+        // Overlapping invisible hit spheres must not steal a neighbouring
+        // source's centre click, especially on the smaller phone projection.
+        hits.sort((a, b) => {
+            const distance = hit => {
+                const p = hit.object.getWorldPosition(new THREE.Vector3()).project(camera);
+                return Math.hypot((p.x - pointer.x) * rect.width, (p.y - pointer.y) * rect.height);
+            };
+            return distance(a) - distance(b);
+        });
+        const selectedSource = hits[0].object.userData;
+        const r = selectedSource.river;
         const panel = document.getElementById("river-detail");
         if (!panel) return;
         panel.style.display = "block";
+        panel.dataset.riverIndex = selectedSource.sourceIndex;
         panel.innerHTML = `<div class="k">${r.transport.toFixed(0)} m&sup3;/s &middot; ${r.temp.toFixed(1)}&deg;C &middot; injection profile</div><canvas class="chart" id="riverChart"></canvas>`;
         const sLevels = r.vshape.map((_, idx) => idx / (r.vshape.length - 1) - 1);
-        drawLineChart(document.getElementById("riverChart"), r.vshape, sLevels, "#4fa8ff");
+        drawLineChart(document.getElementById("riverChart"), r.vshape, sLevels, "#47737b");
     });
 
     // -- Argo inspection: same raycaster/pointer as rivers above, gated on
@@ -2095,6 +2162,17 @@ export function mountAssembly() {
         if (!hits.length) return;
         const href = hrefByObject.get(hits[0].object);
         if (href) window.location.href = href;
+    });
+
+    const partsLabels = createPartsLabels({
+        viewport: document.getElementById("viewport"), camera,
+        onInteract: () => { controls.autoRotate = false; },
+        components: [
+            { title: "Weather", href: "dig_weather.html", sources: () => [surfaceMesh] },
+            { title: "Open boundaries", href: "dig_boundary.html", sources: () => boundaryGroup.children.filter(obj => obj.geometry && obj !== sourceMesh) },
+            { title: "Tides", href: "dig_tides.html", sources: () => tideWallGroup.children },
+            { title: "Rivers", href: "dig_rivers.html", sources: () => riverGroup.children.map(obj => ({ localToWorld: point => obj.localToWorld(point) })) },
+        ],
     });
 
     // -- step navigation --------------------------------------------------
@@ -2287,11 +2365,19 @@ export function mountAssembly() {
             history.replaceState({...history.state, modelStep:curId}, "", url);
         }
         if(curId === "argo" && prevId !== "argo") {
-            loadArgoExtension();
-            const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
-            argoDrop=reduced?1:0;
-            setArgoTime(argoTime);
-            setArgoPlaying(!reduced);
+            const revealArgo=()=>{
+                if(STEPS[stepIdx]?.id!=="argo")return;
+                const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+                argoDrop=reduced?1:0;
+                setArgoTime(argoTime);
+                setLayerVisible(argoGroup,true);
+                setArgoPlaying(!reduced);
+            };
+            if(argoDataReady)revealArgo();
+            else {
+                setLayerVisible(argoGroup,false);setArgoPlaying(false);
+                loadArgoExtension().then(revealArgo);
+            }
         }
         if(curId !== "argo") setArgoPlaying(false);
         if (curId === "parts" && prevId !== "parts") { setPartsShelf(true); setPartsCam(true); }
@@ -2357,17 +2443,20 @@ export function mountAssembly() {
                 setFramesDay((framesDayIdx + 1) % FN);
             }
         }
+        scene.updateMatrixWorld();
+        camera.updateMatrixWorld();
+        partsLabels.update(stepIdx >= 0 && STEPS[stepIdx].id === "parts");
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
     }
     animate();
 
     window.__debug = {
-        THREE, scene, camera, renderer, labelRenderer, terrainMesh, boundaryGroup, surfaceMesh, nudgBorderGroup, nudgFloorMesh, nudgRoofMesh,
-        tideWallGroup, riverGroup, windPlane, iniSliceGroup, initialOceanMesh, framesMesh, outerFaces, argoGroup, goTo, STEPS,
+        THREE, scene, camera, renderer, controls, partsLabels, labelRenderer, terrainMesh, boundaryGroup, surfaceMesh, nudgBorderGroup, nudgFloorMesh, nudgRoofMesh,
+        tideWallGroup, riverGroup, riverSources: RIVERS, riverFaces, windPlane, iniSliceGroup, initialOceanMesh, framesMesh, outerFaces, argoGroup, goTo, STEPS,
         setMeteoField, setBoundaryField, setBoundarySource, setClimField, setTideConstituent, setNudgDisplayMode,
         setIniField, setFrameField: setFramesField, setFramesDay, playFrames, pauseFrames,
-        setArgoVar, argoTracks, setArgoTime, argoStart, argoEnd, setArgoPlaying, loadArgoExtension,
+        setArgoVar, argoTracks, setArgoTime, argoStart, argoEnd, setArgoPlaying, loadArgoExtension, argoTerrain, argoDisplayPosition,
         gotoPart: (name) => {
             const hrefs = { boundary: "dig_boundary.html", weather: "dig_weather.html", tides: "dig_tides.html", rivers: "dig_rivers.html" };
             if (!hrefs[name]) return false;
@@ -2381,4 +2470,6 @@ export function mountAssembly() {
             return true;
         },
     };
+    if("requestIdleCallback" in window)requestIdleCallback(()=>loadArgoExtension(),{timeout:1500});
+    else setTimeout(()=>loadArgoExtension(),0);
 }

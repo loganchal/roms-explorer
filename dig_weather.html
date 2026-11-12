@@ -94,7 +94,7 @@
             #series-grid, #regrid-grid { grid-template-columns: 1fr; }
         }
     </style>
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261113-english"></script></head>
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261113-native-final2"></script><link rel="stylesheet" href="detail-controls.css?v=20261113-native-final2"></head>
 
 <body>
     <div id="dig-wrap">
@@ -103,7 +103,7 @@
             <div id="field-buttons" class="field-buttons visible"></div>
         </div>
         <div id="dig-content">
-            <div id="regrid-card" class="dig-card glass">
+            <div id="regrid-card" class="dig-card glass" aria-busy="true">
                 <div id="regrid-grid">
                     <div class="regrid-pane">
                         <div class="k">Native CFSR grid</div>
@@ -114,7 +114,7 @@
                         <canvas id="regrid-canvas"></canvas>
                     </div>
                 </div>
-                <div class="dig-caption">Air temperature, one hour, bilinearly interpolated from the coarse CFSR grid onto the model's 5 km curvilinear grid.</div>
+                <div id="regrid-caption" class="dig-caption"></div>
             </div>
             <div id="map-card" class="dig-card glass">
                 <div id="map-wrap">
@@ -146,7 +146,7 @@
 
     <script src="error_banner.js"></script>
     <script src="scene_data.js"></script>
-    <script type="module" src="./dig_weather.js?v=20261113-stage-return"></script>
+    <script type="module" src="./dig_weather.js?v=20261113-native-final2"></script>
 </body>
 
 </html>

@@ -1,3 +1,4 @@
+import { riverSources as RIVERS } from "./river-sources.js?v=20261113-native-final2";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
@@ -261,19 +262,21 @@ export function mountExplorer(config = {}) {
 
     // -- rivers -------------------------------------------------------------
     const riverGroup = new THREE.Group();
-    const riverMat = new THREE.MeshBasicMaterial({ color: 0x4fa8ff });
-    if (typeof RIVERS !== "undefined") {
-        const maxTransport = Math.max(...RIVERS.map(r => r.transport));
-        RIVERS.forEach(r => {
-            const radius = 0.6 + 2.2 * Math.sqrt(r.transport / maxTransport);
-            const geo = new THREE.SphereGeometry(radius, 12, 12);
-            const mesh = new THREE.Mesh(geo, riverMat);
-            const [x, z] = lonLatToXZ(r.lon, r.lat, lonMid, latMid);
-            mesh.position.set(x, 2, z);
-            mesh.userData = { kind: "river", river: r };
-            riverGroup.add(mesh);
-        });
-    }
+    const riverHitMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:0, colorWrite:false, depthWrite:false });
+    const maxRiverTransport = Math.max(...RIVERS.map(r => r.transport));
+    RIVERS.forEach((r, sourceIndex) => {
+        const discharge = Math.sqrt(r.transport / maxRiverTransport);
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(3.2,12,10),riverHitMat);
+        const centre = new THREE.Mesh(new THREE.CircleGeometry(.3+.4*discharge,24), new THREE.MeshBasicMaterial({color:0xeee3c9,depthWrite:false}));
+        const radius=.6+1.05*discharge;
+        const ring = new THREE.Mesh(new THREE.RingGeometry(radius,radius+.13,40),new THREE.MeshBasicMaterial({color:0xb8d2cc,transparent:true,opacity:.68,side:THREE.DoubleSide,depthWrite:false}));
+        centre.rotation.x=ring.rotation.x=-Math.PI/2;
+        mesh.add(centre,ring);
+        const [x,z]=lonLatToXZ(r.face.lon,r.face.lat,lonMid,latMid);
+        mesh.position.set(x,.015,z);
+        mesh.userData={kind:"river",river:r,sourceIndex,face:r.face};
+        riverGroup.add(mesh);
+    });
     riverGroup.visible = cfg.overlays.rivers;
     scene.add(riverGroup);
 

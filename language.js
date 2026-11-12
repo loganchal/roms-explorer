@@ -76,7 +76,7 @@
  CanvasRenderingContext2D.prototype.fillText=function(text,...args){return originalFill.call(this,translate(String(text)),...args)};
  try{localStorage.setItem('site-language',language)}catch(_){}
  document.documentElement.lang=language;
- fetch('language-mi.json?v=20261113-budget-reo').then(response=>{if(!response.ok)throw Error(response.status);return response.json()}).then(data=>{
+ fetch('language-mi.json?v=20261113-native-final2').then(response=>{if(!response.ok)throw Error(response.status);return response.json()}).then(data=>{
   dictionary=data;
   ordered=Object.entries(data).filter(([key])=>key.length>=3).sort((a,b)=>b[0].length-a[0].length).map(([en,mi])=>[new RegExp('(?<![A-Za-z])'+escape(en)+'(?![A-Za-z])','g'),mi]);
   observer=new MutationObserver(refresh);refresh();broadcast();
