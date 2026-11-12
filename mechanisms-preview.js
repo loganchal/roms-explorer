@@ -233,3 +233,8 @@ try {
 } catch(error) {
   $('#status').textContent=error.message;
 }
+
+// The host model keeps this page alive between steps; pause when it leaves view.
+window.addEventListener('message', event => {
+  if (event.origin === location.origin && event.data?.type === 'budget-visibility' && !event.data.visible) play(false);
+});

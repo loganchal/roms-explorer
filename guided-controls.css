@@ -178,3 +178,13 @@ html[lang="mi"] #step-card #frames-controls-wrap.visible { grid-template-columns
 #frames-field-buttons > button:last-child:nth-child(odd) { grid-column:1 / -1; }
 #budget-link { order:4; display:block; margin:4px 0 8px; color:var(--ink); font:15px/1.4 Georgia,serif; text-underline-offset:4px; }
 #budget-link[hidden] { display:none; }
+#budget-stage { position:fixed; inset:0; z-index:10001; background:#f7f4e9; color:#293b3a; }
+#budget-stage[hidden] { display:none; }
+.budget-flow { height:52px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; border-bottom:1px solid #cbd0c4; }
+.budget-flow button { display:flex; align-items:center; gap:8px; border:0; padding:8px 0; background:none; color:inherit; font:15px Georgia,serif; cursor:pointer; }
+.budget-flow button:hover span { text-decoration:underline; text-underline-offset:4px; }
+.budget-flow svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.2; }
+#budget-frame { display:block; width:100%; height:calc(100% - 52px); border:0; background:#f7f4e9; }
+.budget-active #viewport,.budget-active .model-home { visibility:hidden; }
+.budget-active > .language-switch { z-index:10002; top:8px; left:50%; right:auto; transform:translateX(-50%); }
+@media(max-width:500px) { .budget-flow { padding-inline:12px; } .budget-flow button { font-size:12px; gap:4px; } .budget-active > .language-switch { gap:7px; font-size:12px; } }

@@ -80,3 +80,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible {
  background:#42666b url('/assets/monet/ngv.webp') 50% 74% / cover no-repeat;
 }
 @media(max-width:480px) { .painted-band { height:46px; } }
+html[data-embedded] header { display:none; }
+.value-basis { margin:10px 0 0; color:var(--muted); font-size:14px; }
+@media(max-width:480px) { .value-basis { font-size:12px; } }

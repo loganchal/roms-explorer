@@ -363,6 +363,11 @@ const STEPS = [
         limitation: null,
     },
     {
+        id: "budget", title: "Stratification budget", kid: "",
+        detail: "Absolute model values and full process tendencies. Accumulated contributions are changes since 1 July, not climatological anomalies.",
+        limitation: null,
+    },
+    {
         id: "parts", title: "Data explorer", kid: "Explore forcing data",
         detail: "Each forcing component opens its own page.",
         limitation: null,
@@ -1982,7 +1987,6 @@ export function mountAssembly() {
     function renderStepUI() {
         document.getElementById("viewport").dataset.step = stepIdx < 0 ? "empty" : STEPS[stepIdx].id;
         document.getElementById("argo-evaluation").hidden = stepIdx < 0 || STEPS[stepIdx].id !== "argo";
-        document.getElementById("budget-link").hidden = stepIdx < 0 || STEPS[stepIdx].id !== "frames";
         document.getElementById("step-prev").disabled = stepIdx < 0;
         document.getElementById("step-next").disabled = stepIdx >= STEPS.length - 1;
         const dots = document.getElementById("step-dots");
@@ -2156,15 +2160,31 @@ export function mountAssembly() {
         const curId = stepIdx >= 0 ? STEPS[stepIdx].id : null;
         if (curId === "parts" && prevId !== "parts") { setPartsShelf(true); setPartsCam(true); }
         else if (curId !== "parts" && prevId === "parts") { setPartsShelf(false); setPartsCam(false); }
+        const budgetActive = curId === "budget";
+        document.body.classList.toggle("budget-active", budgetActive);
+        const budgetStage = document.getElementById("budget-stage");
+        const budgetFrame = document.getElementById("budget-frame");
+        budgetStage.hidden = !budgetActive;
+        if (budgetActive) {
+            if (!budgetFrame.hasAttribute("src")) budgetFrame.src = "mechanisms-preview.html?embedded=1";
+            viewport.setAttribute("aria-hidden", "true");
+            requestAnimationFrame(() => document.getElementById("budget-prev").focus({preventScroll:true}));
+        } else if (prevId === "budget") {
+            budgetFrame.contentWindow?.postMessage({type:"budget-visibility",visible:false}, location.origin);
+            viewport.removeAttribute("aria-hidden");
+            requestAnimationFrame(() => document.getElementById("step-next").focus({preventScroll:true}));
+        }
         renderStepUI();
     }
 
+    document.getElementById("budget-prev").addEventListener("click", () => goTo(stepIdx - 1));
+    document.getElementById("budget-next").addEventListener("click", () => goTo(stepIdx + 1));
     document.getElementById("step-next").addEventListener("click", () => goTo(stepIdx + 1));
     document.getElementById("step-prev").addEventListener("click", () => goTo(stepIdx - 1));
     goTo(-1);
     // the dig-deeper pages' back-links point at index.html#parts -- land
     // straight on that step instead of the empty cube when arriving that way.
-    if (location.hash === "#parts" || location.hash === "#frames") {
+    if (["#parts", "#frames", "#budget", "#argo"].includes(location.hash)) {
         const partsStepIdx = STEPS.findIndex(s => s.id === location.hash.slice(1));
         if (partsStepIdx >= 0) goTo(partsStepIdx);
     }
@@ -2175,6 +2195,7 @@ export function mountAssembly() {
     function animate() {
         requestAnimationFrame(animate);
         const dt = Math.min(0.1, clock.getDelta()); // clamp so a stalled/backgrounded tab doesn't jump
+        if (stepIdx >= 0 && STEPS[stepIdx].id === "budget") return;
         controls.update();
         updateFades(dt);
         updatePartsShelf(dt);
