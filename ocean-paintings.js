@@ -34,7 +34,7 @@
     };
     let paintings = [{ id: "ngv", url: "/assets/monet/ngv.webp" }];
     try {
-        const response = await fetch("/assets/monet/rotation.json");
+        const response = await fetch("/assets/monet/rotation.json?v=20261112-hires");
         if (response.ok) {
             const catalogue = await response.json();
             if (Array.isArray(catalogue) && catalogue.length) paintings = catalogue;
@@ -53,6 +53,10 @@
     function prepare(index) {
         if (prepared?.index === index) return prepared.promise;
         const image = new Image();
+        if (paintings[index].entrance_srcset) {
+            image.sizes = "100vw";
+            image.srcset = paintings[index].entrance_srcset;
+        }
         image.src = paintings[index].url;
         const promise = image.decode();
         promise.catch(() => {});
@@ -68,13 +72,15 @@
         try {
             await prepare(index);
             if (locked) return;
-            root.style.setProperty("--ocean-painting", 'url("' + paintings[index].url + '")');
+            const selected = new URL(prepared.image.currentSrc || paintings[index].url, location.href);
+            const url = selected.pathname + selected.search;
+            root.style.setProperty("--ocean-painting", 'url("' + url + '")');
             const crop = stripCrops[paintings[index].id] || ["100% auto", "50% 68%"];
             root.style.setProperty("--ocean-strip-size", crop[0]);
             root.style.setProperty("--ocean-strip-position", crop[1]);
             root.dataset.oceanPainting = paintings[index].id;
             root.dataset.oceanArt = "ready";
-            try { sessionStorage.setItem("ocean-model-active-art",JSON.stringify({url:paintings[index].url,id:paintings[index].id,size:crop[0],position:crop[1]})); } catch(_) {}
+            try { sessionStorage.setItem("ocean-model-active-art",JSON.stringify({url,id:paintings[index].id,size:crop[0],position:crop[1]})); } catch(_) {}
             try {
                 sessionStorage.setItem(storageKey, String(nextIndex));
             } catch {}
