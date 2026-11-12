@@ -1,0 +1,32 @@
+{
+  "exporter_revision": "029a1f8b841b1279571ec386fb4902b1ce151bc9",
+  "slurm_job": "6428841",
+  "slurm_state": "COMPLETED",
+  "slurm_exit_code": "0:0",
+  "snapshot_utc": "2021-01-04T01:00:00Z",
+  "month": "202101",
+  "fields": [
+    "uwind",
+    "vwind",
+    "swrad",
+    "pair",
+    "tair",
+    "qair",
+    "rain",
+    "lwradDown"
+  ],
+  "native_time_offsets_seconds": {
+    "uwind": 0.0,
+    "vwind": 0.0,
+    "swrad": 0.0,
+    "pair": 0.0,
+    "tair": 0.0,
+    "qair": 0.0,
+    "rain": 0.0,
+    "lwradDown": 0.0
+  },
+  "bytes": 8457976,
+  "sha256": "0edff6625226986b5e46e3869c8e51e70052bd769ff586f94d3f0d9b24028c15",
+  "source": "CFSR January 2021 native crops and existing bilinear regrid",
+  "exported_at_utc": "2026-11-12T23:00:22Z"
+}
