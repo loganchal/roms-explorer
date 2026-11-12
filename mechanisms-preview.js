@@ -21,9 +21,16 @@ const profiles = [
 const format = (value, decimals=1) => Number(value).toLocaleString('en-NZ', {
   minimumFractionDigits:decimals, maximumFractionDigits:decimals
 });
-const formatDate = date => new Date(date+'T12:00:00Z').toLocaleDateString('en-NZ', {
-  day:'numeric', month:'short', year:'numeric', timeZone:'UTC'
-});
+const isMaori = () => (window.modelLanguage?.language || document.documentElement.lang)==='mi';
+const localize = text => window.modelLanguage?.translate(text) || text;
+const formatDate = date => {
+  const value=new Date(date+'T12:00:00Z');
+  if(isMaori()) {
+    const months=['Kohi.','Hui.','Pou.','Pae.','Hara.','Pipi.','Hōng.','Here.','Mah.','Whi-n.','Whi-r.','Haki.'];
+    return `${value.getUTCDate()} ${months[value.getUTCMonth()]} ${value.getUTCFullYear()}`;
+  }
+  return value.toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+};
 const rate = (record, process) => process.keys.reduce((sum,key) => sum+record.rates[key], 0);
 
 function element(tag, attributes, parent) {
@@ -60,7 +67,8 @@ function drawProfiles() {
     const right = (index+1)*panelWidth-14;
     const x = value => left+(value-profile.min)/(profile.max-profile.min)*(right-left);
     const y = depth => 49+depth/250*170;
-    label(svg,left,13,profile.title,{class:'title'});
+    const title=isMaori()?({temp:'Pāmahana',salt:'Totetanga',density:'Kiato (σθ)'})[profile.key]:profile.title;
+    label(svg,left,13,title,{class:'title','data-i18n-ignore':''});
     label(svg,left,30,profile.unit);
     line(svg,left,49,left,219);
     line(svg,left,219,right,219);
@@ -151,8 +159,8 @@ function drawSeason() {
   element('circle',{cx:x(day+1),cy:y(data.pea[day+1]),r:3,fill:'#293b3a'},svg);
   data.days.forEach((record,index) => {
     if (record.date.endsWith('-01')) label(svg,x(index),225,
-      new Date(record.date+'T12:00:00Z').toLocaleDateString('en-NZ',{month:'short',timeZone:'UTC'}),
-      {'text-anchor':'middle'});
+      isMaori()?record.date.slice(5,7):new Date(record.date+'T12:00:00Z').toLocaleDateString('en-NZ',{month:'short',timeZone:'UTC'}),
+      {'text-anchor':'middle','data-i18n-ignore':''});
   });
   highlight(highlighted);
 }
@@ -187,6 +195,7 @@ $('#day').addEventListener('input',event=>{
   render();
 });
 window.addEventListener('resize',render);
+document.addEventListener('site-language-change',render);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)play(false)});
 function tick(time) {
   if (playing) {

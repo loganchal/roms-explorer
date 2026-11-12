@@ -83,3 +83,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible {
 html[data-embedded] header { display:none; }
 .value-basis { margin:10px 0 0; color:var(--muted); font-size:14px; }
 @media(max-width:480px) { .value-basis { font-size:12px; } }
+.budget-language .language-switch { position:static; padding:0; background:none; font-size:12px; }
+html[data-embedded] .language-switch { display:none; }
+html[lang="mi"] .process { grid-template-columns:150px minmax(45px,1fr) 53px; min-height:35px; }
+html[lang="mi"] .direction { padding-left:159px; }
+@media(max-width:480px) {
+ html[lang="mi"] .heading h1 { font-size:25px; }
+ html[lang="mi"] .value-basis { font-size:11px; }
+ html[lang="mi"] .process { grid-template-columns:138px minmax(40px,1fr) 48px; min-height:38px; font-size:12px; }
+ html[lang="mi"] .direction { padding-left:144px; }
+ html[lang="mi"] .season-heading h2 { max-width:210px; }
+}
+html[lang="mi"] #play { width:100px; flex:none; }

@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Online stratification budget construction</title>
   <script>if(new URLSearchParams(location.search).get("embedded")==="1")document.documentElement.dataset.embedded="true";</script>
-  <link rel="stylesheet" href="mechanisms-preview.css?v=20261112-budget-flow">
+  <link rel="stylesheet" href="mechanisms-preview.css?v=20261113-budget-reo">
+  <link rel="stylesheet" href="language.css?v=20261113-budget-reo">
+  <script defer src="language.js?v=20261113-budget-reo"></script>
 </head>
 <body>
   <div class="painted-band" aria-hidden="true"></div>
-  <header><a href="./index.html#frames">Ocean model</a></header>
+  <header><a href="./index.html#frames">Ocean model</a><div class="budget-language" data-language-controls></div></header>
   <main>
     <div class="heading"><div><h1>Online stratification budget construction</h1><p class="value-basis">Absolute model values · full process tendencies</p></div><img class="locator" src="data/methods-demo/locator.svg?v=20261112" alt="Offshore study site west of New Zealand’s lower North Island" width="160" height="160"></div>
     <p id="status" role="status">Reading the annual example…</p>
@@ -17,7 +19,7 @@
       <div class="timeline">
         <button id="play" type="button" aria-label="Play annual development"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 3 7 5-7 5Z"/></svg><span>Play</span></button>
         <input id="day" type="range" min="0" max="180" value="0" aria-label="Date">
-        <output id="date" for="day"></output>
+        <output id="date" for="day" data-i18n-ignore></output>
       </div>
       <div class="upper">
         <section class="profiles" aria-label="Temperature, salinity and density profiles"><div id="profiles"></div><p class="note">Faint lines: 1 July. Dotted line: 200 m.</p></section>
@@ -27,12 +29,12 @@
     </div>
     <details class="method"><summary>How the budget is constructed</summary>
       <p>Each physical process changes temperature and salinity. The model converts these tracer tendencies to density tendencies, then calculates each process’s contribution to the change in potential energy anomaly (PEA).</p>
-      <div class="equations"><p>ρ̇<sub>j</sub> = ρ<sub>0</sub>(−αṪ<sub>j</sub> + βṠ<sub>j</sub>)</p><p>φ̇<sub>j</sub> = (g/H) ∫<sub>−H</sub><sup>0</sup> (ρ̄̇<sub>j</sub> − ρ̇<sub>j</sub>) z dz</p></div>
+      <div class="equations" data-i18n-ignore><p>ρ̇<sub>j</sub> = ρ<sub>0</sub>(−αṪ<sub>j</sub> + βṠ<sub>j</sub>)</p><p>φ̇<sub>j</sub> = (g/H) ∫<sub>−H</sub><sup>0</sup> (ρ̄̇<sub>j</sub> − ρ̇<sub>j</sub>) z dz</p></div>
       <p>Integrating these contributions through time, and adding the initial PEA and closure corrections, reconstructs the developing stratification. The layer extends from the surface to 200 m. Corrections account for nonlinear density, moving geometry and tracer-update residuals.</p>
       <p>This example uses an offshore column, July 2008–June 2009. The budget uses online model diagnostics. The profile snapshots are daily means; surface-referenced potential density is calculated from their T and S and shown as σθ = ρθ − 1000 kg m⁻³. Accumulated contributions are relative to the start of the year, not a climatological anomaly.</p>
       <p id="validation"></p>
     </details>
   </main>
-  <script type="module" src="mechanisms-preview.js?v=20261112-budget-flow"></script>
+  <script type="module" src="mechanisms-preview.js?v=20261113-budget-reo"></script>
 </body>
 </html>
