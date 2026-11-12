@@ -1,41 +1,235 @@
-import { potentialDensityAnomaly } from "./budget-physics.js?v=20261112-density";
-const $=s=>document.querySelector(s);
-const ns='http://www.w3.org/2000/svg';
-const groups=[{id:'heat',name:'Surface heat',keys:['heat'],colour:'#c06b43'},{id:'fw',name:'Freshwater',keys:['fw'],colour:'#38958e'},{id:'mix',name:'Vertical mixing',keys:['mix'],colour:'#77649a'},{id:'adv',name:'Advection',keys:['hadv','vadv'],colour:'#3779a3'},{id:'dif',name:'Horizontal diffusion',keys:['hdif'],colour:'#84954f'},{id:'nudg',name:'Relaxation',keys:['nudg'],colour:'#a4758a'},{id:'cor',name:'Closure corrections',keys:['dilut','geom','tlres','slres','eos'],colour:'#89857d'}];
-const views={column:['The water column','State → density → stratification','Daily-mean temperature, salinity and their surface-referenced potential density provide the water-column context. Density is displayed as σθ = ρθ − 1000 kg m⁻³, calculated from the displayed T and S. The budget uses process tendencies evaluated online; it is not reconstructed from these snapshots.'],ledger:['The process budget','Physical processes → PEA tendencies','Positive rates increase stratification; negative rates reduce it. Each bar is a contribution to the online upper-200 m PEA tendency on the selected day.'],season:['Seasonal development','Initial state + accumulated contributions','The dark line is the model’s PEA. Coloured lines show the accumulated contribution of each process since 1 September, relative to zero. The dashed line reconstructs PEA from its initial state and all contributions.']};
-let view=new URLSearchParams(location.search).get('view')||'ledger';if(!views[view])view='ledger';
-let data,day=0,playing=false,last=0,hidden=new Set();
-const number=(n,p=1)=>Number(n).toLocaleString('en-NZ',{minimumFractionDigits:p,maximumFractionDigits:p});
-const date=s=>new Date(s+'T12:00:00Z').toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
-const rate=(d,g)=>g.keys.reduce((s,k)=>s+d.rates[k],0);
-const el=(tag,attrs={},parent)=>{const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);if(parent)parent.append(e);return e};
-const text=(svg,x,y,label,attrs={})=>{const e=el('text',{x,y,...attrs},svg);e.textContent=label;return e};
-function svg(height=390,width=1000){$('#visual').replaceChildren();const s=el('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':views[view][0]},$('#visual'));return s}
-const path=(xs,ys)=>xs.map((x,i)=>(i?'L':'M')+x.toFixed(2)+','+ys[i].toFixed(2)).join(' ');
-function axis(s,x1,y1,x2,y2){el('line',{x1,y1,x2,y2,stroke:'#cbd0c4','stroke-width':1},s)}
-function column(){const s=svg(400),d=data.days[day];const panels=[{key:'temp',title:'Temperature',unit:'°C',left:70,right:310,colour:'#c06b43'},{key:'salt',title:'Salinity',unit:'PSU',left:395,right:635,colour:'#3779a3'},{key:'density',title:'Potential density',unit:'σθ / kg m⁻³',left:720,right:960,colour:'#376a70'}];
- for(const p of panels){const all=data.days.flatMap(d=>d[p.key]);let lo=Math.floor(Math.min(...all)*2)/2,hi=Math.ceil(Math.max(...all)*2)/2;if(hi===lo)hi=lo+1;const x=v=>p.left+(v-lo)/(hi-lo)*(p.right-p.left),y=z=>65+z/250*275;
- text(s,p.left,25,p.title,{'class':'chart-title'});text(s,p.right,25,p.unit,{'class':'axis-label','text-anchor':'end'});axis(s,p.left,65,p.left,340);axis(s,p.left,340,p.right,340);
- for(let depth=0;depth<=250;depth+=50){text(s,p.left-12,y(depth)+4,depth,{'class':'tick','text-anchor':'end'});if(depth===200)el('line',{x1:p.left,y1:y(depth),x2:p.right,y2:y(depth),stroke:'#b9b9ab','stroke-dasharray':'3 5'},s)}
- for(let k=0;k<5;k++){const v=lo+(hi-lo)*k/4;text(s,x(v),365,number(v,1),{'class':'tick','text-anchor':'middle'})}
- for(const idx of [0,day]){const v=data.days[idx];el('path',{d:path(v[p.key].map(x),v.depth.map(y)),fill:'none',stroke:p.colour,'stroke-width':idx===day?3:1.2,opacity:idx===day?1:.3},s)}
- }text(s,14,200,'Depth / m',{'class':'axis-label',transform:'rotate(-90 14 200)'});text(s,498,393,'Faint profiles: 1 September. Dotted line: 200 m integration limit.',{'class':'axis-label','text-anchor':'middle'});}
-function ledger(){const s=svg(420),d=data.days[day],vals=groups.map(g=>rate(d,g)*86400);const max=Math.max(...data.days.flatMap(d=>groups.map(g=>Math.abs(rate(d,g)*86400))))*1.1;const cx=565,span=300,x=v=>cx+v/max*span;
- text(s,cx-span,24,'Destratifying',{'class':'axis-label'});text(s,cx+span,24,'Stratifying',{'class':'axis-label','text-anchor':'end'});axis(s,cx,42,cx,360);
- groups.forEach((g,i)=>{const y=55+i*44,v=vals[i];text(s,12,y+8,g.name,{style:'font-size:17px'});el('rect',{x:Math.min(cx,x(v)),y:y-6,width:Math.max(.8,Math.abs(x(v)-cx)),height:19,fill:g.colour},s);text(s,960,y+8,(v>0?'+':'')+number(v,3),{'text-anchor':'end',style:'font-size:15px;font-variant-numeric:tabular-nums'})});
- text(s,960,390,'PEA tendency / J m⁻³ day⁻¹',{'class':'axis-label','text-anchor':'end'});const net=vals.reduce((a,b)=>a+b,0);text(s,12,390,'Net tendency '+(net>0?'+':'')+number(net,3)+' J m⁻³ day⁻¹',{'class':'axis-label'});}
-function season(){const s=svg(420),n=data.days.length,initial=data.days[0].pea_start;const cumulative=groups.map(g=>{let sum=0;return [0,...data.days.map(d=>sum+=rate(d,g)*d.seconds)]});const actual=[initial,...data.days.map(d=>d.pea_end)],reconstructed=actual.map((_,i)=>initial+cumulative.reduce((sum,g)=>sum+g[i],0));const all=[0,...actual,...reconstructed,...cumulative.flat()];let lo=Math.min(...all),hi=Math.max(...all);const pad=(hi-lo)*.08||1;lo-=pad;hi+=pad;const x=i=>75+i/n*875,y=v=>335-(v-lo)/(hi-lo)*280;axis(s,75,55,75,335);axis(s,75,335,950,335);
- for(let k=0;k<5;k++){const v=lo+(hi-lo)*k/4;text(s,62,y(v)+4,number(v,0),{'class':'tick','text-anchor':'end'})}el('line',{x1:75,y1:y(0),x2:950,y2:y(0),stroke:'#cbd0c4','stroke-dasharray':'3 5'},s);
- const draw=(values,col,width,dash)=>el('path',{d:path(values.slice(0,day+2).map((_,i)=>x(i)),values.slice(0,day+2).map(y)),fill:'none',stroke:col,'stroke-width':width,...(dash?{'stroke-dasharray':dash}:{})},s);
- groups.forEach((g,i)=>{if(!hidden.has(g.id))draw(cumulative[i],g.colour,2)});draw(actual,'#293b3a',3);draw(reconstructed,'#f7f4e9',1.3,'4 4');el('line',{x1:x(day+1),x2:x(day+1),y1:48,y2:335,stroke:'#67716b','stroke-width':1,opacity:.5},s);el('circle',{cx:x(day+1),cy:y(actual[day+1]),r:4,fill:'#293b3a'},s);
- for(let i=0;i<n;i++)if(data.days[i].date.endsWith('-01'))text(s,x(i),365,new Date(data.days[i].date+'T12:00Z').toLocaleDateString('en-NZ',{month:'short',timeZone:'UTC'}),{'class':'tick','text-anchor':'middle'});text(s,75,24,'PEA and accumulated contributions / J m⁻³',{'class':'axis-label'});text(s,950,400,'Initial PEA '+number(initial)+' J m⁻³',{'class':'axis-label','text-anchor':'end'});}
-function compactColumn(){const s=svg(920,400);const panels=[{key:'temp',name:'Temperature / °C',colour:'#c06b43'},{key:'salt',name:'Salinity / PSU',colour:'#3779a3'},{key:'density',name:'Potential density / σθ (kg m⁻³)',colour:'#376a70'}];panels.forEach((p,k)=>{const top=45+k*300,all=data.days.flatMap(d=>d[p.key]),lo=Math.floor(Math.min(...all)*2)/2,hi=Math.ceil(Math.max(...all)*2)/2,x=v=>55+(v-lo)/(hi-lo)*320,y=z=>top+z; text(s,55,top-18,p.name,{'class':'chart-title'});axis(s,55,top,55,top+250);axis(s,55,top+250,375,top+250);for(let depth=0;depth<=250;depth+=50)text(s,42,y(depth)+4,depth,{'class':'tick','text-anchor':'end'});for(let j=0;j<4;j++){const v=lo+(hi-lo)*j/3;text(s,x(v),top+270,number(v,1),{'class':'tick','text-anchor':'middle'})}el('line',{x1:55,x2:375,y1:y(200),y2:y(200),stroke:'#cbd0c4','stroke-dasharray':'3 5'},s);for(const idx of [0,day]){const d=data.days[idx];el('path',{d:path(d[p.key].map(x),d.depth.map(y)),fill:'none',stroke:p.colour,'stroke-width':idx===day?2.5:1,opacity:idx===day?1:.3},s)}});}
-function compactLedger(){const s=svg(530,400),d=data.days[day];const max=Math.max(...data.days.flatMap(d=>groups.map(g=>Math.abs(rate(d,g)*86400))))*1.1,x=v=>200+v/max*175;axis(s,200,40,200,480);text(s,20,20,'Destratifying',{'class':'axis-label'});text(s,380,20,'Stratifying',{'class':'axis-label','text-anchor':'end'});groups.forEach((g,i)=>{const top=48+i*62,v=rate(d,g)*86400;text(s,20,top,g.name,{style:'font-size:16px'});text(s,380,top,(v>0?'+':'')+number(v,3),{style:'font-size:14px','text-anchor':'end'});el('rect',{x:Math.min(200,x(v)),y:top+12,width:Math.max(.8,Math.abs(x(v)-200)),height:13,fill:g.colour},s)});text(s,380,515,'PEA tendency / J m⁻³ day⁻¹',{'class':'axis-label','text-anchor':'end'});}
-function compactSeason(){const s=svg(360,400),n=data.days.length,initial=data.days[0].pea_start;const sums=groups.map(g=>{let v=0;return [0,...data.days.map(d=>v+=rate(d,g)*d.seconds)]}),actual=[initial,...data.days.map(d=>d.pea_end)],reconstructed=actual.map((_,i)=>initial+sums.reduce((v,g)=>v+g[i],0)),all=[0,...actual,...sums.flat()];let lo=Math.min(...all),hi=Math.max(...all);const pad=(hi-lo)*.08||1;lo-=pad;hi+=pad;const x=i=>52+i/n*330,y=v=>290-(v-lo)/(hi-lo)*240;axis(s,52,50,52,290);axis(s,52,290,382,290);for(let j=0;j<5;j++){const v=lo+(hi-lo)*j/4;text(s,43,y(v)+4,number(v,0),{'class':'tick','text-anchor':'end'})}const draw=(v,c,w,dash)=>el('path',{d:path(v.slice(0,day+2).map((_,i)=>x(i)),v.slice(0,day+2).map(y)),fill:'none',stroke:c,'stroke-width':w,...(dash?{'stroke-dasharray':dash}:{})},s);groups.forEach((g,i)=>{if(!hidden.has(g.id))draw(sums[i],g.colour,1.5)});draw(actual,'#293b3a',3);draw(reconstructed,'#f7f4e9',1,'4 4');el('line',{x1:x(day+1),x2:x(day+1),y1:45,y2:290,stroke:'#67716b',opacity:.5},s);for(let i=0;i<n;i++)if(data.days[i].date.endsWith('-01'))text(s,x(i),315,new Date(data.days[i].date+'T12:00Z').toLocaleDateString('en-NZ',{month:'short',timeZone:'UTC'}),{'class':'tick','text-anchor':'middle'});text(s,52,22,'PEA / J m⁻³',{'class':'axis-label'});text(s,382,348,'Initial PEA '+number(initial)+' J m⁻³',{'class':'axis-label','text-anchor':'end'});}
-window.addEventListener('resize',()=>{if(data)render()});
-function render(){if(!data)return;const d=data.days[day];$('#pea').textContent=number(d.pea_end);const change=d.pea_end-data.days[0].pea_start;$('#change').textContent=(change>0?'+':'')+number(change);$('#selected-date').textContent=date(d.date);$('#timeline-date').textContent=date(d.date);$('#day').value=day;$('#day').style.setProperty('--progress',day/(data.days.length-1)*100+'%');$('#day').setAttribute('aria-valuetext',date(d.date));(matchMedia("(max-width:700px)").matches?{column:compactColumn,ledger:compactLedger,season:compactSeason}:{column,ledger,season})[view]();}
-function setView(next){view=next;const [title,kicker,caption]=views[view];$('#view-title').textContent=title;$('#view-kicker').textContent=kicker;$('#caption').textContent=caption;document.querySelectorAll('[data-view]').forEach(a=>{if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});$('#legend').replaceChildren();if(view==='season')for(const g of groups){const b=document.createElement('button');b.textContent=g.name;b.style.setProperty('--colour',g.colour);b.setAttribute('aria-pressed',!hidden.has(g.id));b.onclick=()=>{hidden.has(g.id)?hidden.delete(g.id):hidden.add(g.id);b.setAttribute('aria-pressed',!hidden.has(g.id));render()};$('#legend').append(b)}render()}
-function play(on){playing=on;$('#play span').textContent=on?'Pause':'Play';$('#play').setAttribute('aria-label',on?'Pause seasonal development':'Play seasonal development');$('#play path').setAttribute('d',on?'M4 3h3v10H4ZM9 3h3v10H9Z':'m5 3 7 5-7 5Z');last=0}
-$('#play').onclick=()=>{if(day===data.days.length-1)day=0;play(!playing)};$('#day').oninput=e=>{play(false);day=Number(e.target.value);render()};document.querySelectorAll('[data-view]').forEach(a=>a.onclick=e=>{e.preventDefault();history.replaceState(null,'',a.href);setView(a.dataset.view)});
-function tick(t){if(playing){if(!last)last=t;if(t-last>140){day=Math.min(day+1,data.days.length-1);last=t;render();if(day===data.days.length-1)play(false)}}requestAnimationFrame(tick)}document.addEventListener('visibilitychange',()=>{if(document.hidden)play(false)});
-try{const r=await fetch('./data/methods-demo/season.json?v=20261112');if(!r.ok)throw Error('The seasonal data are not available yet.');data=await r.json();if(!data.days?.length)throw Error('The seasonal data are incomplete.');for(const d of data.days)d.density=d.temp.map((t,i)=>potentialDensityAnomaly(t,d.salt[i]));$('#day').max=data.days.length-1;day=60;$('#location').textContent=Math.abs(data.location.lat).toFixed(2)+'°S · '+data.location.lon.toFixed(2)+'°E\nOne offshore water column';$('#status').hidden=true;$('#demo').hidden=false;$('#validation').textContent='The example contains '+data.days.length+' daily records. The exported process-sum check has a maximum discrepancy of '+data.validation.max_rate_sum_error.toExponential(2)+' W m⁻³.';setView(view);requestAnimationFrame(tick);window.__budgetDemo={data,get view(){return view},get day(){return day},setDay(n){play(false);day=n;render()}}}catch(e){$('#status').textContent=e.message;$('#status').classList.add('error')}
+import { potentialDensityAnomaly } from './budget-physics.js?v=20261112-density';
+
+const $ = selector => document.querySelector(selector);
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const processes = [
+  { id:'heat', name:'Surface heat', keys:['heat'], colour:'#bc714e' },
+  { id:'fw', name:'Freshwater', keys:['fw'], colour:'#438f87' },
+  { id:'mix', name:'Vertical mixing', keys:['mix'], colour:'#827198' },
+  { id:'adv', name:'Advection', keys:['hadv','vadv'], colour:'#497c9a' },
+  { id:'dif', name:'Horizontal diffusion', keys:['hdif'], colour:'#869454' },
+  { id:'nudg', name:'Relaxation', keys:['nudg'], colour:'#a47c8c' },
+  { id:'cor', name:'Corrections', keys:['dilut','geom','tlres','slres','eos'], colour:'#8a877e' }
+];
+let data, day = 60, playing = false, previousTime = 0;
+let highlighted = null;
+const profiles = [
+  { key:'temp', title:'Temperature', unit:'°C', colour:'#bc714e' },
+  { key:'salt', title:'Salinity', unit:'PSU', colour:'#497c9a' },
+  { key:'density', title:'Density (σθ)', unit:'kg m⁻³', colour:'#376a70' }
+];
+const format = (value, decimals=1) => Number(value).toLocaleString('en-NZ', {
+  minimumFractionDigits:decimals, maximumFractionDigits:decimals
+});
+const formatDate = date => new Date(date+'T12:00:00Z').toLocaleDateString('en-NZ', {
+  day:'numeric', month:'short', year:'numeric', timeZone:'UTC'
+});
+const rate = (record, process) => process.keys.reduce((sum,key) => sum+record.rates[key], 0);
+
+function element(tag, attributes, parent) {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [key,value] of Object.entries(attributes)) node.setAttribute(key,value);
+  parent.append(node);
+  return node;
+}
+function label(svg, x, y, value, attributes={}) {
+  const node = element('text', { x,y,...attributes },svg);
+  node.textContent = value;
+  return node;
+}
+function line(svg, x1, y1, x2, y2, attributes={}) {
+  return element('line', { x1,y1,x2,y2,stroke:'#cbd0c4',...attributes }, svg);
+}
+function figure(target, height, description) {
+  const container = $(target);
+  container.replaceChildren();
+  const width = Math.max(320,container.clientWidth);
+  return { width, svg:element('svg', {
+    viewBox:`0 0 ${width} ${height}`, role:'img', 'aria-label':description
+  },container) };
+}
+function path(x, y) {
+  return x.map((value,index) => `${index?'L':'M'}${value.toFixed(2)},${y[index].toFixed(2)}`).join(' ');
+}
+
+function drawProfiles() {
+  const {svg,width} = figure('#profiles',255,'Temperature, salinity and surface-referenced potential density profiles');
+  const panelWidth = width/3;
+  profiles.forEach((profile,index) => {
+    const left = index*panelWidth + (index===0?31:18);
+    const right = (index+1)*panelWidth-14;
+    const x = value => left+(value-profile.min)/(profile.max-profile.min)*(right-left);
+    const y = depth => 49+depth/250*170;
+    label(svg,left,13,profile.title,{class:'title'});
+    label(svg,left,30,profile.unit);
+    line(svg,left,49,left,219);
+    line(svg,left,219,right,219);
+    for (const depth of [0,100,200,250]) {
+      if (index===0) label(svg,left-8,y(depth)+4,depth,{'text-anchor':'end'});
+    }
+    line(svg,left,y(200),right,y(200),{'stroke-dasharray':'2 4'});
+    const ticks = width<500?2:3;
+    for (let i=0;i<ticks;i++) {
+      const value = profile.min+(profile.max-profile.min)*i/(ticks-1);
+      label(svg,x(value),239,format(value),{'text-anchor':'middle'});
+    }
+    for (const [record,opacity,strokeWidth] of [[data.days[0],.25,1],[data.days[day],1,2]]) {
+      element('path', {
+        d:path(record[profile.key].map(x),record.depth.map(y)), fill:'none',
+        stroke:profile.colour, 'stroke-width':strokeWidth, opacity
+      },svg);
+    }
+  });
+  label(svg,5,145,'m');
+}
+
+function createProcesses() {
+  const container = $('#processes');
+  container.setAttribute('role','list');
+  processes.forEach(process => {
+    const row = document.createElement('div');
+    row.className='process';
+    row.tabIndex=0;
+    row.setAttribute('role','listitem');
+    row.style.setProperty('--colour',process.colour);
+    const name=document.createElement('span');
+    name.className='process-label';
+    name.textContent=process.name;
+    const bar=document.createElement('span');
+    bar.className='process-bar';
+    bar.setAttribute('aria-hidden','true');
+    bar.append(document.createElement('i'));
+    const value=document.createElement('span');
+    value.className='process-value';
+    row.append(name,bar,value);
+    row.addEventListener('mouseenter',()=>highlight(process.id));
+    row.addEventListener('mouseleave',()=>highlight(null));
+    row.addEventListener('focus',()=>highlight(process.id));
+    row.addEventListener('blur',()=>highlight(null));
+    process.row=row;
+    container.append(row);
+  });
+}
+function updateProcesses() {
+  processes.forEach(process => {
+    const value=rate(data.days[day],process)*86400;
+    const extent=Math.abs(value)/data.maxRate*50;
+    const bar=process.row.querySelector('i');
+    bar.style.left=(value<0?50-extent:50)+'%';
+    bar.style.width=extent+'%';
+    process.row.querySelector('.process-value').textContent=(value>0?'+':'')+format(value,2);
+    process.row.setAttribute('aria-label',`${process.name}: ${format(value,3)} joules per cubic metre per day. Follow contribution in the seasonal plot.`);
+  });
+}
+function highlight(id) {
+  highlighted=id;
+  document.querySelectorAll('[data-process]').forEach(node => {
+    node.setAttribute('opacity',!id||node.dataset.process===id?1:.14);
+    node.setAttribute('stroke-width',id===node.dataset.process?2.7:1.6);
+  });
+}
+
+function drawSeason() {
+  const {svg,width} = figure('#season',240,'Model potential energy anomaly and accumulated process contributions since 1 September');
+  const left=40, right=width-15, top=14, bottom=202;
+  const x=index=>left+index/data.days.length*(right-left);
+  const y=value=>bottom-(value-data.seasonMin)/(data.seasonMax-data.seasonMin)*(bottom-top);
+  line(svg,left,top,left,bottom);
+  line(svg,left,bottom,right,bottom);
+  line(svg,left,y(0),right,y(0),{'stroke-dasharray':'2 4'});
+  for (let i=0;i<5;i++) {
+    const value=data.seasonMin+(data.seasonMax-data.seasonMin)*i/4;
+    label(svg,left-8,y(value)+4,format(value,0),{'text-anchor':'end'});
+  }
+  processes.forEach(process => element('path', {
+    d:path(process.accumulated.slice(0,day+2).map((_,i)=>x(i)),process.accumulated.slice(0,day+2).map(y)),
+    fill:'none',stroke:process.colour,'stroke-width':1.6,'data-process':process.id
+  },svg));
+  const state=data.pea.slice(0,day+2);
+  element('path',{d:path(state.map((_,i)=>x(i)),state.map(y)),fill:'none',stroke:'#293b3a','stroke-width':2.3},svg);
+  line(svg,x(day+1),top,x(day+1),bottom,{stroke:'#69736c',opacity:.45});
+  element('circle',{cx:x(day+1),cy:y(data.pea[day+1]),r:3,fill:'#293b3a'},svg);
+  data.days.forEach((record,index) => {
+    if (record.date.endsWith('-01')) label(svg,x(index),225,
+      new Date(record.date+'T12:00:00Z').toLocaleDateString('en-NZ',{month:'short',timeZone:'UTC'}),
+      {'text-anchor':'middle'});
+  });
+  highlight(highlighted);
+}
+
+function render() {
+  if (!data) return;
+  const record=data.days[day];
+  $('#date').textContent=formatDate(record.date);
+  $('#pea').textContent=format(record.pea_end);
+  $('#day').value=day;
+  $('#day').style.setProperty('--progress',100*day/(data.days.length-1)+'%');
+  $('#day').setAttribute('aria-valuetext',formatDate(record.date));
+  drawProfiles();
+  updateProcesses();
+  drawSeason();
+}
+function play(enabled) {
+  playing=enabled;
+  previousTime=0;
+  $('#play span').textContent=enabled?'Pause':'Play';
+  $('#play').setAttribute('aria-label',enabled?'Pause seasonal development':'Play seasonal development');
+  $('#play path').setAttribute('d',enabled?'M4 3h3v10H4ZM9 3h3v10H9Z':'m5 3 7 5-7 5Z');
+}
+$('#play').addEventListener('click',()=>{
+  if (!data) return;
+  if (day===data.days.length-1) day=0;
+  play(!playing);
+});
+$('#day').addEventListener('input',event=>{
+  play(false);
+  day=Number(event.target.value);
+  render();
+});
+window.addEventListener('resize',render);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)play(false)});
+function tick(time) {
+  if (playing) {
+    if (!previousTime) previousTime=time;
+    if (time-previousTime>140) {
+      day=Math.min(day+1,data.days.length-1);
+      previousTime=time;
+      render();
+      if (day===data.days.length-1) play(false);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+try {
+  const response=await fetch('./data/methods-demo/season.json?v=20261112');
+  if (!response.ok) throw Error('The seasonal data could not be loaded.');
+  data=await response.json();
+  for (const record of data.days) record.density=record.temp.map((t,i)=>potentialDensityAnomaly(t,record.salt[i]));
+  for (const profile of profiles) {
+    const values=data.days.flatMap(record=>record[profile.key]);
+    profile.min=Math.floor(Math.min(...values)*2)/2;
+    profile.max=Math.ceil(Math.max(...values)*2)/2;
+    if (profile.max===profile.min) profile.max++;
+  }
+  data.maxRate=Math.max(...data.days.flatMap(record=>processes.map(process=>Math.abs(rate(record,process)*86400))))*1.05;
+  processes.forEach(process=>{
+    let sum=0;
+    process.accumulated=[0,...data.days.map(record=>sum+=rate(record,process)*record.seconds)];
+  });
+  data.pea=[data.days[0].pea_start,...data.days.map(record=>record.pea_end)];
+  const values=[...data.pea,...processes.flatMap(process=>process.accumulated)];
+  const min=Math.min(...values),max=Math.max(...values),pad=(max-min)*.08||1;
+  data.seasonMin=min-pad;
+  data.seasonMax=max+pad;
+  $('#day').max=data.days.length-1;
+  $('#location').textContent=`${Math.abs(data.location.lat).toFixed(2)}°S · ${data.location.lon.toFixed(2)}°E`;
+  $('#validation').textContent='The accumulated contributions reconstruct the final PEA to within '+format(Math.abs(data.validation.final_accumulated_reconstruction_error),4)+' J m⁻³, consistent with archived field precision.';
+  $('#status').hidden=true;
+  $('#demo').hidden=false;
+  createProcesses();
+  render();
+  requestAnimationFrame(tick);
+  window.__budgetDemo={data,get day(){return day},setDay(index){play(false);day=index;render()}};
+} catch(error) {
+  $('#status').textContent=error.message;
+}

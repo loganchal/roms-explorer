@@ -37,3 +37,10 @@ sigma-theta = rho-theta - 1000 kg m^-3. It is distinct from both in-situ density
 and PEA. The browser calculation was checked against the existing Atlas
 ROMS EOS port for all displayed states plus reference/clamping cases (6519
 states; maximum numerical discrepancy 0 kg m^-3).
+
+Interface revision: a single workspace with one shared date control. Temperature,
+salinity and density profiles, daily process contributions and accumulated
+seasonal development remain visible together. Process focus/hover links the
+contribution rows to the seasonal curves. Method equations are in one closed
+native disclosure. The former view query parameters remain harmless so existing
+local review links still open the updated workspace.
