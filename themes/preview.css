@@ -93,3 +93,41 @@ html[data-ocean-cycle][data-theme="etretat"][data-ocean-art="ready"] #entrance::
 @media(prefers-reduced-motion:reduce) {
     html[data-ocean-cycle] #entrance::before { transition:none; }
 }
+
+.entrance-profiles { display:none; }
+[data-theme="etretat"] .entrance-profiles {
+    display:block; position:absolute; top:53%; left:0; width:100%; height:47%;
+    overflow:hidden; pointer-events:none;
+    mask-image:radial-gradient(ellipse 44% 18% at 50% 32%,transparent 86%,#000 100%);
+}
+.entrance-profiles path {
+    fill:none; stroke:var(--profile-ink); vector-effect:non-scaling-stroke; stroke-linecap:round; stroke-linejoin:round;
+    animation-duration:var(--drop-duration); animation-delay:var(--drop-delay); animation-iteration-count:infinite; animation-timing-function:cubic-bezier(.2,.5,.4,1);
+}
+.argo-profile-trace { stroke-width:.85; stroke-dasharray:1 1; animation-name:argo-descent; }
+.argo-profile-head { stroke-width:2.5; stroke-dasharray:.001 1.001; animation-name:argo-descent-head; }
+@keyframes argo-descent {
+    0% { stroke-dashoffset:1; opacity:0; transform:translateY(-5px); }
+    10% { opacity:.48; }
+    76% { stroke-dashoffset:0; opacity:.35; transform:translateY(0); }
+    100% { stroke-dashoffset:0; opacity:0; transform:translateY(9px); }
+}
+@keyframes argo-descent-head {
+    0% { stroke-dashoffset:0; opacity:0; transform:translateY(-5px); }
+    10% { opacity:.75; }
+    76% { stroke-dashoffset:-1; opacity:.5; transform:translateY(0); }
+    100% { stroke-dashoffset:-1; opacity:0; transform:translateY(9px); }
+}
+#entrance.is-leaving .entrance-profiles path { animation-play-state:paused; }
+#entrance.has-error .entrance-profiles { display:none; }
+@media(max-width:640px) {
+    [data-theme="etretat"] .entrance-profiles {
+        mask-image:radial-gradient(ellipse 58% 22% at 50% 32%,transparent 86%,#000 100%);
+    }
+    .argo-drop:nth-child(even) { display:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+    .entrance-profiles path { animation:none; }
+    .argo-profile-trace { stroke-dashoffset:0; opacity:.18; }
+    .argo-profile-head { display:none; }
+}
