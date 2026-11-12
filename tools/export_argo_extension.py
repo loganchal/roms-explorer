@@ -76,8 +76,21 @@ def match(args):
     payload['models']=allmodels;payload['modelSource']='Daily mean nz5km_avg, nearest wet horizontal cell; Vtransform=2 native levels, linear interpolation to measured pressure, UNESCO sigma-t, display dbar~m.'
     pathlib.Path(args.out).write_text(json.dumps(payload,separators=(',',':'),allow_nan=False))
 
+
+def combine(args):
+    parts=[json.loads(p.read_text()) for p in sorted(pathlib.Path(args.parts).glob('part-*.json'))]
+    assert len(parts)==54, f'Expected 54 complete months, got {len(parts)}'
+    payload={k:v for k,v in parts[0].items() if k not in ('floats','models')}
+    pairs=[(f,m) for part in parts for f,m in zip(part['floats'],part['models'])]
+    pairs.sort(key=lambda pair:pair[0]['time'])
+    assert len({f['id'] for f,m in pairs})==len(pairs)
+    assert all(m is not None and f['id']==m['id'] for f,m in pairs)
+    payload.update(floats=[f for f,m in pairs],models=[m for f,m in pairs])
+    pathlib.Path(args.out).write_text(json.dumps(payload,separators=(',',':'),allow_nan=False))
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser();sub=ap.add_subparsers(dest='mode',required=True)
     f=sub.add_parser('fetch');f.add_argument('--cache',required=True);f.add_argument('--out',required=True)
     m=sub.add_parser('match');m.add_argument('--month');m.add_argument('--observations',required=True);m.add_argument('--outputs',required=True);m.add_argument('--grid',required=True);m.add_argument('--out',required=True)
-    a=ap.parse_args();fetch_all(a) if a.mode=='fetch' else match(a)
+    c=sub.add_parser('combine');c.add_argument('--parts',required=True);c.add_argument('--out',required=True)
+    a=ap.parse_args();{'fetch':fetch_all,'match':match,'combine':combine}[a.mode](a)

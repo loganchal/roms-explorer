@@ -1,0 +1,20 @@
+{
+  "exporter_revision": "6816e6c",
+  "slurm_array": "6428766",
+  "slurm_tasks": 54,
+  "slurm_state": "COMPLETED",
+  "slurm_exit_code": "0:0",
+  "period": {
+    "start": "2021-01-01",
+    "end": "2025-06-30"
+  },
+  "observed_profiles": 2957,
+  "wmo_floats": 215,
+  "source": "Argovis v3 argo_core",
+  "model_release": "hindcast_199401_202605_v1",
+  "model_files": "nz5km_avg_YYYYMM.nc",
+  "selection": "QC <=2 for pressure/T/S;32 measured levels including endpoints;20-day per-WMO separation",
+  "embargo_scope": "Individual illustrative profiles only; no unpublished composites or mechanistic findings",
+  "payload_bytes": 8596081,
+  "payload_sha256": "beda2820fdec50c650c4782e6ea2f2afce6b0856cf6ac78125dac23edc17b83d"
+}
