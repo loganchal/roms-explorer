@@ -31,6 +31,14 @@ def surface(dataset, name, time, indices):
     return a[...,indices['east'],:][...,indices['north']].astype('f4')
 
 
+def pad_column_boundary(values):
+    """Extend nearest interior display samples over unwritten ghost diagnostics."""
+    result=np.array(values,copy=True)
+    result[0,:]=result[1,:];result[-1,:]=result[-2,:]
+    result[:,0]=result[:,1];result[:,-1]=result[:,-2]
+    return result
+
+
 def centre(year,month):
     return datetime(year,month,1)+timedelta(days=calendar.monthrange(year,month)[1]/2)
 
@@ -99,10 +107,11 @@ def main():
                     records[name+'_anom'].append(profiles(d,name,t,indices)-reference(clims,date,name))
                     surfaces[name+'_anom'].append(surface(d,name,t,indices)-reference(clims,date,name+'_surface'))
                 pea=np.ma.filled(e['strat200_pea'][t],0)
-                records['pea_anom'].append(grid_edges(pea,indices)[None,:]-reference(clims,date,'pea'))
-                surfaces['pea_anom'].append(pea[np.ix_(indices['east'],indices['north'])]-reference(clims,date,'pea_surface'))
+                pea_surface=pad_column_boundary(pea[np.ix_(indices['east'],indices['north'])]-reference(clims,date,'pea_surface'))
+                records['pea_anom'].append(np.concatenate([pea_surface[-1,:],pea_surface[0,:],pea_surface[:,-1],pea_surface[:,0]])[None,:])
+                surfaces['pea_anom'].append(pea_surface)
         sources.extend([file_receipt(avg),file_receipt(dia)]);print('anomalies '+month,flush=True)
-    patch={'frames':{},'surface':{},'reference':{'years':[1994,2020],'method':'Daily model output minus the 1994-2020 monthly model climatology, linearly interpolated between month centres. No detrending.','PEA':'Native daily-mean strat200_pea: upper 200 m or shallower seabed. Side colours represent this column metric, not a depth-resolved PEA profile.','revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'sources':sources}}
+    patch={'frames':{},'surface':{},'reference':{'years':[1994,2020],'method':'Daily model output minus the 1994-2020 monthly model climatology, linearly interpolated between month centres. No detrending.','PEA':'Native daily-mean strat200_pea: upper 200 m or shallower seabed. Side colours represent this column metric, not a depth-resolved PEA profile. Unwritten outer ghost diagnostics are padded from the nearest interior sampled column, with matching surface-edge padding.','revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'sources':sources}}
     for key in records:
         patch['frames'][key]=pack_field(a.out,'frames-'+key+'.u16.gz',np.stack(records[key]),wet)
         patch['surface'][key]=pack_surface(a.out,'surface-'+key+'.u8.gz',np.stack(surfaces[key]),surf_wet)

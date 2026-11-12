@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 from netCDF4 import Dataset
-from export_ocean_anomalies import profiles, surface, reference
+from export_ocean_anomalies import profiles, surface, reference, pad_column_boundary
 from export_ocean_faces import edge_indices
 
 
@@ -29,6 +29,15 @@ class SeasonalReferenceTests(unittest.TestCase):
 
 
 class BoundarySamplingTests(unittest.TestCase):
+    def test_pea_ghost_border_uses_adjacent_interior_signal(self):
+        values=np.zeros((5,6));values[1:-1,1:-1]=np.arange(12).reshape(3,4)+1
+        result=pad_column_boundary(values)
+        np.testing.assert_array_equal(result[0,1:-1],values[1,1:-1])
+        np.testing.assert_array_equal(result[-1,1:-1],values[-2,1:-1])
+        np.testing.assert_array_equal(result[1:-1,0],values[1:-1,1])
+        self.assertEqual(result[0,0],values[1,1])
+        np.testing.assert_array_equal(values[0],0)
+
     def test_profiles_and_surfaces_share_exact_outer_endpoints(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'example.nc'
