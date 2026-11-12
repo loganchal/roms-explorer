@@ -1,14 +1,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { modelFaces } from "./ocean-faces.js";
+import { oceanSurfaceGeometry, nearestWetSamples } from "./ocean-surface.js";
 import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 
-// Guided assembly: start from an empty cube, step through building the
-// model up one piece at a time. Each step is simple by default (a kid
-// should follow it) but has an expandable detail panel with real evidence
-// and an honest note on what's simplified in THIS VISUALIZATION specifically
-// (separate from the provenance badge, which is about the underlying data).
-// No new data is pulled for this pass -- steps reuse what's already in
-// scene_data.js and are explicit where that's a simplification.
+// Guided assembly of the model's forcing, initial state and output.
+// Initial outer faces are loaded separately from the verified depth export.
 
 const NY = GRID_NY, NX = GRID_NX;
 const CUBE_SIZE = 300; // world units -- horizontal (lon/lat) extent
@@ -228,7 +225,7 @@ const INI_SLICES = {
 // (see quantize_frames() in build_roms_explorer_scene_data.py) at half
 // resolution (FRAMES_SUB=2). Decoded once here; the per-frame RGB colour
 // buffers themselves are built lazily inside mountAssembly (see
-// framesColorCache) since that's the actual perf-sensitive part.
+// frame texture) for efficient, bounded playback memory.
 const FRAMES_MASK_ARR = b64u8(FRAMES_MASK_B64);
 const FRAMES_RAW = {
     temp: b64u8(FRAMES_TEMP_B64), salt: b64u8(FRAMES_SALT_B64),
@@ -364,7 +361,7 @@ const STEPS = [
     {
         id: "frames", title: "Run forward", kid: "The model's own output, month by month.",
         prov: "original", source: "nz5km_avg_*.nc",
-        detail: "A few daily-mean snapshots per month, across the whole run so far.",
+        detail: "A few daily-mean snapshots per month, across the whole run so far. Surface colours show model output; the side panels indicate depth.",
         limitation: null,
     },
     {
@@ -480,12 +477,25 @@ export function mountAssembly() {
     }
 
     // -- grid step --------------------------------------------------------
-    const terrainGeo = buildGridGeometry();
-    const posAttr = terrainGeo.attributes.position;
-    for (let k = 0; k < NY * NX; k++) posAttr.setY(k, MASK[k] < 0.5 ? 0 : depthToY(H[k]));
+    const oceanSurface = oceanSurfaceGeometry(NX, NY, MASK, gridX, gridZ, FRAMES_SUB, FRAMES_NX, FRAMES_NY);
+    const terrainGeo = oceanSurface.geometry.clone();
+    const terrainPositions = terrainGeo.attributes.position;
+    const terrainColors = new Float32Array(oceanSurface.samples.length * 3);
+    for (let k = 0; k < oceanSurface.samples.length; k++) {
+        const source = oceanSurface.samples[k];
+        const depth = oceanSurface.coastal[k] ? 0 : H[source];
+        terrainPositions.setY(k, depthToY(depth));
+        const color = colormap((depth - hRange[0]) / (hRange[1] - hRange[0]), BATHY_STOPS);
+        terrainColors.set([color.r, color.g, color.b], k * 3);
+    }
+    terrainGeo.setAttribute("color", new THREE.BufferAttribute(terrainColors, 3));
     terrainGeo.computeVertexNormals();
-    paintField(terrainGeo, H, hRange, BATHY_STOPS);
     const terrainMesh = new THREE.Mesh(terrainGeo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 1 }));
+    const dryMask = MASK.map(value => value >= 0.5 ? 0 : 1);
+    const land = oceanSurfaceGeometry(NX, NY, dryMask, gridX, gridZ, FRAMES_SUB, FRAMES_NX, FRAMES_NY);
+    const landMaterial = new THREE.MeshLambertMaterial({ color: LAND_COLOR, side: THREE.DoubleSide, transparent: true, opacity: 1 });
+    land.geometry.computeVertexNormals();
+    terrainMesh.add(new THREE.Mesh(land.geometry, landMaterial));
     terrainMesh.visible = false;
     scene.add(terrainMesh);
 
@@ -693,7 +703,7 @@ export function mountAssembly() {
     // "Weather above" replaces whatever's showing here when we get to it --
     // it doesn't float a second surface on top. Its switcher is the same
     // two options as the boundary step -- same climatology pipeline.
-    const SURFACE_Y = -1.2; // just below y=0 so it doesn't z-fight the land plateau
+    const SURFACE_Y = 0.05; // sea-level ocean; its native shoreline excludes land
     const surfaceGeo = buildGridGeometry();
     // BufferGeometry.setIndex only auto-wraps a plain Array into a
     // BufferAttribute -- a typed array passed directly is treated as already
@@ -1357,52 +1367,52 @@ export function mountAssembly() {
         if (!INI_FIELDS[key]) return;
         lastIniField = { source: INI_FIELDS, key, buttonsElId: "ini-field-buttons" };
         setSurfaceField(INI_FIELDS, key, "ini-field-buttons");
+        paintInitialOcean(key);
         iniSlicesApplicable = key === "temp" || key === "salt";
         if (iniSlicesApplicable) setIniSliceField(key);
         applyVisibility(); // re-derive slice visibility immediately if already on the "ini" step
     }
     makeFieldButtons("ini-field-buttons", INI_FIELDS, "temp", setIniField);
 
-    // -- run-forward step: a DEDICATED lower-res mesh, not the shared
-    // surfaceMesh -- FN frames x 4 fields of full-resolution per-vertex
-    // colour would be wasteful to recompute on every switch. Colours are
-    // decoded from the quantized bytes and cached ONCE per field (FN
-    // Float32Array buffers, built lazily on first use), so playback and
-    // field switching after that first hit is just an array copy +
-    // needsUpdate -- no per-frame colour math.
+    const initialDisplayRanges = {}, frameDisplayRanges = {};
+    const initialOceanColors = new Float32Array(oceanSurface.samples.length * 3);
+    oceanSurface.geometry.setAttribute("color", new THREE.BufferAttribute(initialOceanColors, 3));
+    const initialOceanMesh = new THREE.Mesh(oceanSurface.geometry, new THREE.MeshBasicMaterial({
+        vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.85
+    }));
+    initialOceanMesh.position.y = SURFACE_Y;
+    initialOceanMesh.visible = false;
+    scene.add(initialOceanMesh);
+
+    function paintInitialOcean(key) {
+        const field = INI_FIELDS[key];
+        const range = initialDisplayRanges[key] || field.range;
+        for (let k = 0; k < oceanSurface.samples.length; k++) {
+            const source = oceanSurface.samples[k];
+            if (MASK[source] < 0.5) continue;
+            const value = field.field[source];
+            const color = colormap((value - range[0]) / (range[1] - range[0] || 1), field.stops);
+            initialOceanColors.set([color.r, color.g, color.b], k * 3);
+        }
+        oceanSurface.geometry.attributes.color.needsUpdate = true;
+    }
+    paintInitialOcean("temp");
+
+    // The native shoreline and linearly sampled frame texture share one geometry.
     const FNY = FRAMES_NY, FNX = FRAMES_NX, FN = FRAMES_N, FCOUNT = FNY * FNX;
-    const framesPositions = new Float32Array(FCOUNT * 3);
-    for (let jf = 0; jf < FNY; jf++) for (let iff = 0; iff < FNX; iff++) {
-        const k = (jf * FRAMES_SUB) * NX + (iff * FRAMES_SUB); // same subsample stride the server used
-        const f = jf * FNX + iff;
-        framesPositions[f * 3] = gridX[k]; framesPositions[f * 3 + 1] = 0; framesPositions[f * 3 + 2] = gridZ[k];
-    }
-    // land fully excluded from the triangulation (not painted grey) -- a
-    // time-lapse of the ocean surface only, same hole-cutting technique the
-    // climatology drape uses to expose the nudging border underneath it.
-    const framesIndex = [];
-    for (let jf = 0; jf < FNY - 1; jf++) for (let iff = 0; iff < FNX - 1; iff++) {
-        const a = jf * FNX + iff, b = jf * FNX + iff + 1, c = (jf + 1) * FNX + iff, d = (jf + 1) * FNX + iff + 1;
-        // cut shallow cells as well as land: where the shelf rises above the
-        // drape plane a flat sheet would knife through the terrain (ugly from
-        // any low angle), so the animated ocean simply ends at that contour.
-        const deep = (ff) => {
-            const kk = (Math.floor(ff / FNX) * FRAMES_SUB) * NX + ((ff % FNX) * FRAMES_SUB);
-            return depthToY(H[kk]) < SURFACE_Y - 0.2;
-        };
-        if (FRAMES_MASK_ARR[a] && FRAMES_MASK_ARR[b] && FRAMES_MASK_ARR[c] && FRAMES_MASK_ARR[d]
-            && deep(a) && deep(b) && deep(c) && deep(d)) framesIndex.push(a, b, c, b, d, c);
-    }
-    const framesGeo = new THREE.BufferGeometry();
-    framesGeo.setAttribute("position", new THREE.BufferAttribute(framesPositions, 3));
-    framesGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(FCOUNT * 3), 3));
-    framesGeo.setIndex(framesIndex);
-    const framesMesh = new THREE.Mesh(framesGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.92 }));
+    const nearestFrameSample = nearestWetSamples(FRAMES_MASK_ARR, FNX, FNY);
+    const framePixels = new Uint8Array(FCOUNT * 4);
+    const frameTexture = new THREE.DataTexture(framePixels, FNX, FNY, THREE.RGBAFormat);
+    frameTexture.minFilter = frameTexture.magFilter = THREE.LinearFilter;
+    frameTexture.generateMipmaps = false;
+    const framesGeo = oceanSurface.geometry;
+    const framesMesh = new THREE.Mesh(framesGeo, new THREE.MeshBasicMaterial({
+        map: frameTexture, side: THREE.DoubleSide, transparent: true, opacity: 0.92
+    }));
     framesMesh.position.y = SURFACE_Y;
     framesMesh.visible = false;
     scene.add(framesMesh);
-
-    const framesColorCache = {}; // field key -> [Float32Array(FCOUNT*3) x FN], built on first use
+    const framesColorTables = {};
     // ssh and the two anomaly fields need a range SYMMETRIC about zero (so
     // their diverging ramp's white middle stop lands on mean-sea-level / no
     // anomaly), which differs from the field's own [vmin,vmax] -- everything
@@ -1412,24 +1422,25 @@ export function mountAssembly() {
         // (val-vmin)/span collapses to byte/255 exactly, since that's how
         // quantize_frames() built the byte in the first place -- the
         // non-zero-centered case just dequantizes back to a plain 0..1.
-        if (!ZERO_CENTERED_FIELDS.has(key)) return (byte) => byte / 255;
+        if (!ZERO_CENTERED_FIELDS.has(key)) {
+            const [lo,hi] = FRAMES_FIELDS[key].range;
+            const [a,b] = frameDisplayRanges[key] || [lo,hi];
+            return byte => (lo + byte / 255 * (hi-lo) - a) / (b-a || 1);
+        }
         const [vmin, vmax] = FRAMES_FIELDS[key].range, span = (vmax - vmin) || 1;
         const m = Math.max(Math.abs(vmin), Math.abs(vmax)) || 1;
         return (byte) => ((vmin + (byte / 255) * span) + m) / (2 * m);
     }
-    function buildFramesCache(key) {
-        const raw = FRAMES_RAW[key], stopsRGB = toRGB(FRAMES_FIELDS[key].stops), toT01 = framesToT01(key);
-        const cache = new Array(FN), tmp = [0, 0, 0];
-        for (let t = 0; t < FN; t++) {
-            const arr = new Float32Array(FCOUNT * 3), base = t * FCOUNT;
-            for (let k = 0; k < FCOUNT; k++) {
-                if (!FRAMES_MASK_ARR[k]) continue; // land -- excluded from the index, colour never sampled
-                fastColormap(toT01(raw[base + k]), stopsRGB, tmp);
-                arr[k * 3] = tmp[0]; arr[k * 3 + 1] = tmp[1]; arr[k * 3 + 2] = tmp[2];
-            }
-            cache[t] = arr;
+    function frameColorTable(key) {
+        if (framesColorTables[key]) return framesColorTables[key];
+        const table = new Uint8Array(256 * 4);
+        const stops = toRGB(FRAMES_FIELDS[key].stops), toT01 = framesToT01(key), color = [0, 0, 0];
+        for (let byte = 0; byte < 256; byte++) {
+            fastColormap(toT01(byte), stops, color);
+            table.set([Math.round(color[0] * 255), Math.round(color[1] * 255), Math.round(color[2] * 255), 255], byte * 4);
         }
-        return cache;
+        framesColorTables[key] = table;
+        return table;
     }
     let framesFieldKey = "temp", framesDayIdx = 0, framesPlaying = false, framesElapsed = 0;
     // playback speed scales with frame count so a multi-year timelapse still
@@ -1437,9 +1448,18 @@ export function mountAssembly() {
     // (~10 s) and stretching it out to minutes.
     const FRAMES_FPS = FN <= 40 ? 3 : Math.min(12, Math.max(6, Math.round(FN / 20)));
     function paintFramesFrame() {
-        if (!framesColorCache[framesFieldKey]) framesColorCache[framesFieldKey] = buildFramesCache(framesFieldKey);
-        framesGeo.attributes.color.array.set(framesColorCache[framesFieldKey][framesDayIdx]);
-        framesGeo.attributes.color.needsUpdate = true;
+        const raw = FRAMES_RAW[framesFieldKey], table = frameColorTable(framesFieldKey);
+        const start = framesDayIdx * FCOUNT;
+        for (let k = 0; k < FCOUNT; k++) {
+            const sample = nearestFrameSample[k];
+            const color = raw[start + Math.max(0, sample)] * 4;
+            const pixel = k * 4;
+            framePixels[pixel] = table[color];
+            framePixels[pixel + 1] = table[color + 1];
+            framePixels[pixel + 2] = table[color + 2];
+            framePixels[pixel + 3] = 255;
+        }
+        frameTexture.needsUpdate = true;
     }
     function formatFramesDay(idx) {
         return (typeof FRAMES_DATES !== "undefined" && FRAMES_DATES[idx]) ? FRAMES_DATES[idx] : `frame ${idx + 1}`;
@@ -1463,23 +1483,55 @@ export function mountAssembly() {
         framesDayIdx = Math.max(0, Math.min(FN - 1, idx));
         paintFramesFrame();
         updateFramesUI();
+        syncFaces();
     }
     function setFramesField(key) {
         if (!FRAMES_FIELDS[key]) return;
         framesFieldKey = key;
         paintFramesFrame();
+        syncFaces();
         const buttons = document.getElementById("frames-field-buttons");
         if (buttons) Array.from(buttons.children).forEach(b => b.classList.toggle("active", b.dataset.key === key));
     }
-    function playFrames() { framesPlaying = true; updateFramesUI(); }
+    function playFrames() { framesElapsed = 0; framesPlaying = true; updateFramesUI(); }
     function pauseFrames() { framesPlaying = false; updateFramesUI(); }
     paintFramesFrame(); // pre-warm temp/day-1 so the mesh isn't blank on first visit
     makeFieldButtons("frames-field-buttons", FRAMES_FIELDS, "temp", setFramesField);
     const framesSlider = document.getElementById("frames-day-slider");
-    if (framesSlider) framesSlider.addEventListener("input", () => setFramesDay(parseInt(framesSlider.value, 10) - 1));
+    if (framesSlider) {
+        framesSlider.addEventListener("pointerdown", pauseFrames);
+        framesSlider.addEventListener("input", () => { const index = parseInt(framesSlider.value, 10) - 1; pauseFrames(); setFramesDay(index); });
+    }
     const framesPlayBtn = document.getElementById("frames-play-btn");
     if (framesPlayBtn) framesPlayBtn.addEventListener("click", () => (framesPlaying ? pauseFrames() : playFrames()));
     updateFramesUI();
+
+    const outerFaces = modelFaces({
+        nx:NX, ny:NY, mask:MASK, depth:H, x:gridX, z:gridZ, initialZeta:INI_ZETA,
+        dates:FRAMES_DATES, depthToY, surfaceY:SURFACE_Y, color:colormap,
+        style:(kind,key)=>({
+            range:(kind==="initial"?initialDisplayRanges:frameDisplayRanges)[key],
+            stops:(kind==="initial"?INI_FIELDS:FRAMES_FIELDS)[key].stops
+        }),
+        onRange:(kind,key,range)=>{
+            const fields=kind==="initial"?INI_FIELDS:FRAMES_FIELDS;
+            const combined=[Math.min(range[0],fields[key].range[0]),Math.max(range[1],fields[key].range[1])];
+            if(kind==="initial") {
+                initialDisplayRanges[key]=combined;
+                if(lastIniField.key===key) paintInitialOcean(key);
+            } else {
+                frameDisplayRanges[key]=combined;
+                delete framesColorTables[key];
+                if(framesFieldKey===key) paintFramesFrame();
+            }
+        }
+    });
+    scene.add(outerFaces.group,outerFaces.domain);
+    function syncFaces() {
+        const id=stepIdx>=0?STEPS[stepIdx].id:null;
+        outerFaces.show(id==="ini"?"initial":id==="frames"?"frames":null,
+            id==="ini"?lastIniField.key:framesFieldKey,framesDayIdx);
+    }
 
     // -- Argo check step: every float as a small orange marker (click target
     // + locator) plus a vertical difference-profile line at the float's own
@@ -1644,7 +1696,7 @@ export function mountAssembly() {
     // animation} is ever meant to be on screen at once, so applyVisibility()
     // (below) drives them directly off the current step id instead of the
     // generic "visible from this id onward" rule every other layer uses.
-    const EXCLUSIVE_SURFACE_LAYERS = [surfaceMesh, windPlane, iniSliceGroup, framesMesh];
+    const EXCLUSIVE_SURFACE_LAYERS = [surfaceMesh, initialOceanMesh, windPlane, iniSliceGroup, framesMesh];
 
     // -- cross-fade each layer in/out on step change, instead of an instant
     // snap. `current`/`target` are a 0..1 fraction of each material's OWN
@@ -1998,6 +2050,7 @@ export function mountAssembly() {
     }
 
     function applyVisibility() {
+        syncFaces();
         const activeIds = new Set();
         for (let i = 0; i <= stepIdx; i++) activeIds.add(STEPS[i].id);
         Object.entries(STEP_LAYERS).forEach(([id, objs]) => {
@@ -2019,7 +2072,8 @@ export function mountAssembly() {
         // layers, same reasoning as the nudging border retiring at "meteo".
         const iniIdx = STEPS.findIndex(s => s.id === "ini");
         if (stepIdx >= iniIdx) { setLayerVisible(boundaryGroup, false); setLayerVisible(tideWallGroup, false); }
-        setLayerVisible(surfaceMesh, id === "meteo" || id === "ini");
+        setLayerVisible(surfaceMesh, id === "meteo");
+        setLayerVisible(initialOceanMesh, id === "ini");
         setLayerVisible(windPlane, id === "meteo");
         setLayerVisible(iniSliceGroup, id === "ini" && iniSlicesApplicable);
         setLayerVisible(framesMesh, id === "frames");
@@ -2055,6 +2109,7 @@ export function mountAssembly() {
             const restore = id === "volume" ? lastVolumeField : (id === "meteo" || id === "parts") ? lastMeteoField : id === "ini" ? lastIniField : null;
             if (restore) setSurfaceField(restore.source, restore.key, restore.buttonsElId);
             if (id === "ini") {
+                paintInitialOcean(lastIniField.key);
                 iniSlicesApplicable = lastIniField.key === "temp" || lastIniField.key === "salt";
                 if (iniSlicesApplicable) setIniSliceField(lastIniField.key);
             }
@@ -2108,7 +2163,7 @@ export function mountAssembly() {
 
     window.__debug = {
         THREE, scene, camera, renderer, labelRenderer, terrainMesh, boundaryGroup, surfaceMesh, nudgBorderGroup, nudgFloorMesh, nudgRoofMesh,
-        tideWallGroup, riverGroup, windPlane, iniSliceGroup, framesMesh, argoGroup, goTo, STEPS,
+        tideWallGroup, riverGroup, windPlane, iniSliceGroup, initialOceanMesh, framesMesh, outerFaces, argoGroup, goTo, STEPS,
         setMeteoField, setBoundaryField, setBoundarySource, setClimField, setTideConstituent, setNudgDisplayMode,
         setIniField, setFrameField: setFramesField, setFramesDay, playFrames, pauseFrames,
         setArgoVar,
