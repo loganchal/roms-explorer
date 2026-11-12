@@ -11,7 +11,8 @@ wet grid cells. It is loaded only when entering the Argo stage.
 - At least 10 complete levels per profile; measured pressure below 3000 dbar.
 - Retain at most 32 measured levels including shallowest/deepest valid levels.
 - Per WMO, retain observations at least 20 days apart for a compact display.
-- Final selection: 2,957 profiles from 215 WMOs. Actual observation dates run
+- Initial value selection: 2,957 profiles from 215 WMOs. Position/time QC
+  subsequently removes 25 profiles, leaving 2,932 profiles from 214 WMOs. Actual observation dates run
   from 1 January 2021 to 30 June 2025. No observations are assigned invented dates.
 
 Model input is the daily-mean `nz5km_avg_YYYYMM.nc` output in
@@ -27,7 +28,10 @@ the endpoint value. The match distance is retained for each profile.
 
 This is an illustrative collection of individual model/observation comparisons;
 it does not export unpublished composite or mechanistic budget findings.
-Animation positions between observations are illustrative. Native measured
+Animation positions use every available QC-approved GPS fix for these WMOs
+(`data/argo-trajectories.json`: 8,234 fixes), without the 20-day value thinning.
+Only short gaps are interpolated; missing coverage does not fabricate movement.
+All positions use the same geographic projection as the model grid. Native measured
 depth ranges and observations remain intact in the payload.
 
 ## Reproduction
@@ -42,3 +46,12 @@ then run `combine --parts PARTS --out data/argo-extension.json` locally.
 Matchup exporter revision: `6816e6c`; Slurm array: `6428766`, 54 tasks.
 Validate the assembled payload with
 `python tools/check_argo_extension.py data/argo-extension.json`.
+
+To reproduce position QC and the unthinned trajectory payload, run
+`tools/export_argo_trajectories.py --cache CACHE --profiles INITIAL_PAYLOAD
+--out data/argo-trajectories.json --filtered-profiles-out data/argo-extension.json`
+after combining the model matchups. The command accepts only position/time QC
+flags 1 or 2, verifies cycle numbers against source IDs, preserves ascent/descent
+record suffixes, and deduplicates exact source records. The full trajectory set
+contains no synthetic points. Long gaps (up to 794 days in this regional query)
+are gaps, not evidence of a straight route through the country.

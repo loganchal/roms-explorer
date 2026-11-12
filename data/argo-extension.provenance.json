@@ -8,13 +8,14 @@
     "start": "2021-01-01",
     "end": "2025-06-30"
   },
-  "observed_profiles": 2957,
-  "wmo_floats": 215,
+  "observed_profiles": 2932,
+  "wmo_floats": 214,
   "source": "Argovis v3 argo_core",
   "model_release": "hindcast_199401_202605_v1",
   "model_files": "nz5km_avg_YYYYMM.nc",
   "selection": "QC <=2 for pressure/T/S;32 measured levels including endpoints;20-day per-WMO separation",
   "embargo_scope": "Individual illustrative profiles only; no unpublished composites or mechanistic findings",
-  "payload_bytes": 8596081,
-  "payload_sha256": "beda2820fdec50c650c4782e6ea2f2afce6b0856cf6ac78125dac23edc17b83d"
+  "payload_bytes": 8524585,
+  "payload_sha256": "5d30c6fd0b11aa92eab92d0aab8e816dbf76f9161f58406611e19f8480f689e4",
+  "position_time_qc_removed": 25
 }
