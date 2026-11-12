@@ -2889,6 +2889,52 @@
       "maximum": 1.2977769374847412,
       "scale": 1.9802530217414202e-05,
       "max_error": 9.901263524278447e-06
+    },
+    "temp_anom": {
+      "file": "frames-temp_anom.u16.gz",
+      "dtype": "<u2",
+      "shape": [
+        216,
+        50,
+        436
+      ],
+      "bytes": 8782043,
+      "sha256": "56970309dca05564b5f817e70cc7078fd0ec7c53365f621d7a714f48dbcdf429",
+      "minimum": -3.6224915981292725,
+      "maximum": 5.1293182373046875,
+      "scale": 0.0001335440579146099,
+      "max_error": 6.677202349969491e-05
+    },
+    "salt_anom": {
+      "file": "frames-salt_anom.u16.gz",
+      "dtype": "<u2",
+      "shape": [
+        216,
+        50,
+        436
+      ],
+      "bytes": 8500867,
+      "sha256": "e8898f9b7c49a910b40c98f2eea4390449ebe92208f6af9aed44e3866ad442f3",
+      "minimum": -1.1267662048339844,
+      "maximum": 0.8755340576171875,
+      "scale": 3.0553143548503424e-05,
+      "max_error": 1.527636804432575e-05
+    },
+    "pea_anom": {
+      "file": "frames-pea_anom.u16.gz",
+      "dtype": "<u2",
+      "shape": [
+        216,
+        1,
+        436
+      ],
+      "bytes": 177753,
+      "sha256": "ff67da5dc9fc58495d829c24ccc77fdafef87125aac218586753c43b34db71f9",
+      "minimum": -128.6292724609375,
+      "maximum": 196.25213623046875,
+      "scale": 0.0049573725290517475,
+      "max_error": 0.002478673633248718,
+      "column_metric": true
     }
   },
   "surface": {
@@ -2955,6 +3001,54 @@
       "scale": 0.003950993985522027,
       "max_error": 0.001975496773626406,
       "clipped_fraction": 0.020000600168047056
+    },
+    "temp_anom": {
+      "file": "surface-temp_anom.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 2239836,
+      "sha256": "897ab503915e0e473e8ab574bdea2c54b0b48d51f23c948a5afff805fc7ff0ea",
+      "minimum": -1.1435249185562133,
+      "maximum": 2.63419620513916,
+      "scale": 0.014814592641942641,
+      "max_error": 0.007407287429360698,
+      "clipped_fraction": 0.020000600168047056
+    },
+    "salt_anom": {
+      "file": "surface-salt_anom.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 2223995,
+      "sha256": "af5795a247ef604f2dde3418fbe4b595f263f8e74e16b04aa7cf1f263ddb9c76",
+      "minimum": -0.305960578918457,
+      "maximum": 0.4062957763671875,
+      "scale": 0.0027931621775907625,
+      "max_error": 0.001396574581370602,
+      "clipped_fraction": 0.020000183384681014
+    },
+    "pea_anom": {
+      "file": "surface-pea_anom.u8.gz",
+      "dtype": "u1",
+      "shape": [
+        216,
+        118,
+        100
+      ],
+      "bytes": 2144302,
+      "sha256": "63d12832bf5be7af38127255aed2d0952db5007678489a121cf8eb3ab08cc412",
+      "minimum": -57.979630584716794,
+      "maximum": 85.4822801208496,
+      "scale": 0.5625957282571231,
+      "max_error": 0.2812976199879387,
+      "clipped_fraction": 0.020000600168047056
     }
   },
   "zeta": {
@@ -2967,5 +3061,573 @@
     "bytes": 339689,
     "sha256": "8e78f185dd024a2294e1ea6c5d38b7ae708a81e90669e39fe2137374497e7e7a"
   },
-  "vertical_method": "ROMS Vtransform=2, native sigma levels, per-frame free surface."
+  "vertical_method": "ROMS Vtransform=2, native sigma levels, per-frame free surface.",
+  "anomaly_reference": {
+    "years": [
+      1994,
+      2020
+    ],
+    "method": "Daily model output minus the 1994-2020 monthly model climatology, linearly interpolated between month centres. No detrending.",
+    "PEA": "Native daily-mean strat200_pea: upper 200 m or shallower seabed. Side colours represent this column metric, not a depth-resolved PEA profile. Unwritten outer ghost diagnostics are padded from the nearest interior sampled column, with matching surface-edge padding.",
+    "revision": "7e09841141e4592ae723199d482d84ea4b892339",
+    "sources": [
+      {
+        "file": "nz5km_avg_202101.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789943591109793758
+      },
+      {
+        "file": "nz5km_dia_202101.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789943594911873683
+      },
+      {
+        "file": "nz5km_avg_202102.nc",
+        "bytes": 6561047136,
+        "mtime_ns": 1789943193684785421
+      },
+      {
+        "file": "nz5km_dia_202102.nc",
+        "bytes": 3891943196,
+        "mtime_ns": 1789943201667900466
+      },
+      {
+        "file": "nz5km_avg_202103.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789946420117343928
+      },
+      {
+        "file": "nz5km_dia_202103.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789946440963637202
+      },
+      {
+        "file": "nz5km_avg_202104.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789948266219793492
+      },
+      {
+        "file": "nz5km_dia_202104.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789948270889855897
+      },
+      {
+        "file": "nz5km_avg_202105.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789949534170379939
+      },
+      {
+        "file": "nz5km_dia_202105.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789949538192437373
+      },
+      {
+        "file": "nz5km_avg_202106.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789951535391138933
+      },
+      {
+        "file": "nz5km_dia_202106.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789951545148277401
+      },
+      {
+        "file": "nz5km_avg_202107.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789951973635680012
+      },
+      {
+        "file": "nz5km_dia_202107.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789951995086177532
+      },
+      {
+        "file": "nz5km_avg_202108.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789955414578292127
+      },
+      {
+        "file": "nz5km_dia_202108.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789955435333587597
+      },
+      {
+        "file": "nz5km_avg_202109.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789956390591625167
+      },
+      {
+        "file": "nz5km_dia_202109.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789956395218690741
+      },
+      {
+        "file": "nz5km_avg_202110.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789957773919890093
+      },
+      {
+        "file": "nz5km_dia_202110.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789957779628970318
+      },
+      {
+        "file": "nz5km_avg_202111.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789960279724189482
+      },
+      {
+        "file": "nz5km_dia_202111.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789960297696444295
+      },
+      {
+        "file": "nz5km_avg_202112.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789960722669140774
+      },
+      {
+        "file": "nz5km_dia_202112.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789960744266640938
+      },
+      {
+        "file": "nz5km_avg_202201.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789964588793030982
+      },
+      {
+        "file": "nz5km_dia_202201.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789964608524309341
+      },
+      {
+        "file": "nz5km_avg_202202.nc",
+        "bytes": 6561047140,
+        "mtime_ns": 1789740365974301265
+      },
+      {
+        "file": "nz5km_dia_202202.nc",
+        "bytes": 3891943200,
+        "mtime_ns": 1789740377410550603
+      },
+      {
+        "file": "nz5km_avg_202203.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789965093064176364
+      },
+      {
+        "file": "nz5km_dia_202203.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789965106524359009
+      },
+      {
+        "file": "nz5km_avg_202204.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789965557119468161
+      },
+      {
+        "file": "nz5km_dia_202204.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789965561230522025
+      },
+      {
+        "file": "nz5km_avg_202205.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789969081412658012
+      },
+      {
+        "file": "nz5km_dia_202205.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789969099530914461
+      },
+      {
+        "file": "nz5km_avg_202206.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789969178977480681
+      },
+      {
+        "file": "nz5km_dia_202206.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789969195753870105
+      },
+      {
+        "file": "nz5km_avg_202207.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789973729168155779
+      },
+      {
+        "file": "nz5km_dia_202207.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789973750121454443
+      },
+      {
+        "file": "nz5km_avg_202208.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789973872926061280
+      },
+      {
+        "file": "nz5km_dia_202208.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789973886141244107
+      },
+      {
+        "file": "nz5km_avg_202209.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789973454238272955
+      },
+      {
+        "file": "nz5km_dia_202209.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789973458439331101
+      },
+      {
+        "file": "nz5km_avg_202210.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789979051971201977
+      },
+      {
+        "file": "nz5km_dia_202210.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789979070407461396
+      },
+      {
+        "file": "nz5km_avg_202211.nc",
+        "bytes": 7027893208,
+        "mtime_ns": 1789977411743158758
+      },
+      {
+        "file": "nz5km_dia_202211.nc",
+        "bytes": 4120354780,
+        "mtime_ns": 1789977426606503880
+      },
+      {
+        "file": "nz5km_avg_202212.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789981680045054829
+      },
+      {
+        "file": "nz5km_dia_202212.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789981683923106145
+      },
+      {
+        "file": "nz5km_avg_202301.nc",
+        "bytes": 7261316244,
+        "mtime_ns": 1789982767594401492
+      },
+      {
+        "file": "nz5km_dia_202301.nc",
+        "bytes": 4234560572,
+        "mtime_ns": 1789982788672698636
+      },
+      {
+        "file": "nz5km_avg_202302.nc",
+        "bytes": 6561047136,
+        "mtime_ns": 1789981427496544097
+      },
+      {
+        "file": "nz5km_dia_202302.nc",
+        "bytes": 3891943196,
+        "mtime_ns": 1789981432244611115
+      },
+      {
+        "file": "nz5km_avg_202303.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051369880538474
+      },
+      {
+        "file": "nz5km_dia_202303.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051347345554175
+      },
+      {
+        "file": "nz5km_avg_202304.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051368530539415
+      },
+      {
+        "file": "nz5km_dia_202304.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051353908549602
+      },
+      {
+        "file": "nz5km_avg_202305.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051372262536814
+      },
+      {
+        "file": "nz5km_dia_202305.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051359392545781
+      },
+      {
+        "file": "nz5km_avg_202306.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051372848536406
+      },
+      {
+        "file": "nz5km_dia_202306.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051361141544563
+      },
+      {
+        "file": "nz5km_avg_202307.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051375548534525
+      },
+      {
+        "file": "nz5km_dia_202307.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051360667544893
+      },
+      {
+        "file": "nz5km_avg_202308.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051378295532611
+      },
+      {
+        "file": "nz5km_dia_202308.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051367528540113
+      },
+      {
+        "file": "nz5km_avg_202309.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051383819528762
+      },
+      {
+        "file": "nz5km_dia_202309.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051369824538513
+      },
+      {
+        "file": "nz5km_avg_202310.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051390886523939
+      },
+      {
+        "file": "nz5km_dia_202310.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051376200534071
+      },
+      {
+        "file": "nz5km_avg_202311.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051406413515123
+      },
+      {
+        "file": "nz5km_dia_202311.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051391086523826
+      },
+      {
+        "file": "nz5km_avg_202312.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051410052513057
+      },
+      {
+        "file": "nz5km_dia_202312.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051400234518632
+      },
+      {
+        "file": "nz5km_avg_202401.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051421872506345
+      },
+      {
+        "file": "nz5km_dia_202401.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051408387514002
+      },
+      {
+        "file": "nz5km_avg_202402.nc",
+        "bytes": 6794470208,
+        "mtime_ns": 1790051421954506299
+      },
+      {
+        "file": "nz5km_dia_202402.nc",
+        "bytes": 4006149024,
+        "mtime_ns": 1790051412736511533
+      },
+      {
+        "file": "nz5km_avg_202403.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051431411500929
+      },
+      {
+        "file": "nz5km_dia_202403.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051417956508569
+      },
+      {
+        "file": "nz5km_avg_202404.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051434987498899
+      },
+      {
+        "file": "nz5km_dia_202404.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051422598505933
+      },
+      {
+        "file": "nz5km_avg_202405.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051441741495064
+      },
+      {
+        "file": "nz5km_dia_202405.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051428191502757
+      },
+      {
+        "file": "nz5km_avg_202406.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051454299487933
+      },
+      {
+        "file": "nz5km_dia_202406.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051433518499733
+      },
+      {
+        "file": "nz5km_avg_202407.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051456111486905
+      },
+      {
+        "file": "nz5km_dia_202407.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051440971495501
+      },
+      {
+        "file": "nz5km_avg_202408.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051472221477757
+      },
+      {
+        "file": "nz5km_dia_202408.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051453428488428
+      },
+      {
+        "file": "nz5km_avg_202409.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051473108477254
+      },
+      {
+        "file": "nz5km_dia_202409.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051460470484429
+      },
+      {
+        "file": "nz5km_avg_202410.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051480665472963
+      },
+      {
+        "file": "nz5km_dia_202410.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051469570479262
+      },
+      {
+        "file": "nz5km_avg_202411.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051487192469257
+      },
+      {
+        "file": "nz5km_dia_202411.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051475352475979
+      },
+      {
+        "file": "nz5km_avg_202412.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051490783467218
+      },
+      {
+        "file": "nz5km_dia_202412.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051478973473923
+      },
+      {
+        "file": "nz5km_avg_202501.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051505693458752
+      },
+      {
+        "file": "nz5km_dia_202501.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051493409465727
+      },
+      {
+        "file": "nz5km_avg_202502.nc",
+        "bytes": 6561047172,
+        "mtime_ns": 1790051515042453444
+      },
+      {
+        "file": "nz5km_dia_202502.nc",
+        "bytes": 3891943232,
+        "mtime_ns": 1790051502157460760
+      },
+      {
+        "file": "nz5km_avg_202503.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051522603449013
+      },
+      {
+        "file": "nz5km_dia_202503.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051508230457311
+      },
+      {
+        "file": "nz5km_avg_202504.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051527471446046
+      },
+      {
+        "file": "nz5km_dia_202504.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051514173453937
+      },
+      {
+        "file": "nz5km_avg_202505.nc",
+        "bytes": 7261316280,
+        "mtime_ns": 1790051535493441157
+      },
+      {
+        "file": "nz5km_dia_202505.nc",
+        "bytes": 4234560608,
+        "mtime_ns": 1790051522891448837
+      },
+      {
+        "file": "nz5km_avg_202506.nc",
+        "bytes": 7027893244,
+        "mtime_ns": 1790051545167435262
+      },
+      {
+        "file": "nz5km_dia_202506.nc",
+        "bytes": 4120354816,
+        "mtime_ns": 1790051526863446417
+      }
+    ],
+    "climatology_sha256": {
+      "month-01.npz": "c541b548c5307c0e38066cd8d5d54ffd07fb0cfc57dc19a6ea50958605b3c86e",
+      "month-02.npz": "7fe3d700a1971b13d4014b7729b61c0e381a76b332145c7677727ad7692ee465",
+      "month-03.npz": "66c5b100ab9fbaf86a67bdb888ce047ed16c9cead67c3843fc4b0d909e21d0b0",
+      "month-04.npz": "4b805ba9ccbac72353b0a4f23841b9d172b41ce0c124a692b20f23afa29f0f5d",
+      "month-05.npz": "b2c4fa572f648c3bde2ff5c05c070c2540018d9f9588decebd485a6185090fd4",
+      "month-06.npz": "7c269220364ddefa8eae548c3bc28598a7a06e386b632a1cfbeada8cb84269b2",
+      "month-07.npz": "8c119a57b2c3f259bbfaf31e9cd7f5e48c61c8601645b2c146a736a6fedcb5b1",
+      "month-08.npz": "e8eb6c131a6de0e69e7dd12e891f5b062260db97ac76bcfa1d0060759a127114",
+      "month-09.npz": "37f3a9f9c374251d1b0d49ae9ac650cc36b4ad0f661e5894de322c29b6b6fb96",
+      "month-10.npz": "bbb7f146f14116167966a1ba1c058b776ab542023d266e1fffb25e3c1672d50b",
+      "month-11.npz": "5cc6f9e28b733279dfb37dbaa8619251408078dad168e2d00f5d122332f4b48f",
+      "month-12.npz": "c5b4579fb1a54c202fe647c194fd0a3985049bf8d8caca94bdc57644c9530679"
+    },
+    "climatology_job": "6421897",
+    "export_job": "6423006",
+    "baseline_days": 9862
+  }
 }

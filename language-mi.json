@@ -368,5 +368,8 @@
   "Hindcast evaluation": "Aromātai tauira o mua",
   "Upper-200 m PEA RMSE is 12.3% lower in the paired 1994–2020 comparison (95% confidence interval 6.9–18.8%), using 13,809 common in-situ profile matchups outside the outer nudging region.": "He 12.3% iti ake te RMSE PEA o te 200 m o runga i te whakataurite takirua 1994–2020 (awhe whakapono 95% he 6.9–18.8%), mā ngā kōtaha inenga takirua 13,809 kei waho o te rohe whakatikatika o waho.",
   "Home": "Te kāinga",
-  "Surface and side colours show the same dated model output.": "Ka whakaatu ngā tae o te mata me ngā taha i ngā putanga tauira mō te rā kotahi."
+  "Surface and side colours show the same dated model output.": "Ka whakaatu ngā tae o te mata me ngā taha i ngā putanga tauira mō te rā kotahi.",
+  "Salinity anomaly": "Te rerekētanga totetanga",
+  "Temperature, salinity and PEA anomalies use the 1994–2020 monthly model climatology, interpolated through the seasonal cycle.": "Ka whakatauritea ngā rerekētanga pāmahana, totetanga me te PEA ki te āhua ā-marama o te tauira mō 1994–2020, kua takawaengatia puta noa i te huringa kaupeka.",
+  "PEA is integrated over the upper 200 m or shallower seabed; its side colour represents the column value.": "Ka tātaihia te PEA mō te 200 m o runga, ki te papa moana rānei mēnā he pāpaku ake; ko te tae o te taha hei whakaatu i te uara mō taua tīwae wai."
 }

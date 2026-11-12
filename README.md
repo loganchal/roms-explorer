@@ -26,15 +26,32 @@ of drawing the coast from that coarser sampling. Scrubbing pauses playback.
 Initial-state outer faces use all 50 sigma levels, physical bathymetry and the
 ROMS Vtransform=2 coordinate. Compact fields load on demand, with shared surface
 and wall colour ranges. `data/ocean-faces/manifest.json` records source revision,
-checksums, quantization error and the initial-surface validation. Aoraki export
-job 6421028 used committed source 12ce3db.
+checksums and quantization error.
 
 Run-forward temperature, salinity and currents use synchronized surface and
 50-level side fields from the frozen `hindcast_199401_202605_v1` release.
 Both update on the same frame selection; depth palettes are cached once per
 field, and arrays load only when their field is selected. The surface texture
 retains native outer endpoints so it meets the side faces at identical cells.
-Sea level is refreshed from the same release without depth faces. Historical
-surface anomaly views are retained without depth faces.
+Sea level is refreshed from the same release without depth faces. Anomaly playback also uses synchronized surface and side data.
 The manifest records source files, quantization errors and checksums; export
 job 6421525 ran committed source d820421 on Aoraki.
+
+## Anomaly reference
+
+Temperature and salinity anomalies retain all 50 native sigma levels. Their
+reference is the 1994-2020 monthly model climatology, linearly interpolated
+between month centres on the model grid; no detrending is applied. The same
+reference is used for native daily-mean upper-200 m `strat200_pea` anomalies.
+PEA is a column metric: its side colour denotes the upper-200 m (or shallower
+seabed) column value, rather than a depth-resolved PEA profile.
+
+`tools/export_ocean_anomalies.py` builds twelve monthly reference arrays, then
+exports the three anomalies at the explorer's existing dates. The reference
+arrays stay on Weka; the website manifest retains their checksums, input
+receipts, reference definition and source revision. Temperature, salinity and
+PEA use fixed, zero-centred display scales shared by their surfaces and sides.
+
+The anomaly reference used array 6421897; export job 6423006 ran source
+7e09841. Outer PEA diagnostic ghost cells are padded from the nearest valid
+interior display sample, consistently on the surface and side edges.

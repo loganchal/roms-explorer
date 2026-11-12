@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { modelFaces } from "./ocean-faces.js?v=20261112-animated-faces";
-import { oceanSurfaceGeometry, nearestWetSamples } from "./ocean-surface.js?v=20261112-animated-faces";
+import { modelFaces } from "./ocean-faces.js?v=20261112-anomaly-faces";
+import { oceanSurfaceGeometry, nearestWetSamples } from "./ocean-surface.js?v=20261112-anomaly-faces";
 import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 
 // Guided assembly of the model's forcing, initial state and output.
@@ -237,19 +237,11 @@ const FRAMES_FIELDS = {
     speed: { label: "Current speed", range: FRAMES_SPEED_RANGE, stops: WIND_SPEED_STOPS },
     ssh: { label: "SSH", range: FRAMES_ZETA_RANGE, stops: ZETA_STOPS },
 };
-// temperature/stratification anomaly frames only exist if the scene_data
-// build was given --clim-sst/--strat-dir/--clim-n2pyc
-// (extract_model_showcase.py) -- guard so older builds still work. Both are
-// deviations from the 1994-2020 day-of-year climatology, so they share
-// SSH's diverging blue-white-red ramp (below/above the seasonal norm).
-if (typeof FRAMES_TEMP_ANOM_B64 !== "undefined") {
-    FRAMES_RAW.temp_anom = b64u8(FRAMES_TEMP_ANOM_B64);
-    FRAMES_FIELDS.temp_anom = { label: "Temperature anomaly", range: FRAMES_TEMP_ANOM_RANGE, stops: ZETA_STOPS };
-}
-if (typeof FRAMES_N2PYC_ANOM_B64 !== "undefined") {
-    FRAMES_RAW.n2pyc_anom = b64u8(FRAMES_N2PYC_ANOM_B64);
-    FRAMES_FIELDS.n2pyc_anom = { label: "Stratification anomaly", range: FRAMES_N2PYC_ANOM_RANGE, stops: ZETA_STOPS };
-}
+// Matching surface/profile anomalies load lazily from the shared model baseline.
+// Empty fields stay transparent until their data arrive.
+FRAMES_FIELDS.temp_anom={label:"Temperature anomaly",range:[-1,1],stops:ZETA_STOPS};
+FRAMES_FIELDS.salt_anom={label:"Salinity anomaly",range:[-1,1],stops:ZETA_STOPS};
+FRAMES_FIELDS.pea_anom={label:"Stratification anomaly",range:[-1,1],stops:ZETA_STOPS};
 
 // all 11 tidal constituents' amp+phase -- bare identifiers since scene_data.js
 // declares one const per constituent (TIDE_AMP_M2_B64 etc); TIDE_NAMES gives
@@ -361,7 +353,7 @@ const STEPS = [
     {
         id: "frames", title: "Run forward", kid: "The model's own output, month by month.",
         prov: "original", source: "nz5km_avg_*.nc",
-        detail: "A few daily-mean snapshots per month, across the whole run so far. Surface and side colours show the same dated model output.",
+        detail: "A few daily-mean snapshots per month, across the whole run so far. Surface and side colours show the same dated model output. Temperature, salinity and PEA anomalies use the 1994–2020 monthly model climatology, interpolated through the seasonal cycle. PEA is integrated over the upper 200 m or shallower seabed; its side colour represents the column value.",
         limitation: null,
     },
     {
@@ -1419,7 +1411,7 @@ export function mountAssembly() {
     // their diverging ramp's white middle stop lands on mean-sea-level / no
     // anomaly), which differs from the field's own [vmin,vmax] -- everything
     // else maps its own byte range straight to [0,1].
-    const ZERO_CENTERED_FIELDS = new Set(["ssh", "temp_anom", "n2pyc_anom"]);
+    const ZERO_CENTERED_FIELDS = new Set(["ssh", "temp_anom", "salt_anom", "pea_anom"]);
     function framesToT01(key) {
         // (val-vmin)/span collapses to byte/255 exactly, since that's how
         // quantize_frames() built the byte in the first place -- the
@@ -1430,7 +1422,8 @@ export function mountAssembly() {
             return byte => (lo + byte / 255 * (hi-lo) - a) / (b-a || 1);
         }
         const [vmin, vmax] = FRAMES_FIELDS[key].range, span = (vmax - vmin) || 1;
-        const m = Math.max(Math.abs(vmin), Math.abs(vmax)) || 1;
+        const display = frameDisplayRanges[key] || [vmin,vmax];
+        const m = Math.max(Math.abs(display[0]), Math.abs(display[1])) || 1;
         return (byte) => ((vmin + (byte / 255) * span) + m) / (2 * m);
     }
     function frameColorTable(key) {
@@ -1481,7 +1474,9 @@ export function mountAssembly() {
     }
     function paintFramesFrame() {
         configureFrameGrid(framesFieldKey);
-        const raw = FRAMES_RAW[framesFieldKey], table = frameColorTable(framesFieldKey);
+        const raw = FRAMES_RAW[framesFieldKey];
+        if(!raw) { framePixels.fill(0);frameTexture.needsUpdate=true;return; }
+        const table = frameColorTable(framesFieldKey);
         const start = framesDayIdx * frameCount;
         for (let k = 0; k < frameCount; k++) {
             const sample = nearestFrameSample[k];
@@ -1553,7 +1548,8 @@ export function mountAssembly() {
                 FRAMES_FIELDS[key].range=[surface.info.minimum,surface.info.maximum];
             }
             const fields=kind==="initial"?INI_FIELDS:FRAMES_FIELDS;
-            const combined=[Math.min(range[0],fields[key].range[0]),Math.max(range[1],fields[key].range[1])];
+            let combined=[Math.min(range[0],fields[key].range[0]),Math.max(range[1],fields[key].range[1])];
+            if(kind==="frames" && ZERO_CENTERED_FIELDS.has(key)) {const m=Math.max(Math.abs(combined[0]),Math.abs(combined[1]));combined=[-m,m];}
             if(kind==="initial") {
                 initialDisplayRanges[key]=combined;
                 if(lastIniField.key===key) paintInitialOcean(key);

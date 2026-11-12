@@ -4,14 +4,14 @@ import * as THREE from "three";
 export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, depthToY, surfaceY, style, color, onRange }) {
     const group = new THREE.Group();
     group.visible = false;
-    const supported = new Set(["temp", "salt", "speed"]);
+    const supported = new Set(["temp", "salt", "speed", "temp_anom", "salt_anom", "pea_anom"]);
     const base = new URL("./data/ocean-faces/", import.meta.url);
     const cache = new Map(), pending = new Map(), failed = new Set();
     let manifestPromise, manifest, desired = null, drawn = "", geometryKind, sides;
 
     async function getManifest() {
         if (!manifestPromise) manifestPromise = (async () => {
-            const response = await fetch(new URL("manifest.json", base));
+            const response = await fetch(new URL("manifest.json?v=20261112-anomaly-faces", base));
             if (!response.ok) throw new Error("Depth manifest unavailable");
             const m = await response.json();
             if (m.nx !== nx || m.ny !== ny || JSON.stringify(m.dates) !== JSON.stringify(dates)) throw new Error("Depth grid/timeline mismatch");
@@ -67,7 +67,7 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
         if (signature===drawn) { group.visible=true; return; }
         if (geometryKind!==kind) rebuild(kind);
         const {values,zeta,info}=data, levels=manifest.s_rho.length, rows=levels+2;
-        const total=info.shape[info.shape.length-1], frameOffset=kind==="frames"?frame*levels*total:0;
+        const total=info.shape[info.shape.length-1], sourceLevels=info.shape[info.shape.length-2], frameOffset=kind==="frames"?frame*sourceLevels*total:0;
         const {range,stops}=style(kind,key);
         if(!data.palette) {
             data.palette=new Float32Array(65536*3);
@@ -86,7 +86,7 @@ export function modelFaces({ nx, ny, mask, depth, x, z, initialZeta, dates, dept
                     const y=row===0?depthToY(h):row===rows-1?surfaceY:Math.min(surfaceY,depthToY(-(eta+(eta+h)*zo)));
                     const vertex=row*n+i;
                     positions.setXYZ(vertex,x[cell],y,z[cell]);
-                    const q=values[frameOffset+level*total+offset+i]*3;
+                    const q=values[frameOffset+(info.column_metric?0:level)*total+offset+i]*3;
                     colors.setXYZ(vertex,data.palette[q],data.palette[q+1],data.palette[q+2]);
                 }
             }
