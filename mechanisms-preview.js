@@ -24,6 +24,10 @@ const processes = [
 ];
 let data, day = 0, playing = false, previousTime = 0;
 let highlighted = null;
+let chartsNeedRebuild = true;
+let profileCurves = [];
+let seasonChart;
+let chartLayout;
 const profiles = [
   { key:'temp', title:'Temperature', unit:'°C', colour:'#bc714e' },
   { key:'salt', title:'Salinity', unit:'PSU', colour:'#497c9a' },
@@ -60,11 +64,17 @@ function line(svg, x1, y1, x2, y2, attributes={}) {
 }
 function figure(target, height, description) {
   const container = $(target);
-  container.replaceChildren();
   const width = Math.max(320,container.clientWidth);
-  return { width, svg:element('svg', {
-    viewBox:`0 0 ${width} ${height}`, role:'img', 'aria-label':description
-  },container) };
+  let svg = container.querySelector('svg');
+  if (!svg) svg = element('svg', { role:'img' }, container);
+  // Keep the outer SVG mounted and sized even while rebuilding its axes.
+  // Preserve scroll geometry and active gesture targets across redraws.
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('aria-label', description);
+  svg.replaceChildren();
+  return { width, svg };
 }
 function path(x, y) {
   return x.map((value,index) => `${index?'L':'M'}${value.toFixed(2)},${y[index].toFixed(2)}`).join(' ');
@@ -73,6 +83,7 @@ function path(x, y) {
 function drawProfiles() {
   const {svg,width} = figure('#profiles',255,'Temperature, salinity and surface-referenced potential density profiles');
   const panelWidth = width/3;
+  profileCurves = [];
   profiles.forEach((profile,index) => {
     const left = index*panelWidth + (index===0?31:18);
     const right = (index+1)*panelWidth-14;
@@ -93,13 +104,21 @@ function drawProfiles() {
       label(svg,x(value),239,format(value),{'text-anchor':'middle'});
     }
     for (const [record,opacity,strokeWidth] of [[data.days[0],.25,1],[data.days[day],1,2]]) {
-      element('path', {
+      const curve = element('path', {
         d:path(record[profile.key].map(x),record.depth.map(y)), fill:'none',
         stroke:profile.colour, 'stroke-width':strokeWidth, opacity
       },svg);
+      if (opacity === 1) profileCurves.push({ curve, profile, x, y });
     }
   });
   label(svg,5,145,'m');
+}
+
+function updateProfiles() {
+  const record = data.days[day];
+  for (const { curve, profile, x, y } of profileCurves) {
+    curve.setAttribute('d', path(record[profile.key].map(x), record.depth.map(y)));
+  }
 }
 
 function createProcesses() {
@@ -160,20 +179,40 @@ function drawSeason() {
     const value=data.seasonMin+(data.seasonMax-data.seasonMin)*i/4;
     label(svg,left-8,y(value)+4,format(value,0),{'text-anchor':'end'});
   }
-  processes.forEach(process => element('path', {
-    d:path(process.accumulated.slice(0,day+2).map((_,i)=>x(i)),process.accumulated.slice(0,day+2).map(y)),
-    fill:'none',stroke:process.colour,'stroke-width':1.6,'data-process':process.id
-  },svg));
-  const state=data.pea.slice(0,day+2);
-  element('path',{d:path(state.map((_,i)=>x(i)),state.map(y)),fill:'none',stroke:'#293b3a','stroke-width':2.3},svg);
-  line(svg,x(day+1),top,x(day+1),bottom,{stroke:'#69736c',opacity:.45});
-  element('circle',{cx:x(day+1),cy:y(data.pea[day+1]),r:3,fill:'#293b3a'},svg);
+  const curves = processes.map(process => ({
+    process,
+    curve: element('path', {
+      fill:'none',stroke:process.colour,'stroke-width':1.6,'data-process':process.id
+    },svg)
+  }));
+  const state = element('path',{fill:'none',stroke:'#293b3a','stroke-width':2.3},svg);
+  const cursor = line(svg,0,top,0,bottom,{stroke:'#69736c',opacity:.45});
+  const dot = element('circle',{r:3,fill:'#293b3a'},svg);
+  seasonChart = { curves, state, cursor, dot, x, y };
   data.days.forEach((record,index) => {
     if (record.date.endsWith('-01')) label(svg,x(index),225,
       isMaori()?record.date.slice(5,7):new Date(record.date+'T12:00:00Z').toLocaleDateString('en-NZ',{month:'short',timeZone:'UTC'}),
       {'text-anchor':'middle','data-i18n-ignore':''});
   });
   highlight(highlighted);
+}
+
+function updateSeason() {
+  const { curves, state, cursor, dot, x, y } = seasonChart;
+  for (const { process, curve } of curves) {
+    const values = process.accumulated.slice(0, day + 2);
+    curve.setAttribute('d', path(values.map((_, i) => x(i)), values.map(y)));
+  }
+  const values = data.pea.slice(0, day + 2);
+  state.setAttribute('d', path(values.map((_, i) => x(i)), values.map(y)));
+  cursor.setAttribute('x1', x(day + 1));
+  cursor.setAttribute('x2', x(day + 1));
+  dot.setAttribute('cx', x(day + 1));
+  dot.setAttribute('cy', y(data.pea[day + 1]));
+}
+
+function chartLayoutKey() {
+  return `${$('#profiles').clientWidth}:${$('#season').clientWidth}:${isMaori()}`;
 }
 
 function render() {
@@ -184,9 +223,15 @@ function render() {
   $('#day').value=day;
   $('#day').style.setProperty('--progress',100*day/(data.days.length-1)+'%');
   $('#day').setAttribute('aria-valuetext',formatDate(record.date));
-  drawProfiles();
+  if (chartsNeedRebuild) {
+    drawProfiles();
+    drawSeason();
+    chartsNeedRebuild = false;
+    chartLayout = chartLayoutKey();
+  }
+  updateProfiles();
   updateProcesses();
-  drawSeason();
+  updateSeason();
 }
 function play(enabled) {
   playing=enabled;
@@ -205,8 +250,15 @@ $('#day').addEventListener('input',event=>{
   day=Number(event.target.value);
   render();
 });
-window.addEventListener('resize',render);
-document.addEventListener('site-language-change',render);
+function rebuildCharts() {
+  // Mobile browser chrome changes viewport height during a scroll gesture.
+  // Only chart width or language affects these axes and labels.
+  if (chartLayoutKey() === chartLayout) return;
+  chartsNeedRebuild = true;
+  render();
+}
+window.addEventListener('resize',rebuildCharts);
+document.addEventListener('site-language-change',rebuildCharts);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)play(false)});
 function tick(time) {
   if (playing) {

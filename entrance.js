@@ -34,7 +34,7 @@ try {
         data.onerror = () => reject(new Error("The model data could not be downloaded. Check your connection and try again."));
         document.body.appendChild(data);
     });
-    const { mountAssembly } = await import("./assembly_scene.js?v=20261113-native-final2");
+    const { mountAssembly } = await import("./assembly_scene.js?v=20261114-budget-scroll");
     mountAssembly();
     history.replaceState({...history.state,modelVisited:true},"",location.href); // Returns after UI setup and the first successful WebGL render.
     await nextFrame();
