@@ -1,15 +1,15 @@
-import { riverSources as RIVERS } from "./river-sources.js?v=20261113-native-final2";
+import { riverSources as RIVERS } from "./river-sources.js?v=20261115-public-forcing1";
 // MetOcean river forcing detail page.
 // Plan-view map of the domain (from MASK_RHO) with the current native river point
-// sources plotted as green dots. Click a dot to see its transport and
+// sources plotted as equal-sized green dots. Click a dot to see its
 // vertical injection profile (vshape).
 
-import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261113-native-final2";
+import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261115-public-forcing1";
 
 mountHeader(document.getElementById("header-mount"), {
     prov: "metocean",
     title: "Rivers",
-    sentence: "River forcing provided by MetOcean.",
+    sentence: "River forcing provided by MetOcean. Discharge withheld; markers are equal-sized.",
     source: "nz5km_N50_rivers.nc",
 });
 
@@ -39,12 +39,6 @@ for (let k = 0; k < mask.length; k++) {
     const lo = lonRho[k], la = latRho[k];
     if (!Number.isFinite(lo) || !Number.isFinite(la)) continue;
     landLon.push(lo); landLat.push(la);
-}
-
-const maxTransport = Math.max(...RIVERS.map(r => r.transport));
-function radiusFor(t) {
-    const norm = Math.sqrt(t) / Math.sqrt(maxTransport);
-    return Math.max(2, Math.min(10, 2 + norm * 8));
 }
 
 const canvas = document.getElementById("map-canvas");
@@ -85,7 +79,7 @@ function draw() {
     // rivers
     riverPositions = RIVERS.map(r => {
         const [x, y] = project(r.face.lon, r.face.lat);
-        return { r, x, y, radius: radiusFor(r.transport) };
+        return { r, x, y, radius: 5 };
     });
     riverPositions.forEach(({ r, x, y, radius }) => {
         ctx.beginPath();
@@ -164,7 +158,7 @@ function selectRiver(r) {
     const panel = document.getElementById("river-detail");
     panel.style.display = "block";
     document.getElementById("river-detail-text").innerHTML =
-        `${r.transport.toFixed(0)} m&sup3;/s`;
+        "Discharge withheld";
     drawProfile(document.getElementById("riverChart"), r.vshape);
     draw();
 }

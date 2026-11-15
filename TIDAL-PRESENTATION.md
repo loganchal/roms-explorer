@@ -1,3 +1,9 @@
+# Current public tide display
+
+The public explorer now uses NOAA CO-OPS San Francisco station 9414290 as an illustrative example, not MetOcean forcing. See PUBLIC-FORCING.md for source and interpretation.
+
+## Earlier presentation (superseded)
+
 # Tidal forcing presentation
 
 The tide stage isolates tidal forcing from the previously displayed GLORYS and

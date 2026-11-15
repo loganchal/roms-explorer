@@ -1,4 +1,5 @@
-import { riverSources as RIVERS } from "./river-sources.js?v=20261113-native-final2";
+import { exampleTideFields } from "./public-tide.js?v=20261115-public-forcing1";
+import { riverSources as RIVERS } from "./river-sources.js?v=20261115-public-forcing1";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
@@ -61,7 +62,7 @@ const lonRho = b64f32(LON_RHO_B64), latRho = b64f32(LAT_RHO_B64);
 const H = b64f32(H_B64), MASK = b64f32(MASK_RHO_B64);
 const CLIM_TEMP = b64f32(CLIM_TEMP_SURF_B64);
 const NUDG = b64f32(NUDG_TRACER_SURF_B64);
-const TIDE_AMP = b64f32(TIDE_AMP_M2_B64); // scene_data now packs every constituent as TIDE_AMP_<NAME>_B64; this view keeps showing M2
+const TIDE_AMP = exampleTideFields(GRID_NY * GRID_NX).M2.amp;
 
 function minMax(arr) {
     let lo = Infinity, hi = -Infinity;
@@ -97,7 +98,7 @@ const DRAPES = {
     nudging: { field: nudgLog, range: nudgRange, stops: NUDG_STOPS,
         label: "log10 nudging rate (1/day)", prov: "nz5km_nudg_N50.nc — recovered Souza et al. 4DVar nudging file; 1/day at the edge, 0.001/day floor inland" },
     tide_amp: { field: TIDE_AMP, range: tideRange, stops: TIDE_STOPS,
-        label: "M2 elevation amplitude (m)", prov: "nz5km-tide.nc — tidal forcing provided by MetOcean" },
+        label: "Example M2 amplitude (m)", prov: "Public NOAA San Francisco station example; uniform illustration, not the model forcing" },
 };
 
 // ---------------------------------------------------------------------------
@@ -263,12 +264,10 @@ export function mountExplorer(config = {}) {
     // -- rivers -------------------------------------------------------------
     const riverGroup = new THREE.Group();
     const riverHitMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:0, colorWrite:false, depthWrite:false });
-    const maxRiverTransport = Math.max(...RIVERS.map(r => r.transport));
     RIVERS.forEach((r, sourceIndex) => {
-        const discharge = Math.sqrt(r.transport / maxRiverTransport);
         const mesh = new THREE.Mesh(new THREE.SphereGeometry(3.2,12,10),riverHitMat);
-        const centre = new THREE.Mesh(new THREE.CircleGeometry(.3+.4*discharge,24), new THREE.MeshBasicMaterial({color:0xeee3c9,depthWrite:false}));
-        const radius=.6+1.05*discharge;
+        const centre = new THREE.Mesh(new THREE.CircleGeometry(.5,24), new THREE.MeshBasicMaterial({color:0xeee3c9,depthWrite:false}));
+        const radius=1.1;
         const ring = new THREE.Mesh(new THREE.RingGeometry(radius,radius+.13,40),new THREE.MeshBasicMaterial({color:0xb8d2cc,transparent:true,opacity:.68,side:THREE.DoubleSide,depthWrite:false}));
         centre.rotation.x=ring.rotation.x=-Math.PI/2;
         mesh.add(centre,ring);
@@ -419,7 +418,7 @@ export function mountExplorer(config = {}) {
     function inspectRiver(r) {
         showField([
             ["layer", "River point source"],
-            ["mean transport", `${r.transport.toFixed(1)} m³/s`],
+            ["discharge", "Withheld"],
             ["lon / lat", `${r.lon.toFixed(2)}, ${r.lat.toFixed(2)}`],
         ]);
         inspectorBody.insertAdjacentHTML("beforeend", `<div class="k" style="margin-top:8px">Vertical injection profile (surface plume)</div><canvas class="chart" id="riverChart"></canvas>`);

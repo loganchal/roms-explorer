@@ -14,8 +14,8 @@
     "ny": 467,
     "nx": 397
   },
-  "bytes": 57701,
-  "sha256": "7a3942d54146e3f7816bffce78778abb8176f48d586bd53d9e576f0ad29c4117",
+  "bytes": 56038,
+  "sha256": "5bf6f13b312263222f70f5f99a84984d6e27016434a6f6dd3178d559ad81e042",
   "checks": [
     "42 finite source records",
     "all 42 native source rho cells wet",
@@ -24,5 +24,13 @@
     "exact requested native Jan1 2021 timestamp",
     "All 42 native mask pairs match browser scene_data; rho-coordinate differences below 0.00001 degrees (Float32 precision)"
   ],
-  "browser_rho_coordinate_max_error_degrees": 7.571741662104614e-06
+  "browser_rho_coordinate_max_error_degrees": 7.571741662104614e-06,
+  "public_redaction": {
+    "removed_fields": [
+      "transport",
+      "transport_signed"
+    ],
+    "marker_size": "uniform",
+    "date": "2026-11-15"
+  }
 }

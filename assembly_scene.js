@@ -1,7 +1,8 @@
 import { observedTracks, trackPosition, prepareSmoothTrack } from "./argo-drift.js?v=20261113-native-final2";
 import { createArgoTerrain } from "./argo-terrain.js?v=20261113-native-final2";
 import * as THREE from "three";
-import { riverFaces, riverSources as RIVERS } from "./river-sources.js?v=20261113-native-final2";
+import { publicTide, TIDE_NAMES, TIDE_PERIOD_HOURS, exampleTideFields } from "./public-tide.js?v=20261115-public-forcing1";
+import { riverFaces, riverSources as RIVERS } from "./river-sources.js?v=20261115-public-forcing1";
 import { createPartsLabels } from "./parts-labels.js?v=20261113-native-final2";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { modelFaces } from "./ocean-faces.js?v=20261112-pea-depth";
@@ -78,6 +79,7 @@ function fastColormap(t, stopsRGB, out) {
 // Distinguish supplied forcing, original model inputs, rebuilt forcing,
 // and independent observations in the provenance labels.
 const PROV = {
+    public: { label: "Public example", color: "#72a5ac" },
     original: { label: "Original", color: "#5dcaa5" },
     metocean: { label: "MetOcean", color: "#5dcaa5" },
     rebuilt: { label: "Rebuilt", color: "#4fa8ff" },
@@ -247,34 +249,20 @@ FRAMES_FIELDS.temp_anom={label:"Temperature anomaly",range:[-1,1],stops:ZETA_STO
 FRAMES_FIELDS.salt_anom={label:"Salinity anomaly",range:[-1,1],stops:ZETA_STOPS};
 FRAMES_FIELDS.pea_anom={label:"Stratification anomaly",range:[-1,1],stops:ZETA_STOPS};
 
-// all 11 tidal constituents' amp+phase -- bare identifiers since scene_data.js
-// declares one const per constituent (TIDE_AMP_M2_B64 etc); TIDE_NAMES gives
-// the name->index order, checked against known periods when first pulled.
-const TIDE_RAW = {
-    M4: { amp: TIDE_AMP_M4_B64, phase: TIDE_PHASE_M4_B64 },
-    K2: { amp: TIDE_AMP_K2_B64, phase: TIDE_PHASE_K2_B64 },
-    S2: { amp: TIDE_AMP_S2_B64, phase: TIDE_PHASE_S2_B64 },
-    M2: { amp: TIDE_AMP_M2_B64, phase: TIDE_PHASE_M2_B64 },
-    N2: { amp: TIDE_AMP_N2_B64, phase: TIDE_PHASE_N2_B64 },
-    K1: { amp: TIDE_AMP_K1_B64, phase: TIDE_PHASE_K1_B64 },
-    P1: { amp: TIDE_AMP_P1_B64, phase: TIDE_PHASE_P1_B64 },
-    O1: { amp: TIDE_AMP_O1_B64, phase: TIDE_PHASE_O1_B64 },
-    Q1: { amp: TIDE_AMP_Q1_B64, phase: TIDE_PHASE_Q1_B64 },
-    MF: { amp: TIDE_AMP_MF_B64, phase: TIDE_PHASE_MF_B64 },
-    MM: { amp: TIDE_AMP_MM_B64, phase: TIDE_PHASE_MM_B64 },
-};
+// Uniform public-station example; not the model’s supplied boundary forcing.
+const TIDE_RAW = exampleTideFields(NY * NX);
 function formatTidePeriod(hours) {
     if (hours >= 48) return (hours / 24).toFixed(1) + "d";
     const h = Math.floor(hours), m = Math.round((hours - h) * 60);
     return `${h}h${String(m).padStart(2, "0")}m`;
 }
 // precompute amp range + phase cos/sin for every constituent once at load --
-// cheap (11 x NY*NX), and means switching constituents is instant (no
+// cheap (constituents x NY*NX), and means switching constituents is instant (no
 // per-vertex trig on the hot path, same trick as the single-constituent
 // version this replaces: cos(wt - phi) = cos(wt)cos(phi) + sin(wt)sin(phi)).
 const TIDE_CONSTITUENTS = {};
 TIDE_NAMES.forEach((name, i) => {
-    const amp = b64f32(TIDE_RAW[name].amp), phase = b64f32(TIDE_RAW[name].phase);
+    const amp = TIDE_RAW[name].amp, phase = TIDE_RAW[name].phase;
     const cosPhi = new Float32Array(NY * NX), sinPhi = new Float32Array(NY * NX);
     for (let k = 0; k < NY * NX; k++) {
         const rad = (phase[k] * Math.PI) / 180;
@@ -331,15 +319,15 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "tides", title: "Tides", kid: "11 constituents on the open boundary.",
-        prov: "metocean", source: "nz5km-tide.nc",
-        detail: "Tidal forcing provided by MetOcean. Amplitude and cycle speed normalized per constituent.",
+        id: "tides", title: "Tides", kid: "Public tide example — NOAA San Francisco.",
+        prov: "public", source: "NOAA CO-OPS · 9414290",
+        detail: "Illustrative station harmonics, repeated uniformly along the boundary. Not the model forcing. Amplitude and cycle speed normalized per constituent.",
         limitation: null,
     },
     {
         id: "rivers", title: "Rivers", kid: `${RIVERS.length} point sources.`,
         prov: "metocean", source: "nz5km_N50_rivers.nc",
-        detail: "River forcing provided by MetOcean.",
+        detail: "River forcing provided by MetOcean. Discharge withheld; markers are equal-sized.",
         limitation: null,
     },
     {
@@ -1016,14 +1004,8 @@ export function mountAssembly() {
         });
     }
 
-    // -- tides step: animated M2 wave along the open boundary, where it's
-    // actually specified. tide_Eamp/Ephase are ~zero through the interior --
-    // tides enter ROMS as a boundary condition (elevation + phase at the four
-    // walls), not a body force, and the model's own dynamics produce the
-    // interior response from that, the same principle as the GLORYS boundary
-    // state. A flat interior drape would have implied a field that was never
-    // actually given to the model, so this animates the real amplitude/phase
-    // along the boundary instead, reusing the wall layout from that step.
+    // Public NOAA station constants repeated on the boundary for illustration.
+    // This is not the MetOcean input or a New Zealand tidal prediction.
     const TIDE_EXAG = 20; // world units at peak amplitude -- normalized per constituent (see below), a display exaggeration only
     const tideWaveRGB = toRGB(TIDE_WAVE_STOPS);
     // demo cycle length scales with the constituent's real period (M4 spins
@@ -1148,14 +1130,12 @@ export function mountAssembly() {
 
     // -- rivers step ----------------------------------------------------
     const riverGroup = new THREE.Group();
-    const maxTransport = Math.max(...RIVERS.map(r => r.transport));
     RIVERS.forEach((r, sourceIndex) => {
-        const discharge = Math.sqrt(r.transport / maxTransport);
         // A generous invisible hit area keeps the fine source marks usable
         // on a phone. Only the ivory centre and sea-glass outline render.
         const mesh = new THREE.Mesh(new THREE.SphereGeometry(3.2, 12, 10), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, colorWrite: false, depthWrite: false }));
-        const centre = new THREE.Mesh(new THREE.CircleGeometry(.3 + .4 * discharge, 24), new THREE.MeshBasicMaterial({ color: 0xeee3c9, transparent: true, opacity: 1, depthWrite: false }));
-        const radius = .6 + 1.05 * discharge;
+        const centre = new THREE.Mesh(new THREE.CircleGeometry(.5, 24), new THREE.MeshBasicMaterial({ color: 0xeee3c9, transparent: true, opacity: 1, depthWrite: false }));
+        const radius = 1.1;
         const outline = new THREE.Mesh(new THREE.RingGeometry(radius, radius + .13, 40), new THREE.MeshBasicMaterial({ color: 0xb8d2cc, side: THREE.DoubleSide, transparent: true, opacity: .68, depthWrite: false }));
         centre.rotation.x = outline.rotation.x = -Math.PI / 2;
         centre.renderOrder = 11; outline.renderOrder = 12;
@@ -2061,7 +2041,7 @@ export function mountAssembly() {
         if (!panel) return;
         panel.style.display = "block";
         panel.dataset.riverIndex = selectedSource.sourceIndex;
-        panel.innerHTML = `<div class="k">${r.transport.toFixed(0)} m&sup3;/s &middot; ${r.temp.toFixed(1)}&deg;C &middot; injection profile</div><canvas class="chart" id="riverChart"></canvas>`;
+        panel.innerHTML = `<div class="k">${r.temp.toFixed(1)}&deg;C &middot; injection profile</div><canvas class="chart" id="riverChart"></canvas>`;
         const sLevels = r.vshape.map((_, idx) => idx / (r.vshape.length - 1) - 1);
         drawLineChart(document.getElementById("riverChart"), r.vshape, sLevels, "#47737b");
     });
@@ -2272,7 +2252,7 @@ export function mountAssembly() {
             const sources = s.sources || (s.prov ? [{ prov: s.prov, source: s.source }] : []);
             const rows = sources.map(({ prov, source }) => {
                 const p = PROV[prov];
-                const srcHtml = source ? `<code class="src">${source}</code>` : "";
+                const srcHtml = source ? (prov === "public" ? `<a class="src" href="${publicTide.station_url}" target="_blank" rel="noopener">${source} ↗</a>` : `<code class="src">${source}</code>`) : "";
                 return `<div class="prov-pair"><div class="prov-badge" style="--c:${p.color}"><span class="dot"></span>${p.label}</div>${srcHtml}</div>`;
             }).join("");
             detailBody.innerHTML = `${rows}<div class="layer-note">${s.detail}</div>`;

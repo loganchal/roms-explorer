@@ -9,7 +9,7 @@ preserved separately in Git.
 The snapshot is the native **1 January 2021, 00:00 UTC** record. Its source time
 axis has 32 daily records beginning 1 December 2020; the selected Jan1 record is
 present exactly, without interpolation or relabelling. The asset contains actual
-signed and absolute transport, surface river temperature and salinity, and all
+surface river temperature and salinity, and all
 50 native `river_Vshape` values for every source. Every Vshape sums to one.
 
 Positions use the corresponding full production grid,
@@ -32,3 +32,7 @@ Reproduction: `tools/export_current_river_sources.py --source SOURCE.nc
 committed and pushed as `3e4ed09` before deployment to the verified Weka
 checkout. Slurm job `6428909` completed with exit `0:0`. Raw native files stay
 outside Git; only the compact display asset and provenance are versioned.
+
+## Public redaction — 15 November 2026
+
+The public JSON omits `transport` and `transport_signed`. Markers have equal size, and inspectors show no discharge. The unused legacy river snapshot has been removed from `scene_data.js`. Source files and their values are not modified. Older Git revisions still retain previously published data.
