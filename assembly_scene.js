@@ -2388,7 +2388,7 @@ export function mountAssembly() {
         const budgetFrame = document.getElementById("budget-frame");
         budgetStage.hidden = !budgetActive;
         if (budgetActive) {
-            if (!budgetFrame.hasAttribute("src")) budgetFrame.src = "mechanisms-preview.html?embedded=1&v=20261114-budget-scroll";
+            if (!budgetFrame.hasAttribute("src")) budgetFrame.src = "mechanisms-preview.html?embedded=1&v=20261115-budget-banner";
             viewport.setAttribute("aria-hidden", "true");
             requestAnimationFrame(() => document.getElementById("budget-prev").focus({preventScroll:true}));
         } else if (prevId === "budget") {

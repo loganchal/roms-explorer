@@ -78,9 +78,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible {
 .painted-band {
  height:68px;
  background-color:#42666b;
- background-image:var(--ocean-painting,url('/assets/monet/ngv.webp'));
+ background-image:var(--budget-painting,var(--ocean-painting,url('/assets/monet/ngv.webp')));
  background-position:var(--ocean-strip-position,50% 74%);
- background-size:var(--ocean-strip-size,cover);
+ /* A page-wide banner must not inherit the control strip’s 150–600% zoom. */
+ background-size:cover;
  background-repeat:no-repeat;
 }
 @media(max-width:480px) { .painted-band { height:46px; } }

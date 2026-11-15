@@ -7,8 +7,22 @@ try {
   if(art?.url?.startsWith('/assets/monet/')) {
     const root=document.documentElement;
     root.style.setProperty('--ocean-painting','url("'+art.url+'")');
-    root.style.setProperty('--ocean-strip-size',art.size);
     root.style.setProperty('--ocean-strip-position',art.position);
+    // The budget is wider than the controls: decode the largest existing source.
+    // Keep the shared selected painting visible if the larger file is unavailable.
+    const image = new Image();
+    const apply = () => {
+      const source = new URL(image.currentSrc || art.url, location.href);
+      root.style.setProperty('--budget-painting', 'url("'+source.pathname+source.search+'")');
+    };
+    image.onload = apply;
+    if (art.id === 'bordighera') {
+      image.sizes = '100vw';
+      image.srcset = '/assets/monet/bordighera-900.webp 900w, /assets/monet/bordighera.webp 1600w, /assets/monet/bordighera-3000.webp 3000w';
+      window.addEventListener('resize', () => { image.sizes = '100vw'; }, {passive:true});
+    }
+    image.src = art.url;
+    image.decode().then(apply).catch(() => {});
   }
 } catch(_) {}
 
