@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Full explorer — ROMS extension domain</title>
     <link rel="stylesheet" href="explorer.css?v=20261112-labels">
-<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261115-public-forcing1"></script></head>
+<link rel="stylesheet" href="language.css?v=20261110-reo1"><script defer src="language.js?v=20261115-forcing-copy2"></script></head>
 
 <body>
     <div id="app">
@@ -24,7 +24,7 @@
             <label class="row"><input type="radio" name="drape" value="bathymetry" checked> Bathymetry</label>
             <label class="row"><input type="radio" name="drape" value="clim_temp"> Climatology, temp</label>
             <label class="row"><input type="radio" name="drape" value="nudging"> Nudging strength</label>
-            <label class="row"><input type="radio" name="drape" value="tide_amp"> Public example: M2 amplitude</label>
+            <label class="row"><input type="radio" name="drape" value="tide_amp"> Example: M2 amplitude</label>
 
             <h2>Overlays</h2>
             <label class="row"><input type="checkbox" id="ov-boundary" checked> Boundary wall</label>
@@ -55,9 +55,9 @@
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }}
     </script>
-    <script src="scene_data.js?v=20261115-public-forcing1"></script>
+    <script src="scene_data.js?v=20261115-forcing-copy2"></script>
     <script type="module">
-        import { mountExplorer } from "./scene_core.js?v=20261115-public-forcing1";
+        import { mountExplorer } from "./scene_core.js?v=20261115-forcing-copy2";
         mountExplorer({
             initialDrape: "bathymetry",
             overlays: { boundary: true, rivers: true, argo: true, wind: false },

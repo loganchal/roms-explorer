@@ -29,12 +29,12 @@ try {
     const minimumEntranceEnd = performance.now() + (returningToModel ? 0 : 3500);
     await new Promise((resolve, reject) => {
         const data = document.createElement("script");
-        data.src = "scene_data.js?v=20261115-public-forcing1";
+        data.src = "scene_data.js?v=20261115-forcing-copy2";
         data.onload = resolve;
         data.onerror = () => reject(new Error("The model data could not be downloaded. Check your connection and try again."));
         document.body.appendChild(data);
     });
-    const { mountAssembly } = await import("./assembly_scene.js?v=20261115-public-forcing1");
+    const { mountAssembly } = await import("./assembly_scene.js?v=20261115-forcing-copy2");
     mountAssembly();
     history.replaceState({...history.state,modelVisited:true},"",location.href); // Returns after UI setup and the first successful WebGL render.
     await nextFrame();

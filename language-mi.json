@@ -424,13 +424,9 @@
   "42 point sources.": "42 ngā puna ira.",
   "Native model source faces.": "Ngā mata puna taketake o te tauira.",
   "Native vertical injection profile.": "Te kōtaha tāpiri wai poutū taketake.",
-  "Public example": "Tauira tūmatanui",
-  "Public tide example — NOAA San Francisco.": "Tauira tai tūmatanui — NOAA San Francisco.",
-  "Public tide example — NOAA San Francisco. Not the model forcing.": "Tauira tai tūmatanui — NOAA San Francisco. Ehara ēnei i ngā raraunga tāuru o te tauira.",
-  "Illustrative station harmonics, repeated uniformly along the boundary. Not the model forcing. Amplitude and cycle speed normalized per constituent.": "He tauira o ngā wāhanga tai o tētahi teihana, he ōrite i te paenga katoa. Ehara ēnei i ngā raraunga tāuru o te tauira. Kua whakaritea te pikinga me te tere huringa mō ia wāhanga tai.",
-  "River forcing provided by MetOcean. Discharge withheld; markers are equal-sized.": "Nā MetOcean ngā raraunga awa. Kāore e whakaaturia ngā rahinga rere wai; he ōrite te rahi o ngā tohu.",
-  "Discharge withheld": "Kāore e whakaaturia te rahinga rere wai",
-  "Withheld": "Kāore e whakaaturia",
   "discharge": "rahinga rere wai",
-  "Illustrative 72-hour harmonic sum from public NOAA station constants. Arbitrary time origin; astronomical corrections omitted. Not a tide prediction or model input.": "He tauira whakakotahi wāhanga tai mō te 72 hāora mai i ngā raraunga tūmatanui o NOAA. He tīmatanga wā noa; kāore ngā whakatikatika arorangi i whakaurua. Ehara i te matapae tai, i te raraunga tāuru tauira rānei."
+  "Tidal constituents.": "Ngā wāhanga tai.",
+  "Example harmonics from NOAA’s San Francisco station. Amplitude and cycle speed normalized for display.": "He tauira wāhanga tai nō te teihana o NOAA ki San Francisco. Kua whakaritea te pikinga me te tere huringa mō te whakaaturanga.",
+  "Harmonic example from NOAA’s San Francisco station.": "He tauira wāhanga tai nō te teihana o NOAA ki San Francisco.",
+  "Ten tidal constituents over 72 hours · illustrative harmonic cycle.": "Tekau ngā wāhanga tai i te 72 hāora · he tauira huringa tai."
 }

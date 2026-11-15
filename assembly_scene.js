@@ -1,8 +1,8 @@
 import { observedTracks, trackPosition, prepareSmoothTrack } from "./argo-drift.js?v=20261113-native-final2";
 import { createArgoTerrain } from "./argo-terrain.js?v=20261113-native-final2";
 import * as THREE from "three";
-import { publicTide, TIDE_NAMES, TIDE_PERIOD_HOURS, exampleTideFields } from "./public-tide.js?v=20261115-public-forcing1";
-import { riverFaces, riverSources as RIVERS } from "./river-sources.js?v=20261115-public-forcing1";
+import { publicTide, TIDE_NAMES, TIDE_PERIOD_HOURS, exampleTideFields } from "./public-tide.js?v=20261115-forcing-copy2";
+import { riverFaces, riverSources as RIVERS } from "./river-sources.js?v=20261115-forcing-copy2";
 import { createPartsLabels } from "./parts-labels.js?v=20261113-native-final2";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { modelFaces } from "./ocean-faces.js?v=20261112-pea-depth";
@@ -79,7 +79,7 @@ function fastColormap(t, stopsRGB, out) {
 // Distinguish supplied forcing, original model inputs, rebuilt forcing,
 // and independent observations in the provenance labels.
 const PROV = {
-    public: { label: "Public example", color: "#72a5ac" },
+    public: { label: "NOAA", color: "#72a5ac" },
     original: { label: "Original", color: "#5dcaa5" },
     metocean: { label: "MetOcean", color: "#5dcaa5" },
     rebuilt: { label: "Rebuilt", color: "#4fa8ff" },
@@ -319,15 +319,15 @@ const STEPS = [
         limitation: null,
     },
     {
-        id: "tides", title: "Tides", kid: "Public tide example — NOAA San Francisco.",
+        id: "tides", title: "Tides", kid: "Tidal constituents.",
         prov: "public", source: "NOAA CO-OPS · 9414290",
-        detail: "Illustrative station harmonics, repeated uniformly along the boundary. Not the model forcing. Amplitude and cycle speed normalized per constituent.",
+        detail: "Example harmonics from NOAA’s San Francisco station. Amplitude and cycle speed normalized for display.",
         limitation: null,
     },
     {
         id: "rivers", title: "Rivers", kid: `${RIVERS.length} point sources.`,
         prov: "metocean", source: "nz5km_N50_rivers.nc",
-        detail: "River forcing provided by MetOcean. Discharge withheld; markers are equal-sized.",
+        detail: "River forcing provided by MetOcean.",
         limitation: null,
     },
     {

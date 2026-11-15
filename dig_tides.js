@@ -1,8 +1,8 @@
-import { publicTide, TIDE_NAMES } from "./public-tide.js?v=20261115-public-forcing1";
-import { drawSeries, mountHeader } from "./dig_common.js?v=20261115-public-forcing1";
+import { publicTide, TIDE_NAMES } from "./public-tide.js?v=20261115-forcing-copy2";
+import { drawSeries, mountHeader } from "./dig_common.js?v=20261115-forcing-copy2";
 mountHeader(document.getElementById("dig-header"), {
     prov: "public", title: "Tides", source: "NOAA CO-OPS · 9414290",
-    sentence: "Public tide example — NOAA San Francisco. Not the model forcing.",
+    sentence: "Harmonic example from NOAA’s San Francisco station.",
 });
 document.getElementById("decomp-point").innerHTML =
     '<a href="'+publicTide.station_url+'" target="_blank" rel="noopener">NOAA San Francisco · station 9414290 ↗</a>';

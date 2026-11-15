@@ -1,5 +1,5 @@
-import { exampleTideFields } from "./public-tide.js?v=20261115-public-forcing1";
-import { riverSources as RIVERS } from "./river-sources.js?v=20261115-public-forcing1";
+import { exampleTideFields } from "./public-tide.js?v=20261115-forcing-copy2";
+import { riverSources as RIVERS } from "./river-sources.js?v=20261115-forcing-copy2";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
@@ -98,7 +98,7 @@ const DRAPES = {
     nudging: { field: nudgLog, range: nudgRange, stops: NUDG_STOPS,
         label: "log10 nudging rate (1/day)", prov: "nz5km_nudg_N50.nc — recovered Souza et al. 4DVar nudging file; 1/day at the edge, 0.001/day floor inland" },
     tide_amp: { field: TIDE_AMP, range: tideRange, stops: TIDE_STOPS,
-        label: "Example M2 amplitude (m)", prov: "Public NOAA San Francisco station example; uniform illustration, not the model forcing" },
+        label: "Example M2 amplitude (m)", prov: "NOAA San Francisco · illustrative station harmonics" },
 };
 
 // ---------------------------------------------------------------------------
@@ -418,7 +418,6 @@ export function mountExplorer(config = {}) {
     function inspectRiver(r) {
         showField([
             ["layer", "River point source"],
-            ["discharge", "Withheld"],
             ["lon / lat", `${r.lon.toFixed(2)}, ${r.lat.toFixed(2)}`],
         ]);
         inspectorBody.insertAdjacentHTML("beforeend", `<div class="k" style="margin-top:8px">Vertical injection profile (surface plume)</div><canvas class="chart" id="riverChart"></canvas>`);

@@ -1,15 +1,15 @@
-import { riverSources as RIVERS } from "./river-sources.js?v=20261115-public-forcing1";
+import { riverSources as RIVERS } from "./river-sources.js?v=20261115-forcing-copy2";
 // MetOcean river forcing detail page.
 // Plan-view map of the domain (from MASK_RHO) with the current native river point
 // sources plotted as equal-sized green dots. Click a dot to see its
 // vertical injection profile (vshape).
 
-import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261115-public-forcing1";
+import { b64f32, mountHeader, PROV } from "./dig_common.js?v=20261115-forcing-copy2";
 
 mountHeader(document.getElementById("header-mount"), {
     prov: "metocean",
     title: "Rivers",
-    sentence: "River forcing provided by MetOcean. Discharge withheld; markers are equal-sized.",
+    sentence: "River forcing provided by MetOcean.",
     source: "nz5km_N50_rivers.nc",
 });
 
@@ -158,7 +158,7 @@ function selectRiver(r) {
     const panel = document.getElementById("river-detail");
     panel.style.display = "block";
     document.getElementById("river-detail-text").innerHTML =
-        "Discharge withheld";
+        "Vertical injection profile";
     drawProfile(document.getElementById("riverChart"), r.vshape);
     draw();
 }
