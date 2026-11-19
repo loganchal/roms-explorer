@@ -5,14 +5,15 @@
     if(root.dataset.modelReturn) {
         try {
             const art=JSON.parse(sessionStorage.getItem("ocean-model-active-art"));
-            if(art?.url?.startsWith("/assets/monet/")) {
+            if(art?.id!=="sainte-adresse" && art?.url?.startsWith("/assets/monet/")) {
                 root.style.setProperty("--ocean-painting",'url("'+art.url+'")');
                 root.style.setProperty("--ocean-strip-size",art.size);
                 root.style.setProperty("--ocean-strip-position",art.position);
                 root.dataset.oceanPainting=art.id;root.dataset.oceanArt="ready";
+                return;
             }
+            sessionStorage.removeItem("ocean-model-active-art");
         } catch(_) {}
-        return;
     }
 
     let locked = false;
@@ -30,11 +31,12 @@
         varengeville: ["100% auto", "50% 20%"],
         bordighera: ["600% auto", "70% 49%"],
         "cliff-walk": ["320% auto", "0% 62%"],
-        etretat: ["300% auto", "0% 72%"]
+        etretat: ["300% auto", "0% 72%"],
+        "pourville-cliffs": ["100% auto", "50% 55%"]
     };
     let paintings = [{ id: "ngv", url: "/assets/monet/ngv.webp" }];
     try {
-        const response = await fetch("/assets/monet/rotation.json?v=20261112-hires");
+        const response = await fetch("/assets/monet/rotation.json?v=20261119-pourville2");
         if (response.ok) {
             const catalogue = await response.json();
             if (Array.isArray(catalogue) && catalogue.length) paintings = catalogue;
